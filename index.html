@@ -1,10 +1,27 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Life Hub - OS</title>
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#1e293b',
+                        darkpanel: '#334155',
+                        darkborder: '#475569',
+                    }
+                }
+            }
+        }
+    </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <!-- Quill Editor (Rich Text) -->
@@ -12,175 +29,365 @@
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 
     <style>
-        /* Design System Professionale */
-        :root { --bg-main: #0f172a; --bg-panel: #1e293b; --border-color: #334155; --text-main: #f8fafc; --text-muted: #94a3b8; }
-        body { background-color: var(--bg-main); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; transition: background-color 0.3s, color 0.3s; }
+        .panel { border-radius: 12px; overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
+        .panel-hover:hover { transform: translateY(-2px); cursor: pointer; }
         
-        .panel { background-color: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
-        .panel-hover:hover { border-color: #475569; transform: translateY(-1px); transition: all 0.2s ease; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); }
+        .task-checkbox { appearance: none; min-width: 1.15rem; width: 1.15rem; height: 1.15rem; border: 2px solid; border-radius: 4px; cursor: pointer; position: relative; transition: all 0.2s; background: transparent; }
+        .dark .task-checkbox { border-color: #94a3b8; }
+        .task-checkbox:checked { background-color: #3b82f6 !important; border-color: #3b82f6 !important; }
+        .task-checkbox:checked::after { content: '✔'; position: absolute; color: white; font-size: 10px; top: -1px; left: 3px; font-weight: bold; }
         
-        /* Checkbox Custom */
-        .task-checkbox { appearance: none; min-width: 1.25rem; width: 1.25rem; height: 1.25rem; border: 2px solid #64748b; border-radius: 4px; cursor: pointer; position: relative; transition: all 0.2s; background: transparent; }
-        .task-checkbox:checked { background-color: #3b82f6; border-color: #3b82f6; }
-        .task-checkbox:checked::after { content: '✔'; position: absolute; color: white; font-size: 11px; top: -1px; left: 3px; font-weight: bold; }
-        
-        /* Priorità Tasks */
-        .prio-3 { border-left: 3px solid #ef4444; }
-        .prio-2 { border-left: 3px solid #f59e0b; }
-        .prio-1 { border-left: 3px solid #3b82f6; }
-        .prio-0 { border-left: 3px solid transparent; }
-
-        /* Drag & Drop Styles */
         .draggable { cursor: grab; }
         .draggable:active { cursor: grabbing; }
-        .drag-over { border: 2px dashed #3b82f6 !important; opacity: 0.5; }
+        .drag-over { border: 2px dashed #60a5fa !important; opacity: 0.5; border-radius: 8px;}
 
-        /* Typography & Scrollbar */
         .word-wrap { overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-        .input-base { width: 100%; background-color: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 0.5rem 0.75rem; color: #f8fafc; font-size: 0.875rem; transition: border-color 0.2s; }
-        .input-base:focus { outline: none; border-color: #3b82f6; }
+        .input-base { width: 100%; border-radius: 8px; padding: 0.5rem 0.75rem; font-size: 0.875rem; transition: all 0.2s; outline: none; border: 1px solid; }
+        .dark .input-base { background-color: #1e293b; border-color: #475569; color: #f8fafc; }
+        .input-base { background-color: #f8fafc; border-color: #e2e8f0; color: #0f172a; }
+        .dark .input-base:focus { border-color: #60a5fa; box-shadow: 0 0 0 1px #60a5fa; }
+        .input-base:focus { border-color: #3b82f6; box-shadow: 0 0 0 1px #3b82f6; }
         
-        /* TM Sidebar Hover */
-        .tm-nav-item { padding: 0.4rem 0.6rem; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; }
-        .tm-nav-item:hover { background-color: rgba(255,255,255,0.05); }
-        .tm-nav-item.active { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; font-weight: 600; }
+        .tm-nav-item { padding: 0.4rem 0.6rem; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 500; }
+        .dark .tm-nav-item:hover { background-color: rgba(255,255,255,0.1); }
+        .tm-nav-item:hover { background-color: rgba(0,0,0,0.05); }
+        .dark .tm-nav-item.active { background-color: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+        .tm-nav-item.active { background-color: rgba(59, 130, 246, 0.1); color: #2563eb; }
 
-        /* Quill Customization for Dark Mode */
-        .ql-toolbar.ql-snow { border-color: #334155; background: #0f172a; border-radius: 6px 6px 0 0; }
-        .ql-container.ql-snow { border-color: #334155; border-radius: 0 0 6px 6px; font-family: inherit; font-size: 14px; min-height: 150px; }
-        .ql-snow .ql-stroke { stroke: #94a3b8; }
-        .ql-snow .ql-fill, .ql-snow .ql-stroke.ql-fill { fill: #94a3b8; }
-        .ql-snow .ql-picker { color: #94a3b8; }
+        .ql-toolbar.ql-snow { border: none !important; border-bottom: 1px solid #e2e8f0 !important; background: transparent; padding: 8px 0 !important; }
+        .dark .ql-toolbar.ql-snow { border-bottom-color: #475569 !important; }
+        .ql-container.ql-snow { border: none !important; font-family: inherit; font-size: 14px; padding: 0.5rem 0; line-height: 1.6; }
+        .dark .ql-snow .ql-stroke { stroke: #cbd5e1; }
+        .dark .ql-snow .ql-fill, .dark .ql-snow .ql-stroke.ql-fill { fill: #cbd5e1; }
+        .dark .ql-snow .ql-picker { color: #cbd5e1; }
+        
+        .glass-header { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .dark .glass-header { background: rgba(30, 41, 59, 0.8); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .glass-header { background: rgba(255, 255, 255, 0.8); border-bottom: 1px solid rgba(0,0,0,0.05); }
     </style>
 </head>
-<body class="min-h-screen p-3 md:p-6 flex flex-col relative">
+<body class="min-h-screen bg-slate-50 dark:bg-darkbg text-slate-800 dark:text-slate-200 flex flex-col relative pb-10">
 
-    <!-- Navbar -->
-    <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 panel p-4 gap-4 w-full max-w-[1400px] mx-auto">
-        <div id="breadcrumbs" class="flex flex-wrap gap-2 items-center text-sm md:text-base font-semibold text-slate-300"></div>
+    <header class="sticky top-0 z-40 w-full glass-header mb-8 px-4 md:px-8 py-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div id="breadcrumbs" class="flex flex-wrap gap-2 items-center text-sm font-semibold text-slate-500 dark:text-slate-300"></div>
         <div class="flex flex-wrap gap-2 md:gap-3 items-center text-sm font-medium">
-            <button onclick="navigate('timeline')" class="text-slate-400 hover:text-amber-400 transition bg-slate-800/50 px-3 py-1.5 rounded-md border border-slate-700"><i class="fas fa-stream mr-1"></i> Timeline</button>
-            <button onclick="navigate('global_tasks')" class="text-slate-400 hover:text-blue-400 transition bg-slate-800/50 px-3 py-1.5 rounded-md border border-slate-700"><i class="fas fa-check-double mr-1"></i> Tasks</button>
-            <button onclick="navigate('global_contacts')" class="text-slate-400 hover:text-emerald-400 transition bg-slate-800/50 px-3 py-1.5 rounded-md border border-slate-700"><i class="fas fa-address-book mr-1"></i> Rubrica</button>
-            <div class="h-6 w-px bg-slate-700 mx-1 hidden md:block"></div>
-            <button onclick="manualSync()" id="syncBtn" class="text-slate-400 hover:text-white transition" title="Sincronizza Gist"><i class="fas fa-cloud-sync text-lg"></i></button>
-            <button onclick="toggleSettings()" class="text-slate-400 hover:text-white transition" title="Impostazioni"><i class="fas fa-cog text-lg"></i></button>
+            <button onclick="navigate('timeline')" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition px-3 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"><i class="fas fa-stream mr-1"></i> Timeline</button>
+            <button onclick="navigate('global_tasks')" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition px-3 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"><i class="fas fa-check-double mr-1"></i> Tasks</button>
+            <button onclick="navigate('global_contacts')" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition px-3 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"><i class="fas fa-address-book mr-1"></i> Rubrica</button>
+            <div class="h-5 w-px bg-slate-300 dark:bg-slate-600 mx-1 hidden md:block"></div>
+            <button onclick="toggleTheme()" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700" title="Cambia Tema"><i class="fas fa-moon text-base dark:hidden"></i><i class="fas fa-sun text-base hidden dark:block"></i></button>
+            <button onclick="openImportModal()" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700" title="Importazione Massiva"><i class="fas fa-file-import text-base"></i></button>
+            <button onclick="forceSync()" id="syncBtn" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700" title="Sincronizza Gist"><i class="fas fa-cloud-sync text-base"></i></button>
+            <button onclick="toggleSettings()" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700" title="Impostazioni"><i class="fas fa-cog text-base"></i></button>
         </div>
     </header>
 
-    <!-- App Content -->
-    <main id="app-content" class="w-full max-w-[1400px] mx-auto flex-1"></main>
+    <main id="app-content" class="w-full max-w-[1400px] mx-auto flex-1 px-4 md:px-8"></main>
 
-    <!-- ================= MODALS ================= -->
-
-    <div id="settingsModal" class="fixed inset-0 bg-black/80 hidden flex justify-center items-center backdrop-blur-sm z-50 p-4">
-        <div class="panel p-6 w-full max-w-xl">
-            <h2 class="text-xl font-bold mb-4">Impostazioni Workspace</h2>
-            <div class="space-y-4 mb-6">
-                <div><label class="block text-sm text-slate-400 mb-1">GitHub PAT (Token)</label><input type="password" id="ghToken" class="input-base"></div>
-                <div><label class="block text-sm text-slate-400 mb-1">Gist ID</label><input type="text" id="gistId" class="input-base"></div>
-                <div>
-                    <label class="block text-sm text-slate-400 mb-1">Google Calendar Embed URL</label>
-                    <div class="bg-amber-900/30 text-amber-400 p-3 rounded mb-2 text-xs border border-amber-900/50 leading-relaxed">
-                        <i class="fas fa-exclamation-triangle mr-1"></i> <b>Per vedere TUTTI i tuoi calendari contemporaneamente:</b><br>
-                        1. Vai su Google Calendar (PC) > Impostazioni (ingranaggio in alto) > Clicca sul tuo calendario principale a sinistra.<br>
-                        2. Assicurati che "Rendi disponibile pubblicamente" sia spuntato (altrimenti l'app blocca l'accesso).<br>
-                        3. Scorri giù fino a "Integra calendario" e clicca sul pulsante bianco <b>"Personalizza"</b>.<br>
-                        4. Si aprirà una pagina. Sulla sinistra spunta le caselle di <b>tutti i calendari</b> che vuoi visualizzare.<br>
-                        5. Copia il nuovo URL in alto che si trova <b>dentro l'attributo src="..."</b> e incollalo qui sotto.
-                    </div>
-                    <input type="text" id="gcalUrl" class="input-base" placeholder="https://calendar.google.com/calendar/embed?src=...">
-                </div>
+    <!-- Modal Archivio Letto/Scritto -->
+    <div id="archiveViewModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 hidden flex justify-center items-center backdrop-blur-sm z-50 p-4">
+        <div class="bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder rounded-xl shadow-xl p-6 w-full max-w-4xl flex flex-col h-[85vh]">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="archiveViewTitle" class="text-xl font-bold">Archivio Appunti</h2>
+                <span id="archiveViewDate" class="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded"></span>
             </div>
-            <div class="flex justify-between items-center pt-4 border-t border-slate-700">
-                <button onclick="factoryReset()" class="text-red-400 hover:text-red-300 text-sm font-medium"><i class="fas fa-exclamation-triangle mr-1"></i> Factory Reset</button>
-                <div class="flex gap-2">
-                    <button onclick="toggleSettings()" class="px-4 py-2 text-sm text-slate-300">Chiudi</button>
-                    <button onclick="saveSettings()" class="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md text-white">Salva</button>
+            <div class="flex-1 bg-slate-50 dark:bg-darkbg rounded border border-slate-200 dark:border-darkborder p-4 overflow-hidden flex flex-col shadow-inner">
+                <div id="quill-archive-editor" class="flex-1 overflow-y-auto"></div>
+            </div>
+            <div class="flex justify-between items-center mt-4 pt-3 border-t border-slate-200 dark:border-darkborder">
+                <p id="archiveEditIndicator" class="text-[10px] font-bold text-amber-500 hidden bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded border border-amber-200 dark:border-amber-900/50"><i class="fas fa-pencil-alt mr-1"></i> Modificato</p>
+                <div class="flex gap-2 ml-auto">
+                    <button onclick="closeArchiveModal()" class="px-4 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition">Chiudi</button>
+                    <button onclick="saveArchiveEdit()" class="px-5 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded font-bold shadow transition">Salva Modifiche</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modale Entità (Sfere, Progetti, Subprogetti) -->
-    <div id="entityModal" class="fixed inset-0 bg-black/80 hidden flex justify-center items-center backdrop-blur-sm z-50 p-4">
-        <div class="panel p-6 w-full max-w-lg">
-            <h2 id="emTitle" class="text-xl font-bold mb-4 border-b border-slate-700 pb-2">Modifica</h2>
-            <div class="space-y-4">
-                <div class="flex gap-4">
-                    <div class="flex-1"><label class="block text-sm text-slate-400 mb-1">Nome</label><input type="text" id="emName" class="input-base"></div>
-                    <div class="w-32"><label class="block text-sm text-slate-400 mb-1">Icona</label><input type="text" id="emIcon" class="input-base" placeholder="fa-folder"></div>
+    <!-- Modal Importazione Dati -->
+    <div id="importModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 hidden flex justify-center items-center backdrop-blur-sm z-50 p-4">
+        <div class="bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder rounded-xl shadow-xl p-6 w-full max-w-2xl">
+            <h2 class="text-lg font-bold mb-2">Importazione Massiva (JSON)</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Incolla qui il codice JSON per generare o recuperare i tuoi dati.</p>
+            <textarea id="importDataArea" class="input-base font-mono text-xs h-64 mb-4" placeholder='{ "spheres": [...], "projects": [...] }'></textarea>
+            <div class="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-darkborder">
+                <button onclick="closeImportModal()" class="px-4 py-1.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">Annulla</button>
+                <button onclick="executeImport()" class="px-4 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded font-bold shadow transition">Importa e Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Settings -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 hidden flex justify-center items-center backdrop-blur-sm z-50 p-4">
+        <div class="bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder rounded-xl shadow-xl p-6 w-full max-w-lg">
+            <h2 class="text-lg font-bold mb-4">Impostazioni Workspace</h2>
+            <div class="space-y-4 mb-6">
+                <div><label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">GitHub PAT (Token)</label><input type="password" id="ghToken" class="input-base"></div>
+                <div><label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Gist ID</label><input type="text" id="gistId" class="input-base"></div>
+            </div>
+            <div class="flex justify-between items-center pt-4 border-t border-slate-200 dark:border-darkborder">
+                <button onclick="factoryReset()" class="text-red-500 hover:text-red-600 text-xs font-bold flex items-center"><i class="fas fa-exclamation-triangle mr-1"></i> Factory Reset</button>
+                <div class="flex gap-2">
+                    <button onclick="toggleSettings()" class="px-3 py-1.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">Chiudi</button>
+                    <button onclick="saveSettings()" class="px-4 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded font-bold shadow transition">Salva</button>
                 </div>
-                
-                <div id="emSphereFields" class="hidden">
-                    <label class="block text-sm text-slate-400 mb-1">Colore Tema (HEX)</label>
-                    <input type="color" id="emColor" class="w-full h-10 bg-transparent cursor-pointer rounded">
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale Entità -->
+    <div id="entityModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 hidden flex justify-center items-center backdrop-blur-sm z-50 p-4">
+        <div class="bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder rounded-xl shadow-xl p-6 w-full max-w-lg">
+            <h2 id="emTitle" class="text-lg font-bold mb-4">Modifica</h2>
+            <div class="space-y-4">
+                <div class="flex gap-3">
+                    <div class="flex-1"><label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Nome</label><input type="text" id="emName" class="input-base"></div>
+                    <div class="w-20"><label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Icona</label><input type="text" id="emIcon" class="input-base" placeholder="fa-folder"></div>
+                    <div class="w-20"><label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Colore</label><input type="color" id="emColor" class="w-full h-9 bg-transparent cursor-pointer rounded border border-slate-200 dark:border-darkborder p-0.5"></div>
                 </div>
 
                 <div id="emProjectFields" class="hidden space-y-4">
-                    <div class="flex gap-4">
-                        <div class="flex-1"><label class="block text-sm text-slate-400 mb-1">Tipologia</label><select id="emType" class="input-base"><option value="Costante">Costante</option><option value="A termine">A termine</option><option value="Ciclico">Ciclico</option></select></div>
-                        <div class="flex-1"><label class="block text-sm text-slate-400 mb-1">Status</label><select id="emStatus" class="input-base"><option value="Nuovo">Nuovo</option><option value="Attivo">Attivo</option><option value="In corso">In corso</option><option value="Completato">Completato</option><option value="In pausa">In pausa</option></select></div>
+                    <div class="flex gap-3">
+                        <div class="flex-1"><label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Tipologia</label><select id="emType" class="input-base"><option value="Costante">Costante</option><option value="A termine">A termine</option><option value="Ciclico">Ciclico</option></select></div>
+                        <div class="flex-1"><label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Status</label><select id="emStatus" class="input-base"><option value="Nuovo">Nuovo</option><option value="Attivo">Attivo</option><option value="In corso">In corso</option><option value="Completato">Completato</option><option value="In pausa">In pausa</option></select></div>
                     </div>
-                    <div class="flex gap-4">
-                        <div class="flex-1"><label class="block text-sm text-slate-400 mb-1">Data Inizio</label><input type="date" id="emStartDate" class="input-base text-slate-400"></div>
-                        <div class="flex-1"><label class="block text-sm text-slate-400 mb-1">Data Fine</label><input type="date" id="emEndDate" class="input-base text-slate-400"></div>
+                    <div class="flex gap-3">
+                        <div class="flex-1"><label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Data Inizio</label><input type="date" id="emStartDate" class="input-base text-slate-500 dark:text-slate-400"></div>
+                        <div class="flex-1"><label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Data Fine</label><input type="date" id="emEndDate" class="input-base text-slate-500 dark:text-slate-400"></div>
                     </div>
-                    <div id="emRelocationArea" class="pt-2 border-t border-slate-700 hidden">
-                        <label class="block text-sm text-slate-400 mb-1" id="emParentLabel">Sposta in...</label>
+                    <div id="emRelocationArea" class="pt-3 border-t border-slate-200 dark:border-darkborder hidden">
+                        <label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400" id="emParentLabel">Sposta in...</label>
                         <select id="emParentSelect" class="input-base"></select>
                     </div>
                 </div>
             </div>
-            <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-700">
-                <button id="emDeleteBtn" onclick="deleteCurrentEntity()" class="text-red-400 hover:text-red-300 text-sm font-medium hidden"><i class="fas fa-trash-alt mr-1"></i> Elimina</button>
+            <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-200 dark:border-darkborder">
+                <button id="emDeleteBtn" onclick="deleteCurrentEntity()" class="text-red-500 hover:text-red-600 text-xs font-bold hidden flex items-center"><i class="fas fa-trash-alt mr-1"></i> Elimina</button>
                 <div class="flex gap-2 ml-auto">
-                    <button onclick="closeEntityModal()" class="px-4 py-2 text-sm text-slate-300 hover:text-white">Annulla</button>
-                    <button onclick="saveEntityModal()" class="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md text-white font-medium">Salva</button>
+                    <button onclick="closeEntityModal()" class="px-3 py-1.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition">Annulla</button>
+                    <button onclick="saveEntityModal()" class="px-4 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded font-bold shadow transition">Salva</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Modale Rubrica -->
-    <div id="contactModal" class="fixed inset-0 bg-black/80 hidden flex justify-center items-center backdrop-blur-sm z-50 p-4">
-        <div class="panel p-6 w-full max-w-sm">
-            <h2 id="cmTitle" class="text-xl font-bold mb-4 border-b border-slate-700 pb-2">Contatto</h2>
+    <div id="contactModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 hidden flex justify-center items-center backdrop-blur-sm z-50 p-4">
+        <div class="bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder rounded-xl shadow-xl p-6 w-full max-w-sm">
+            <h2 id="cmTitle" class="text-lg font-bold mb-4">Contatto</h2>
             <div class="space-y-3">
-                <input type="text" id="cmName" placeholder="Nome / Identificativo" class="input-base">
-                <input type="text" id="cmRole" placeholder="Ruolo" class="input-base">
-                <input type="text" id="cmOrg" placeholder="Organizzazione/Azienda" class="input-base">
-                <input type="text" id="cmPhone" placeholder="Telefono" class="input-base">
-                <input type="email" id="cmEmail" placeholder="Email" class="input-base">
+                <div><label class="block text-[10px] font-bold mb-0.5 text-slate-500 dark:text-slate-400">NOME</label><input type="text" id="cmName" class="input-base"></div>
+                <div><label class="block text-[10px] font-bold mb-0.5 text-slate-500 dark:text-slate-400">RUOLO</label><input type="text" id="cmRole" class="input-base"></div>
+                <div><label class="block text-[10px] font-bold mb-0.5 text-slate-500 dark:text-slate-400">ORGANIZZAZIONE</label><input type="text" id="cmOrg" class="input-base"></div>
+                <div><label class="block text-[10px] font-bold mb-0.5 text-slate-500 dark:text-slate-400">TELEFONO</label><input type="text" id="cmPhone" class="input-base"></div>
+                <div><label class="block text-[10px] font-bold mb-0.5 text-slate-500 dark:text-slate-400">EMAIL</label><input type="email" id="cmEmail" class="input-base"></div>
             </div>
-            <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-700">
-                <button id="cmDeleteBtn" onclick="deleteContact()" class="text-red-400 hover:text-red-300 text-sm font-medium hidden">Elimina</button>
+            <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-200 dark:border-darkborder">
+                <button id="cmDeleteBtn" onclick="deleteContact()" class="text-red-500 hover:text-red-600 text-xs font-bold hidden">Elimina</button>
                 <div class="flex gap-2 ml-auto">
-                    <button onclick="closeContactModal()" class="px-4 py-2 text-sm text-slate-300">Annulla</button>
-                    <button onclick="saveContact()" class="px-4 py-2 text-sm bg-emerald-600 hover:bg-emerald-500 rounded-md text-white">Salva</button>
+                    <button onclick="closeContactModal()" class="px-3 py-1.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition">Annulla</button>
+                    <button onclick="saveContact()" class="px-4 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded font-bold shadow transition">Salva</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 1. CORE & DATA MANAGEMENT ---
-        let state = { 
+        // --- TEMA ---
+        function applyTheme() {
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            render(); 
+        }
+        applyTheme();
+
+        // --- MOTORE DATI (DATA MANAGER) ---
+        class LifeHubDataManager {
+            constructor() {
+                this.token = localStorage.getItem('hub_gh_token') || '';
+                this.gistId = localStorage.getItem('hub_gist_id') || '';
+                this.saveTimeout = null;
+                this.isSyncing = false;
+                
+                this.defaultData = {
+                    version: "5.0",
+                    spheres: [], projects: [], subprojects: [], tasks: [], contacts: []
+                };
+                
+                this.data = JSON.parse(JSON.stringify(this.defaultData));
+            }
+
+            isConfigured() { return this.token.length > 0 && this.gistId.length > 0; }
+
+            async initialize() {
+                if (!this.isConfigured()) {
+                    this.loadLocal();
+                    return;
+                }
+                const btn = document.getElementById('syncBtn');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin text-base"></i>';
+                
+                try {
+                    const res = await fetch(`https://api.github.com/gists/${this.gistId}`, {
+                        headers: { 'Authorization': `Bearer ${this.token}`, 'Cache-Control': 'no-cache' }
+                    });
+                    if (!res.ok) throw new Error("Errore API GitHub");
+                    const gistData = await res.json();
+                    
+                    if (gistData.files && gistData.files['life_hub_data.json']) {
+                        let parsed = {};
+                        let content = gistData.files['life_hub_data.json'].content;
+                        
+                        // Protezione: analizza solo se il Gist non è vuoto
+                        if(content && content.trim() !== "" && content.trim() !== "{}") {
+                            try {
+                                parsed = JSON.parse(content);
+                            } catch(e) { console.warn("JSON non valido sul gist, forzo azzeramento"); }
+                        }
+                        
+                        this.data = this.migrateData(parsed);
+                        this.saveLocal(); // Forza il locale a combaciare con il Cloud
+                    }
+                    btn.innerHTML = '<i class="fas fa-check text-green-500 text-base"></i>';
+                } catch (error) {
+                    console.error("Gist Load Error:", error);
+                    this.loadLocal(); // Fallback solo se API fallisce (offline)
+                    btn.innerHTML = '<i class="fas fa-exclamation-triangle text-amber-500 text-base"></i>';
+                }
+                setTimeout(() => btn.innerHTML = '<i class="fas fa-cloud-sync text-base"></i>', 2000);
+                render();
+            }
+
+            triggerSave() {
+                this.saveLocal();
+                if (this.saveTimeout) clearTimeout(this.saveTimeout);
+                this.saveTimeout = setTimeout(() => { this.pushToCloud(); }, 2500);
+            }
+
+            async pushToCloud() {
+                if (!this.isConfigured() || this.isSyncing) return;
+                this.isSyncing = true;
+                const btn = document.getElementById('syncBtn');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin text-base"></i>';
+
+                try {
+                    const res = await fetch(`https://api.github.com/gists/${this.gistId}`, {
+                        method: 'PATCH',
+                        headers: { 'Authorization': `Bearer ${this.token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ files: { 'life_hub_data.json': { content: JSON.stringify(this.data, null, 2) } } })
+                    });
+                    if (!res.ok) throw new Error("Patch failed");
+                    btn.innerHTML = '<i class="fas fa-check text-green-500 text-base"></i>';
+                } catch (error) {
+                    console.error("Gist Save Error:", error);
+                    btn.innerHTML = '<i class="fas fa-times text-red-500 text-base"></i>';
+                } finally {
+                    this.isSyncing = false;
+                    setTimeout(() => btn.innerHTML = '<i class="fas fa-cloud-sync text-base"></i>', 2000);
+                }
+            }
+
+            loadLocal() {
+                const local = localStorage.getItem('hub_local_data');
+                if (local) this.data = this.migrateData(JSON.parse(local));
+                else this.data = JSON.parse(JSON.stringify(this.defaultData));
+                render();
+            }
+
+            saveLocal() { localStorage.setItem('hub_local_data', JSON.stringify(this.data)); }
+
+            migrateData(d) {
+                if (!d || Object.keys(d).length === 0) return JSON.parse(JSON.stringify(this.defaultData));
+                let n = { version: "5.0", spheres: [], projects: [], subprojects: [], tasks: d.tasks || [], contacts: d.contacts || [] };
+                
+                if (d.version !== "4.5" && d.version !== "5.0" && d.spheres && d.spheres.length > 0 && d.spheres[0].projects !== undefined) {
+                    d.spheres.forEach((s, sIdx) => {
+                        n.spheres.push({ id: s.id, name: s.name, icon: s.icon || 'fa-folder', color: mapColor(s.color), order: s.order||sIdx, notes: s.notes||'', permanentNotes: s.permanentNotes||'', updates: s.updates||[] });
+                        if (s.projects) {
+                            s.projects.forEach((p, pIdx) => {
+                                n.projects.push({ id: p.id, sphereId: s.id, name: p.name, icon: p.icon || 'fa-folder', color: p.color, type: p.type, status: p.status, pinned: p.pinned, archived: p.archived||false, notes: p.notes, permanentNotes: p.permanentNotes||'', updates: p.updates||[], startDate: p.startDate||'', endDate: p.endDate||'', order: p.order||pIdx, pinnedOrder: p.pinnedOrder||pIdx });
+                                if (p.subprojects) {
+                                    p.subprojects.forEach((sp, spIdx) => {
+                                        n.subprojects.push({ id: sp.id, projectId: p.id, name: sp.name, icon: sp.icon || 'fa-file-alt', color: sp.color, type: sp.type||'A termine', status: sp.status||'Attivo', pinned: sp.pinned||false, archived: sp.archived||false, notes: sp.notes, permanentNotes: sp.permanentNotes||'', updates: sp.updates||[], startDate: sp.startDate||'', endDate: sp.endDate||'', order: sp.order||spIdx, pinnedOrder: sp.pinnedOrder||spIdx });
+                                    });
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    n.spheres = (d.spheres || []).map(s => ({...s, color: mapColor(s.color)}));
+                    n.projects = (d.projects || []);
+                    n.subprojects = (d.subprojects || []);
+                }
+                return n;
+            }
+            
+            importJSON(jsonText) {
+                const parsed = JSON.parse(jsonText);
+                if(parsed.spheres) this.data.spheres.push(...parsed.spheres);
+                if(parsed.projects) this.data.projects.push(...parsed.projects);
+                if(parsed.subprojects) this.data.subprojects.push(...parsed.subprojects);
+                if(parsed.tasks) this.data.tasks.push(...parsed.tasks);
+                if(parsed.contacts) this.data.contacts.push(...parsed.contacts);
+                this.triggerSave();
+            }
+            
+            reset() {
+                this.data = JSON.parse(JSON.stringify(this.defaultData));
+                this.triggerSave();
+            }
+        }
+
+        const AppData = new LifeHubDataManager();
+        const state = { 
             view: 'home', 
             path: { sphereId: null, projId: null, subprojId: null }, 
-            ui: { showArchived: false, tmView: 'all', showCompletedTasks: false }, 
-            data: {} 
+            ui: { showArchived: false, tmView: 'all', showCompletedTasks: false },
+            get data() { return AppData.data; },
+            set data(val) { AppData.data = val; }
         };
+
+        // --- GESTIONE APP & UTILITY ---
         let editState = { mode: 'create', type: 'sphere', id: null };
         let contactEditId = null;
-        let quillInstances = {}; 
-        let saveTimeout;
+        let editingTaskId = null;
+        let currentArchiveEdit = { type: null, entityId: null, updateId: null };
+        let archiveQuill = null;
         let dragSource = null;
+
+        function forceSync() { AppData.pushToCloud(); }
+
+        function mapColor(c) {
+            if(!c) return '#94a3b8';
+            if(c.startsWith('#')) return c;
+            if(c.includes('emerald') || c.includes('green')) return '#10b981';
+            if(c.includes('amber') || c.includes('yellow')) return '#f59e0b';
+            if(c.includes('purple')) return '#a855f7';
+            if(c.includes('red')) return '#ef4444';
+            if(c.includes('blue')) return '#3b82f6';
+            return '#94a3b8'; 
+        }
 
         function toggleNavFolder(e, id) {
             e.stopPropagation();
@@ -188,97 +395,180 @@
             e.target.classList.toggle('fa-chevron-down');
             e.target.classList.toggle('fa-chevron-right');
         }
-
-        function scheduleAutosave() {
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => { syncToCloudSilent(); }, 2000);
-            localStorage.setItem('hub_local_data', JSON.stringify(state.data)); 
+        
+        function toggleNotes() {
+            const container = document.getElementById('notes-container');
+            const btn = document.getElementById('toggle-notes-btn');
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden'); container.classList.add('flex');
+                btn.innerHTML = '<i class="fas fa-chevron-up mr-1"></i> Nascondi Appunti';
+            } else {
+                container.classList.add('hidden'); container.classList.remove('flex');
+                btn.innerHTML = '<i class="fas fa-chevron-down mr-1"></i> Mostra Appunti';
+            }
         }
 
-        function mapColor(c) {
-            if(!c) return '#3b82f6';
-            if(c.startsWith('#')) return c;
-            if(c.includes('emerald') || c.includes('green')) return '#10b981';
-            if(c.includes('amber') || c.includes('yellow')) return '#f59e0b';
-            if(c.includes('purple')) return '#a855f7';
-            if(c.includes('red')) return '#ef4444';
-            if(c.includes('slate') || c.includes('gray')) return '#94a3b8';
-            return '#3b82f6'; 
+        function toggleArchivedView() { state.ui.showArchived = !state.ui.showArchived; render(); }
+
+        // --- IMPOSTAZIONI ---
+        function toggleSettings() {
+            const m = document.getElementById('settingsModal');
+            if(m.classList.contains('hidden')) {
+                document.getElementById('ghToken').value = AppData.token;
+                document.getElementById('gistId').value = AppData.gistId;
+                m.classList.remove('hidden');
+            } else { m.classList.add('hidden'); }
         }
 
-        function migrateToV4(d) {
-            if (d.version === "4.2") return d;
-            let n = { version: "4.2", spheres: [], projects: [], subprojects: [], tasks: d.tasks || [], contacts: d.contacts || [] };
-            if (d.spheres) {
-                d.spheres.forEach((s, sIdx) => {
-                    n.spheres.push({ id: s.id, name: s.name, icon: s.icon || 'fa-folder', color: mapColor(s.color), order: s.order||sIdx });
-                    if (s.projects) {
-                        s.projects.forEach((p, pIdx) => {
-                            n.projects.push({ id: p.id, sphereId: s.id, name: p.name, icon: p.icon || 'fa-folder-open', type: p.type, status: p.status, pinned: p.pinned, archived: p.archived||false, notes: p.notes, updates: p.updates||[], startDate: p.startDate||'', endDate: p.endDate||'', order: p.order||pIdx, pinnedOrder: p.pinnedOrder||pIdx });
-                            if (p.subprojects) {
-                                p.subprojects.forEach((sp, spIdx) => {
-                                    n.subprojects.push({ id: sp.id, projectId: p.id, name: sp.name, icon: sp.icon || 'fa-file-alt', type: sp.type||'A termine', status: sp.status||'Attivo', pinned: sp.pinned||false, archived: sp.archived||false, notes: sp.notes, updates: sp.updates||[], startDate: sp.startDate||'', endDate: sp.endDate||'', order: sp.order||spIdx, pinnedOrder: sp.pinnedOrder||spIdx });
-                                });
-                            }
-                        });
-                    }
-                });
-            }
-            if(d.version === "4.0" || d.version === "4.1") {
-                n.spheres = d.spheres.map(s => ({...s, color: mapColor(s.color), icon: s.icon || 'fa-folder'}));
-                n.projects = d.projects.map((p,i) => ({...p, icon: p.icon || 'fa-folder-open', pinnedOrder: p.pinnedOrder||i}));
-                n.subprojects = d.subprojects.map((sp,i) => ({...sp, icon: sp.icon || 'fa-file-alt', pinnedOrder: sp.pinnedOrder||i}));
-            }
-            return n;
+        function saveSettings() {
+            const token = document.getElementById('ghToken').value.trim();
+            const gistId = document.getElementById('gistId').value.trim();
+            localStorage.setItem('hub_gh_token', token);
+            localStorage.setItem('hub_gist_id', gistId);
+            AppData.token = token; AppData.gistId = gistId;
+            toggleSettings();
+            AppData.initialize();
         }
 
-        const defaultData = migrateToV4({
-            version: "3.0",
-            spheres: [
-                { id: 's_com', name: 'Comunità', icon: 'fa-users', color: 'text-emerald-500', projects: [
-                    { id: 'p_aula', name: 'Aula Studio', type: 'Costante', status: 'Attivo', pinned: true, archived: false, notes: 'Spazio autogestito.', updates: [], subprojects: [
-                        { id: 'sp_yb', name: 'Bando Youthbank', type: 'A termine', status: 'In corso', pinned: true, archived: false, notes: 'Preparazione documenti.', updates: [] }
-                    ]}
-                ]},
-                { id: 's_uni_lav', name: 'Uni & Lavoro', icon: 'fa-briefcase', color: 'text-blue-500', projects: [
-                    { id: 'p_tesi', name: 'Tesi Magistrale', type: 'A termine', status: 'In corso', pinned: true, archived: false, notes: 'UN Human Rights', updates: [], subprojects: [] }
-                ]}
-            ]
-        });
-
-        async function loadDataFromCloud() {
-            const token = localStorage.getItem('hub_gh_token'), gistId = localStorage.getItem('hub_gist_id');
-            let loaded = false;
-            if (token && gistId) {
-                try {
-                    const res = await fetch(`https://api.github.com/gists/${gistId}`, { headers: { 'Authorization': `Bearer ${token}` } });
-                    const gistData = await res.json();
-                    if (gistData.files && gistData.files['life_hub_data.json']) { 
-                        state.data = migrateToV4(JSON.parse(gistData.files['life_hub_data.json'].content)); loaded = true; 
-                    }
-                } catch (e) { console.warn("Fallback dati locali"); }
-            }
-            if (!loaded) {
-                const local = localStorage.getItem('hub_local_data');
-                state.data = local ? migrateToV4(JSON.parse(local)) : JSON.parse(JSON.stringify(defaultData));
-            }
-            scheduleAutosave(); render();
+        function factoryReset() { 
+            if(confirm("ATTENZIONE: Questo svuoterà completamente il database e il Gist. Sei sicuro?")) { 
+                AppData.reset(); navigate('home'); toggleSettings(); 
+            } 
         }
 
-        async function syncToCloudSilent() {
-            const token = localStorage.getItem('hub_gh_token'), gistId = localStorage.getItem('hub_gist_id');
-            if (!token || !gistId) return;
-            const btn = document.getElementById('syncBtn'); btn.innerHTML = '<i class="fas fa-spinner fa-spin text-lg text-blue-400"></i>';
+        // --- IMPORTAZIONE ---
+        function openImportModal() { document.getElementById('importDataArea').value = ''; document.getElementById('importModal').classList.remove('hidden'); }
+        function closeImportModal() { document.getElementById('importModal').classList.add('hidden'); }
+        function executeImport() {
+            const jsonText = document.getElementById('importDataArea').value;
+            if(!jsonText.trim()) return;
             try {
-                await fetch(`https://api.github.com/gists/${gistId}`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ files: { 'life_hub_data.json': { content: JSON.stringify(state.data, null, 2) } } }) });
-                btn.innerHTML = '<i class="fas fa-check text-green-400 text-lg"></i>'; setTimeout(() => btn.innerHTML = '<i class="fas fa-cloud-sync text-lg"></i>', 2000);
-            } catch (e) { btn.innerHTML = '<i class="fas fa-times text-red-400 text-lg"></i>'; }
+                AppData.importJSON(jsonText);
+                render();
+                closeImportModal();
+                alert("Dati importati e salvati sul cloud con successo!");
+            } catch(e) {
+                alert("Errore nel formato JSON. Assicurati che il codice sia valido.");
+                console.error(e);
+            }
         }
-        function manualSync() { syncToCloudSilent(); }
-        function factoryReset() { if(confirm("Ripristinare i dati base?")) { state.data = JSON.parse(JSON.stringify(defaultData)); scheduleAutosave(); navigate('home'); toggleSettings(); } }
 
-        // --- 2. RENDER ROUTER & HELPERS ---
-        function navigate(view, sId=null, pId=null, spId=null) { state.view = view; state.path = { sphereId: sId, projId: pId, subprojId: spId }; render(); }
+        // --- MODALE ENTITÀ ---
+        function openEntityModal(mode, type, sId=null, pId=null, spId=null) {
+            editState = { mode, type, id: (mode==='edit' ? (type==='sphere'?sId : (type==='project'?pId : spId)) : null), sId, pId };
+            
+            document.getElementById('emTitle').innerText = mode === 'create' ? `Nuovo ${type}` : `Modifica ${type}`;
+            document.getElementById('entityModal').classList.remove('hidden');
+            document.getElementById('emDeleteBtn').classList.toggle('hidden', mode === 'create');
+            
+            const pFields = document.getElementById('emProjectFields');
+            const reloArea = document.getElementById('emRelocationArea');
+            pFields.classList.toggle('hidden', type === 'sphere');
+            reloArea.classList.toggle('hidden', mode === 'create' || type === 'sphere');
+
+            if(mode === 'create') {
+                document.getElementById('emName').value = ''; document.getElementById('emIcon').value = type==='sphere' ? 'fa-folder' : (type==='project' ? 'fa-folder-open' : 'fa-file-alt');
+                document.getElementById('emColor').value = type==='sphere' ? '#3b82f6' : '#94a3b8';
+                if(type !== 'sphere') {
+                    document.getElementById('emType').value = 'A termine'; document.getElementById('emStatus').value = 'Nuovo';
+                    document.getElementById('emStartDate').value = ''; document.getElementById('emEndDate').value = '';
+                }
+            } else {
+                const e = getEntity(type, editState.id);
+                if(e) {
+                    document.getElementById('emName').value = e.name; document.getElementById('emIcon').value = e.icon; document.getElementById('emColor').value = mapColor(e.color);
+                    if(type !== 'sphere') {
+                        document.getElementById('emType').value = e.type || 'A termine'; document.getElementById('emStatus').value = e.status || 'Attivo';
+                        document.getElementById('emStartDate').value = e.startDate || ''; document.getElementById('emEndDate').value = e.endDate || '';
+                        
+                        const sel = document.getElementById('emParentSelect');
+                        sel.innerHTML = '';
+                        if(type === 'project') {
+                            document.getElementById('emParentLabel').innerText = 'Sposta in Sfera:';
+                            state.data.spheres.forEach(s => sel.innerHTML += `<option value="${s.id}" ${s.id===e.sphereId?'selected':''}>${s.name}</option>`);
+                        } else if(type === 'subproject') {
+                            document.getElementById('emParentLabel').innerText = 'Sposta in Progetto:';
+                            state.data.projects.forEach(p => {
+                                const ps = getEntity('sphere', p.sphereId);
+                                sel.innerHTML += `<option value="${p.id}" ${p.id===e.projectId?'selected':''}>${ps ? ps.name : 'Orfano'} > ${p.name}</option>`;
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        function closeEntityModal() { document.getElementById('entityModal').classList.add('hidden'); }
+        
+        function saveEntityModal() {
+            const name = document.getElementById('emName').value.trim();
+            if(!name) return alert("Inserisci un nome valido.");
+            
+            const baseObj = { name, icon: document.getElementById('emIcon').value, color: document.getElementById('emColor').value };
+            let extraObj = {};
+            if(editState.type !== 'sphere') {
+                extraObj = { type: document.getElementById('emType').value, status: document.getElementById('emStatus').value, startDate: document.getElementById('emStartDate').value, endDate: document.getElementById('emEndDate').value };
+            }
+
+            if(editState.mode === 'create') {
+                const newId = editState.type.charAt(0) + '_' + Date.now();
+                if(editState.type === 'sphere') state.data.spheres.push({ id: newId, ...baseObj, order: state.data.spheres.length, notes: '', permanentNotes: '', updates: [] });
+                else if(editState.type === 'project') state.data.projects.push({ id: newId, sphereId: editState.sId, ...baseObj, ...extraObj, pinned: false, archived: false, order: getChildren('sphere', editState.sId).length, notes: '', permanentNotes: '', updates: [] });
+                else state.data.subprojects.push({ id: newId, projectId: editState.pId, ...baseObj, ...extraObj, pinned: false, archived: false, order: getChildren('project', editState.pId).length, notes: '', permanentNotes: '', updates: [] });
+                
+                if(editState.type === 'sphere') navigate('sphere', newId);
+                else if(editState.type === 'project') navigate('project', editState.sId, newId);
+                else navigate('subproject', editState.sId, editState.pId, newId);
+            } else {
+                const e = getEntity(editState.type, editState.id);
+                if(e) {
+                    Object.assign(e, baseObj, extraObj);
+                    if(editState.type !== 'sphere') {
+                        const newParent = document.getElementById('emParentSelect').value;
+                        if(editState.type === 'project' && e.sphereId !== newParent) {
+                            e.sphereId = newParent;
+                            e.order = getChildren('sphere', newParent).length;
+                            if(state.path.projId === e.id) navigate('project', newParent, e.id);
+                        } else if(editState.type === 'subproject' && e.projectId !== newParent) {
+                            e.projectId = newParent;
+                            e.order = getChildren('project', newParent).length;
+                            if(state.path.subprojId === e.id) {
+                                const targetProj = getEntity('project', newParent);
+                                if(targetProj) navigate('subproject', targetProj.sphereId, newParent, e.id);
+                            }
+                        }
+                    }
+                }
+            }
+            closeEntityModal(); AppData.triggerSave(); render();
+        }
+
+        function deleteCurrentEntity() {
+            if(!confirm("Eliminare definitivamente? Verranno eliminati anche tutti i contenuti all'interno.")) return;
+            const id = editState.id;
+            if(editState.type === 'sphere') {
+                state.data.spheres = state.data.spheres.filter(x => x.id !== id);
+                const projs = state.data.projects.filter(x => x.sphereId === id).map(x=>x.id);
+                state.data.projects = state.data.projects.filter(x => x.sphereId !== id);
+                state.data.subprojects = state.data.subprojects.filter(x => !projs.includes(x.projectId));
+                navigate('home');
+            } else if(editState.type === 'project') {
+                state.data.projects = state.data.projects.filter(x => x.id !== id);
+                state.data.subprojects = state.data.subprojects.filter(x => x.projectId !== id);
+                navigate('sphere', editState.sId);
+            } else {
+                state.data.subprojects = state.data.subprojects.filter(x => x.id !== id);
+                navigate('project', editState.sId, editState.pId);
+            }
+            closeEntityModal(); AppData.triggerSave(); render();
+        }
+
+        // --- RENDER ROUTER & HELPERS ---
+        function navigate(view, sId=null, pId=null, spId=null) { 
+            state.view = view; 
+            state.path = { sphereId: sId, projId: pId, subprojId: spId }; 
+            editingTaskId = null; 
+            render(); 
+        }
 
         function render() {
             renderBreadcrumbs();
@@ -294,7 +584,11 @@
             initQuillEditors(); 
         }
 
-        function getEntity(type, id) { return state.data[type + 's'].find(x => x.id === id); }
+        function getEntity(type, id) { 
+            if (!state.data[type + 's']) return null;
+            return state.data[type + 's'].find(x => x.id === id) || null; 
+        }
+        
         function getChildren(parentType, parentId, sortProp = 'order') { 
             if(parentType === 'sphere') return state.data.projects.filter(p => p.sphereId === parentId).sort((a,b)=>(a[sortProp]||0)-(b[sortProp]||0));
             if(parentType === 'project') return state.data.subprojects.filter(sp => sp.projectId === parentId).sort((a,b)=>(a[sortProp]||0)-(b[sortProp]||0));
@@ -303,21 +597,21 @@
         
         function renderBreadcrumbs() {
             const nav = document.getElementById('breadcrumbs');
-            let html = `<span class="cursor-pointer hover:text-white flex items-center gap-1" onclick="navigate('home')"><i class="fas fa-home mb-0.5"></i> Dashboard</span>`;
+            let html = `<span class="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1.5 transition" onclick="navigate('home')"><i class="fas fa-home text-xs mb-[1px]"></i> Home</span>`;
             if (['global_contacts','global_tasks', 'timeline'].includes(state.view)) {
                 const labels = { global_tasks: 'Task Manager', global_contacts: 'Rubrica', timeline: 'Timeline' };
-                html += ` <i class="fas fa-chevron-right text-xs text-slate-600"></i> <span class="text-white">${labels[state.view]}</span>`;
+                html += ` <i class="fas fa-chevron-right text-[9px] opacity-40 mx-1.5"></i> <span class="text-slate-800 dark:text-slate-200 font-bold">${labels[state.view]}</span>`;
             } else if (state.path.sphereId) {
                 const s = getEntity('sphere', state.path.sphereId);
                 if(s) {
-                    html += ` <i class="fas fa-chevron-right text-xs text-slate-600"></i> <span class="cursor-pointer hover:text-white" onclick="navigate('sphere','${s.id}')">${s.name}</span>`;
+                    html += ` <i class="fas fa-chevron-right text-[9px] opacity-40 mx-1.5"></i> <span class="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition" onclick="navigate('sphere','${s.id}')" style="color: ${s.color}">${s.name}</span>`;
                     if (state.path.projId) {
                         const p = getEntity('project', state.path.projId);
                         if(p) {
-                            html += ` <i class="fas fa-chevron-right text-xs text-slate-600"></i> <span class="cursor-pointer hover:text-white" onclick="navigate('project','${s.id}','${p.id}')">${p.name}</span>`;
+                            html += ` <i class="fas fa-chevron-right text-[9px] opacity-40 mx-1.5"></i> <span class="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition text-slate-700 dark:text-slate-300" onclick="navigate('project','${s.id}','${p.id}')">${p.name}</span>`;
                             if (state.path.subprojId) {
                                 const sp = getEntity('subproject', state.path.subprojId);
-                                if(sp) html += ` <i class="fas fa-chevron-right text-xs text-slate-600"></i> <span class="text-white">${sp.name}</span>`;
+                                if(sp) html += ` <i class="fas fa-chevron-right text-[9px] opacity-40 mx-1.5"></i> <span class="text-slate-900 dark:text-white font-bold">${sp.name}</span>`;
                             }
                         }
                     }
@@ -326,17 +620,9 @@
             nav.innerHTML = html;
         }
 
-        // --- 3. DRAG & DROP LOGIC ---
-        function onDragStart(e, id, type, listType) {
-            dragSource = { id, type, listType };
-            e.dataTransfer.effectAllowed = 'move';
-            setTimeout(() => e.target.classList.add('opacity-50'), 0);
-        }
-        function onDragEnd(e) {
-            e.target.classList.remove('opacity-50');
-            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-            dragSource = null;
-        }
+        // --- DRAG & DROP LOGIC ---
+        function onDragStart(e, id, type, listType) { dragSource = { id, type, listType }; e.dataTransfer.effectAllowed = 'move'; setTimeout(() => e.target.classList.add('opacity-40'), 0); }
+        function onDragEnd(e) { e.target.classList.remove('opacity-40'); document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over')); dragSource = null; }
         function onDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; if(!e.currentTarget.classList.contains('drag-over')) e.currentTarget.classList.add('drag-over'); }
         function onDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
         function onDrop(e, targetId, targetType, listType) {
@@ -346,13 +632,16 @@
             if(srcId === targetId && dragSource.type === targetType) return;
 
             let list = [];
-            const prop = listType === 'dashboard_pinned' ? 'pinnedOrder' : 'order';
+            const prop = (listType === 'dashboard_pinned') ? 'pinnedOrder' : 'order';
 
             if(listType === 'dashboard_pinned') list = [...state.data.projects.filter(p=>p.pinned && !p.archived), ...state.data.subprojects.filter(sp=>sp.pinned && !sp.archived)].sort((a,b) => (a.pinnedOrder||0) - (b.pinnedOrder||0));
             else if(listType === 'sphere_pinned') list = state.data.projects.filter(p => p.sphereId === state.path.sphereId && p.pinned && p.archived === state.ui.showArchived).sort((a,b) => (a.order||0) - (b.order||0));
             else if(listType === 'sphere_unpinned') list = state.data.projects.filter(p => p.sphereId === state.path.sphereId && !p.pinned && p.archived === state.ui.showArchived).sort((a,b) => (a.order||0) - (b.order||0));
             else if(listType === 'project_pinned') list = state.data.subprojects.filter(sp => sp.projectId === state.path.projId && sp.pinned && sp.archived === state.ui.showArchived).sort((a,b) => (a.order||0) - (b.order||0));
             else if(listType === 'project_unpinned') list = state.data.subprojects.filter(sp => sp.projectId === state.path.projId && !sp.pinned && sp.archived === state.ui.showArchived).sort((a,b) => (a.order||0) - (b.order||0));
+            else if(listType === 'tm_spheres') list = [...state.data.spheres].sort((a,b) => (a.order||0) - (b.order||0));
+            else if(listType.startsWith('tm_proj_')) list = state.data.projects.filter(p => p.sphereId === listType.replace('tm_proj_','') && !p.archived).sort((a,b) => (a.order||0) - (b.order||0));
+            else if(listType.startsWith('tm_sub_')) list = state.data.subprojects.filter(sp => sp.projectId === listType.replace('tm_sub_','') && !sp.archived).sort((a,b) => (a.order||0) - (b.order||0));
 
             const draggedIdx = list.findIndex(x => x.id === srcId), targetIdx = list.findIndex(x => x.id === targetId);
             if(draggedIdx === -1 || targetIdx === -1) return;
@@ -361,192 +650,339 @@
             list.splice(targetIdx, 0, draggedObj);
 
             list.forEach((item, index) => {
-                if(item.projectId !== undefined) state.data.subprojects.find(x => x.id === item.id)[prop] = index;
-                else state.data.projects.find(x => x.id === item.id)[prop] = index;
+                if(item.projectId !== undefined) {
+                    let obj = state.data.subprojects.find(x => x.id === item.id);
+                    if(obj) obj[prop] = index;
+                } else if(item.sphereId !== undefined) {
+                    let obj = state.data.projects.find(x => x.id === item.id);
+                    if(obj) obj[prop] = index;
+                } else {
+                    let obj = state.data.spheres.find(x => x.id === item.id);
+                    if(obj) obj[prop] = index;
+                }
             });
-            scheduleAutosave(); render();
+            AppData.triggerSave(); render();
         }
 
         function createDraggableCardHtml(title, sub, type, sId, pId, spId, colorHex, listType, itemObj) {
             const id = type === 'project' ? pId : spId;
-            const icon = itemObj.icon || (type === 'project' ? 'fa-folder-open' : 'fa-file-alt');
+            const icon = itemObj.icon || (type === 'project' ? 'fa-folder' : 'fa-file-alt');
             return `
                 <div draggable="true" ondragstart="onDragStart(event, '${id}', '${type}', '${listType}')" ondragend="onDragEnd(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event, '${id}', '${type}', '${listType}')"
-                     onclick="navigate('${type}', '${sId}', '${pId}', '${spId}')" class="panel panel-hover p-4 flex justify-between items-center relative overflow-hidden group draggable mb-3">
-                    <div class="absolute left-0 top-0 bottom-0 w-1" style="background-color: ${colorHex}"></div>
+                     onclick="navigate('${type}', '${sId}', '${pId}', '${spId}')" class="panel panel-hover p-3 flex justify-between items-center relative group draggable mb-3 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm border-l-4" style="border-left-color: ${colorHex}">
                     <div class="pl-2 word-wrap flex-1">
-                        <h3 class="font-bold text-slate-200 text-sm flex items-center">
-                            ${itemObj.pinned ? '<i class="fas fa-star text-amber-500 text-[10px] mr-1.5"></i>' : ''} <i class="fas ${icon} text-slate-500 mr-2 text-[10px]"></i> ${title}
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center">
+                            ${itemObj.pinned ? '<i class="fas fa-star text-amber-500 text-[10px] mr-1.5"></i>' : ''} <i class="fas ${icon} text-slate-400 dark:text-slate-500 mr-1.5 text-xs"></i> ${title}
                         </h3>
-                        <p class="text-xs text-slate-400 mt-0.5"><i class="fas fa-hashtag mr-1"></i>${sub}</p>
+                        <p class="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">${sub}</p>
                     </div>
-                    <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition items-center">
-                        <button onclick="event.stopPropagation(); toggleArchiveEntity('${type}', '${id}')" class="text-slate-500 hover:text-amber-400 p-1" title="Archivia"><i class="fas fa-archive text-xs"></i></button>
-                        <i class="fas fa-grip-lines text-slate-600 text-sm ml-1 cursor-grab"></i>
+                    <div class="flex gap-1.5 opacity-0 group-hover:opacity-100 transition items-center">
+                        <button onclick="event.stopPropagation(); toggleArchiveEntity('${type}', '${id}')" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 p-1" title="Archivia"><i class="fas fa-archive text-[10px]"></i></button>
+                        <i class="fas fa-grip-lines text-slate-300 dark:text-slate-600 text-xs ml-1 cursor-grab"></i>
                     </div>
                 </div>`;
         }
 
-
-        // --- 4. DASHBOARD ---
+        // --- DASHBOARD ---
         function renderDashboard() {
             let pinnedHtml = '', spheresHtml = '';
             
-            state.data.spheres.sort((a,b)=>a.order-b.order).forEach(s => {
-                spheresHtml += `<div onclick="navigate('sphere', '${s.id}')" class="panel panel-hover p-5 flex flex-col items-center justify-center text-center h-32 border-t-4 bg-slate-800/40" style="border-top-color: ${s.color}">
-                    <i class="fas ${s.icon} text-3xl mb-2" style="color: ${s.color}"></i><h3 class="font-bold text-slate-200">${s.name}</h3></div>`;
+            state.data.spheres.sort((a,b)=>(a.order||0)-(b.order||0)).forEach(s => {
+                spheresHtml += `<div onclick="navigate('sphere', '${s.id}')" class="panel panel-hover p-4 flex flex-col items-center justify-center text-center h-28 border-t-4 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm" style="border-top-color: ${s.color}">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center mb-2" style="background-color: ${s.color}20"><i class="fas ${s.icon} text-lg" style="color: ${s.color}"></i></div>
+                    <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100">${s.name}</h3>
+                </div>`;
             });
             
             let pinnedList = [...state.data.projects.filter(p=>p.pinned && !p.archived), ...state.data.subprojects.filter(sp=>sp.pinned && !sp.archived)].sort((a,b)=>(a.pinnedOrder||0)-(b.pinnedOrder||0));
             pinnedList.forEach(item => {
-                if(item.projectId) { // subproject
-                    const p = getEntity('project', item.projectId); const s = getEntity('sphere', p.sphereId);
-                    pinnedHtml += createDraggableCardHtml(item.name, `${p.name} (Sub)`, 'subproject', s.id, p.id, item.id, s.color, 'dashboard_pinned', item);
-                } else { // project
+                if(item.projectId) { 
+                    const p = getEntity('project', item.projectId); 
+                    const s = p ? getEntity('sphere', p.sphereId) : null;
+                    const color = item.color || (p?p.color:null) || (s?s.color:null) || '#94a3b8';
+                    const pName = p ? p.name : 'Sconosciuto';
+                    pinnedHtml += createDraggableCardHtml(item.name, `${pName} (Sub)`, 'subproject', s?s.id:null, p?p.id:null, item.id, color, 'dashboard_pinned', item);
+                } else { 
                     const s = getEntity('sphere', item.sphereId);
-                    pinnedHtml += createDraggableCardHtml(item.name, s.name, 'project', s.id, item.id, null, s.color, 'dashboard_pinned', item);
+                    const color = item.color || (s?s.color:null) || '#94a3b8';
+                    const sName = s ? s.name : 'Sconosciuto';
+                    pinnedHtml += createDraggableCardHtml(item.name, sName, 'project', s?s.id:null, item.id, null, color, 'dashboard_pinned', item);
                 }
             });
 
-            const calUrl = localStorage.getItem('hub_gcal_url');
-            const calView = calUrl ? `<iframe src="${calUrl}" style="border: 0" width="100%" height="300" frameborder="0" class="rounded"></iframe>` : `<div class="h-32 flex flex-col items-center justify-center text-sm text-slate-500 border border-dashed border-slate-700 rounded"><i class="far fa-calendar-alt text-2xl mb-2"></i> Calendario non impostato</div>`;
-
             return `
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                    <div class="xl:col-span-2 space-y-6">
-                        <section><h2 class="text-lg font-bold mb-3 flex items-center text-slate-200"><i class="fas fa-thumbtack text-amber-500 mr-2"></i> In Evidenza</h2><div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4">${pinnedHtml || '<p class="text-sm text-slate-500">Nessun elemento in evidenza.</p>'}</div></section>
-                        <section><div class="flex justify-between items-center mb-3"><h2 class="text-lg font-bold flex items-center text-slate-200"><i class="fas fa-cubes text-emerald-500 mr-2"></i> Sfere</h2><button onclick="openEntityModal('create', 'sphere')" class="text-xs bg-slate-800 border border-slate-700 px-2 py-1 rounded text-slate-300 hover:bg-slate-700"><i class="fas fa-plus"></i></button></div><div class="grid grid-cols-2 sm:grid-cols-4 gap-4">${spheresHtml}</div></section>
-                        <section class="panel p-5"><h2 class="text-lg font-bold mb-3 flex items-center text-slate-200"><i class="far fa-calendar-alt text-blue-500 mr-2"></i> Calendario</h2>${calView}</section>
+                    <div class="xl:col-span-2 space-y-8">
+                        <section>
+                            <h2 class="text-[11px] font-bold mb-3 flex items-center text-slate-500 dark:text-slate-400 uppercase tracking-widest">In Evidenza</h2>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4">${pinnedHtml || '<p class="text-xs text-slate-400 italic">Nessun elemento in evidenza.</p>'}</div>
+                        </section>
+                        <section>
+                            <div class="flex justify-between items-center mb-3">
+                                <h2 class="text-[11px] font-bold flex items-center text-slate-500 dark:text-slate-400 uppercase tracking-widest">Le tue Sfere</h2>
+                                <button onclick="openEntityModal('create', 'sphere')" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline transition"><i class="fas fa-plus"></i> Nuova</button>
+                            </div>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">${spheresHtml}</div>
+                        </section>
                     </div>
-                    <div class="panel p-5 h-[750px] flex flex-col bg-slate-800/30">
-                        <div class="flex justify-between border-b border-slate-700 pb-2 mb-3">
-                            <h2 class="text-lg font-bold text-slate-200"><i class="fas fa-check-double text-blue-500 mr-2"></i> Task Recenti (Da fare)</h2>
-                            <button onclick="navigate('global_tasks')" class="text-xs text-blue-400 hover:underline">Apri TM</button>
+                    <div class="panel p-5 h-[650px] flex flex-col bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
+                        <div class="flex justify-between border-b border-slate-200 dark:border-darkborder pb-3 mb-4">
+                            <h2 class="text-[11px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center"><i class="fas fa-tasks text-blue-500 mr-2"></i> Task Attivi</h2>
+                            <button onclick="navigate('global_tasks')" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline transition">Vedi Tutti</button>
                         </div>
                         ${renderInlineTasks(null, true, false)} 
                     </div>
                 </div>`;
         }
 
-        // --- 5. ENTITY VIEWS ---
+        // --- ENTITY VIEWS & NOTES ---
+        function archiveNotes(type, id) {
+            const entity = getEntity(type, id);
+            if(!entity) return;
+            if (!entity.notes || entity.notes.trim() === '' || entity.notes === '<p><br></p>') {
+                alert("Il foglio degli appunti è vuoto. Non c'è nulla da archiviare.");
+                return;
+            }
+            if (!entity.updates) entity.updates = [];
+            const dStr = new Date().toLocaleDateString('it-IT') + ' - ' + new Date().toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'});
+            
+            entity.updates.push({ id: 'u_'+Date.now(), date: dStr, text: entity.notes, edited: false });
+            entity.notes = ''; 
+            
+            const el = document.getElementById(`quill-editor-${type}`);
+            if (el && el.__quill) el.__quill.root.innerHTML = '';
+            
+            AppData.triggerSave(); render();
+        }
+
+        function renderArchivedNotes(updates, type, id) {
+            if (!updates || updates.length === 0) return '';
+            let html = `
+                <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-700/50">
+                    <h3 class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center mb-4"><i class="fas fa-history mr-1.5"></i> Storico Archiviati</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">`;
+            updates.slice().reverse().forEach(u => {
+                html += `
+                    <div onclick="openArchiveModal('${type}', '${id}', '${u.id}')" class="panel p-3 bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder hover:border-blue-500 dark:hover:border-blue-400 cursor-pointer shadow-sm transition group">
+                        <i class="far fa-file-alt text-2xl text-slate-300 dark:text-slate-600 mb-2 group-hover:text-blue-500 transition"></i>
+                        <p class="font-bold text-xs text-slate-700 dark:text-slate-200">Appunti</p>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mt-1">${u.date.split(' - ')[0]}</p>
+                        ${u.edited ? `<p class="text-[8px] text-amber-500 mt-1.5 font-bold"><i class="fas fa-pencil-alt"></i> MODIFICATO</p>` : ''}
+                    </div>`;
+            });
+            return html + `</div></div>`;
+        }
+
+        function openArchiveModal(type, entityId, updateId) {
+            currentArchiveEdit = { type, entityId, updateId };
+            const entity = getEntity(type, entityId);
+            if(!entity) return;
+            const update = entity.updates.find(u => u.id === updateId);
+            
+            document.getElementById('archiveViewTitle').innerText = `Archivio - ${entity.name}`;
+            document.getElementById('archiveViewDate').innerText = update.date;
+            
+            if (update.edited) {
+                document.getElementById('archiveEditIndicator').classList.remove('hidden');
+                document.getElementById('archiveEditIndicator').innerHTML = `<i class="fas fa-pencil-alt mr-1"></i> Modificato il ${update.editDate}`;
+            } else {
+                document.getElementById('archiveEditIndicator').classList.add('hidden');
+            }
+
+            document.getElementById('archiveViewModal').classList.remove('hidden');
+            
+            if (!archiveQuill) {
+                const tOpts = [['bold', 'italic', 'underline', 'strike'], ['blockquote', 'code-block'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], [{ 'color': [] }, { 'background': [] }], ['link'], ['clean']];
+                archiveQuill = new Quill('#quill-archive-editor', { theme: 'snow', modules: { toolbar: tOpts } });
+            }
+            archiveQuill.root.innerHTML = update.text || '';
+        }
+        
+        function closeArchiveModal() { document.getElementById('archiveViewModal').classList.add('hidden'); }
+        
+        function saveArchiveEdit() {
+            const { type, entityId, updateId } = currentArchiveEdit;
+            const entity = getEntity(type, entityId);
+            if(entity) {
+                const update = entity.updates.find(u => u.id === updateId);
+                if(update) {
+                    update.text = archiveQuill.root.innerHTML;
+                    update.edited = true;
+                    update.editDate = new Date().toLocaleDateString('it-IT') + ' ' + new Date().toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'});
+                    AppData.triggerSave(); render();
+                }
+            }
+            closeArchiveModal();
+        }
+
         function renderSphere() {
             const s = getEntity('sphere', state.path.sphereId);
+            if(!s) return `<div class="text-center p-10"><p>Sfera non trovata.</p></div>`;
             const projs = getChildren('sphere', s.id);
             const pinned = projs.filter(p => p.pinned && p.archived === state.ui.showArchived);
             const unpinned = projs.filter(p => !p.pinned && p.archived === state.ui.showArchived);
             
-            const renderProjList = (list, listType) => list.map(p => `
+            const renderProjList = (list, listType) => list.map(p => {
+                const color = p.color || s.color;
+                return `
                 <div draggable="true" ondragstart="onDragStart(event, '${p.id}', 'project', '${listType}')" ondragend="onDragEnd(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event, '${p.id}', 'project', '${listType}')"
-                     class="panel panel-hover p-4 flex justify-between items-start mb-3 border-l-2 group draggable" style="border-left-color: ${s.color}">
+                     class="panel panel-hover p-4 flex justify-between items-start mb-3 border-l-4 group draggable bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm" style="border-left-color: ${color}">
                     <div class="word-wrap flex-1" onclick="navigate('project', '${s.id}', '${p.id}')">
-                        <h3 class="text-base font-bold flex items-center gap-2 text-slate-200 mb-1">${p.pinned ? `<i class="fas fa-star text-amber-500 text-xs"></i>` : ''} <i class="fas ${p.icon||'fa-folder-open'} text-slate-500 text-[10px] mr-1"></i> ${p.name}</h3>
-                        <div class="flex gap-2 text-xs font-medium mt-2">
-                            <span class="bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700">${p.type}</span>
-                            <span class="bg-blue-900/30 text-blue-400 px-2 py-0.5 rounded border border-blue-900/50">${p.status}</span>
+                        <h3 class="text-sm font-bold flex items-center gap-2 text-slate-800 dark:text-slate-100 mb-1.5">${p.pinned ? `<i class="fas fa-star text-amber-500 text-[10px]"></i>` : ''} <i class="fas ${p.icon||'fa-folder'} text-slate-400 dark:text-slate-500 mr-1 text-xs"></i> ${p.name}</h3>
+                        <div class="flex gap-2 text-[10px] font-bold mt-1">
+                            <span class="text-slate-500 uppercase tracking-wider">${p.type}</span> <span class="text-slate-300 dark:text-slate-600">•</span> <span class="text-slate-500 uppercase tracking-wider">${p.status}</span>
                         </div>
                     </div>
-                    <div class="flex gap-2 items-center opacity-0 group-hover:opacity-100 transition">
-                        <button onclick="togglePin('project', '${p.id}')" class="text-slate-500 hover:text-amber-500 p-1" title="Fissa"><i class="fas fa-star"></i></button>
-                        <button onclick="toggleArchiveEntity('project', '${p.id}')" class="text-slate-500 hover:text-amber-400 p-1" title="Archivia"><i class="fas fa-archive"></i></button>
-                        <button onclick="openEntityModal('edit', 'project', '${s.id}', '${p.id}')" class="text-slate-500 hover:text-white p-1"><i class="fas fa-edit"></i></button>
-                        <i class="fas fa-grip-lines text-slate-600 text-sm ml-2 cursor-grab"></i>
+                    <div class="flex gap-1.5 items-center opacity-0 group-hover:opacity-100 transition">
+                        <button onclick="togglePin('project', '${p.id}')" class="text-slate-400 hover:text-amber-500 p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Fissa"><i class="fas fa-star text-xs"></i></button>
+                        <button onclick="toggleArchiveEntity('project', '${p.id}')" class="text-slate-400 hover:text-blue-500 p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Archivia"><i class="fas fa-archive text-xs"></i></button>
+                        <button onclick="openEntityModal('edit', 'project', '${s.id}', '${p.id}')" class="text-slate-400 hover:text-slate-800 dark:hover:text-white p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition"><i class="fas fa-edit text-xs"></i></button>
+                        <i class="fas fa-grip-lines text-slate-300 dark:text-slate-600 text-xs ml-1 cursor-grab"></i>
                     </div>
-                </div>`).join('');
+                </div>`}).join('');
 
             return `
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 border-b border-slate-700 pb-4 gap-4">
-                    <h2 class="text-3xl font-bold flex items-center" style="color: ${s.color}"><i class="fas ${s.icon} mr-3"></i> ${s.name}</h2>
-                    <div class="flex gap-2 text-sm">
-                        <button onclick="state.ui.showArchived = !state.ui.showArchived; render();" class="text-slate-400 hover:text-white px-3 py-1.5 rounded bg-slate-800 border border-slate-700"><i class="fas fa-archive mr-1"></i> ${state.ui.showArchived ? 'Attivi' : 'Archivio'}</button>
-                        <button onclick="openEntityModal('edit', 'sphere', '${s.id}')" class="text-slate-400 hover:text-white px-3 py-1.5 rounded bg-slate-800 border border-slate-700"><i class="fas fa-edit"></i></button>
-                        <button onclick="openEntityModal('create', 'project', '${s.id}')" class="bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded text-white shadow"><i class="fas fa-plus mr-1"></i> Progetto</button>
+                <div class="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 pb-5 border-b border-slate-200 dark:border-darkborder gap-4">
+                    <h2 class="text-3xl font-bold flex items-center tracking-tight" style="color: ${s.color}"><i class="fas ${s.icon} mr-3 opacity-80"></i> ${s.name}</h2>
+                    <div class="flex gap-2 text-sm relative z-20">
+                        <button onclick="toggleArchivedView()" class="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition px-3 py-1.5 bg-white dark:bg-darkpanel rounded shadow-sm border border-slate-200 dark:border-darkborder"><i class="fas fa-archive mr-1.5"></i> ${state.ui.showArchived ? 'Mostra Attivi' : 'Mostra Archivio'}</button>
+                        <button onclick="openEntityModal('edit', 'sphere', '${s.id}')" class="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition px-3 py-1.5 bg-white dark:bg-darkpanel rounded shadow-sm border border-slate-200 dark:border-darkborder"><i class="fas fa-edit mr-1.5"></i> Impostazioni</button>
+                        <button onclick="openEntityModal('create', 'project', '${s.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 text-xs rounded font-bold shadow transition"><i class="fas fa-plus mr-1.5"></i> Progetto</button>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 space-y-6">
-                        ${pinned.length > 0 ? `<div><h3 class="text-xs font-bold text-amber-500 mb-3 uppercase tracking-wider flex items-center"><i class="fas fa-star mr-1"></i> In Evidenza</h3>${renderProjList(pinned, 'sphere_pinned')}</div>` : ''}
-                        <div>
-                            <h3 class="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">${state.ui.showArchived ? 'Archiviati' : 'Tutti i Progetti'}</h3>
-                            ${renderProjList(unpinned, 'sphere_unpinned') || `<p class="text-sm text-slate-500 italic">Nessun progetto.</p>`}
+                
+                <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
+                    <div class="xl:col-span-3 space-y-6">
+                        <div class="panel p-5 bg-white dark:bg-darkpanel shadow-sm border border-slate-200 dark:border-darkborder border-t-4" style="border-top-color: ${s.color}">
+                            <h3 class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center mb-3"><i class="fas fa-info-circle mr-1.5"></i> Informazioni Generali</h3>
+                            <div class="bg-slate-50 dark:bg-[#202938] rounded-lg border border-slate-200 dark:border-darkborder p-2 shadow-inner">
+                                <div id="quill-perm-editor-sphere" class="min-h-[60px]"></div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="panel p-5 bg-white dark:bg-darkpanel shadow-sm border border-slate-200 dark:border-darkborder">
+                                <h3 class="text-[11px] font-bold text-amber-500 uppercase tracking-widest flex items-center mb-4 pb-2 border-b border-slate-100 dark:border-slate-700"><i class="fas fa-star mr-1.5"></i> Progetti In Evidenza</h3>
+                                <div class="space-y-3">${renderProjList(pinned, 'sphere_pinned') || `<p class="text-xs text-slate-400 italic">Niente in evidenza.</p>`}</div>
+                            </div>
+                            <div class="panel p-5 bg-white dark:bg-darkpanel shadow-sm border border-slate-200 dark:border-darkborder">
+                                <h3 class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center mb-4 pb-2 border-b border-slate-100 dark:border-slate-700"><i class="fas fa-folder mr-1.5"></i> ${state.ui.showArchived ? 'Archivio Progetti' : 'Tutti i Progetti'}</h3>
+                                <div class="space-y-3">${renderProjList(unpinned, 'sphere_unpinned') || `<p class="text-xs text-slate-400 italic">Nessun progetto in questa sezione.</p>`}</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="panel p-5 h-fit bg-slate-800/30"><h3 class="font-bold mb-4 pb-2 border-b border-slate-700 text-slate-200"><i class="fas fa-tasks text-blue-500 mr-2"></i>Task Area</h3>${renderInlineTasks(s.id)}</div>
+                    <div class="space-y-6">
+                        <div class="panel p-5 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
+                            <h3 class="font-bold text-[11px] text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-4 pb-3 border-b border-slate-200 dark:border-darkborder flex items-center"><i class="fas fa-tasks text-blue-500 mr-2"></i> Tasks Sfera</h3>
+                            ${renderInlineTasks(s.id)}
+                        </div>
+                    </div>
                 </div>`;
         }
 
         function renderProject() {
-            const s = getEntity('sphere', state.path.sphereId);
             const p = getEntity('project', state.path.projId);
+            if(!p) return `<div class="text-center p-10"><p>Progetto non trovato.</p></div>`;
+            const s = getEntity('sphere', state.path.sphereId);
             const subs = getChildren('project', p.id);
             const pinned = subs.filter(sp => sp.pinned && sp.archived === state.ui.showArchived);
             const unpinned = subs.filter(sp => !sp.pinned && sp.archived === state.ui.showArchived);
+            const prjColor = p.color || (s?s.color:'#94a3b8');
             
-            const renderSubList = (list, listType) => list.map(sp => `
+            const renderSubList = (list, listType) => list.map(sp => {
+                const spColor = sp.color || p.color || (s?s.color:'#94a3b8');
+                return `
                 <div draggable="true" ondragstart="onDragStart(event, '${sp.id}', 'subproject', '${listType}')" ondragend="onDragEnd(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event, '${sp.id}', 'subproject', '${listType}')"
-                     class="panel panel-hover p-4 flex justify-between items-center mb-2 border-l-2 group draggable" style="border-left-color: ${s.color}" onclick="navigate('subproject', '${s.id}', '${p.id}', '${sp.id}')">
+                     class="panel panel-hover p-3 flex justify-between items-center mb-2.5 border-l-4 group draggable bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder" style="border-left-color: ${spColor}" onclick="navigate('subproject', '${s?s.id:null}', '${p.id}', '${sp.id}')">
                     <div class="word-wrap flex-1">
-                        <h4 class="font-medium text-slate-200 text-sm flex items-center gap-2">
-                            ${sp.pinned ? '<i class="fas fa-star text-amber-500 text-xs"></i>' : ''} <i class="fas ${sp.icon||'fa-file-alt'} text-slate-500 text-[10px]"></i> ${sp.name}
+                        <h4 class="font-bold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-2">
+                            ${sp.pinned ? '<i class="fas fa-star text-amber-500 text-[10px]"></i>' : ''} <i class="fas ${sp.icon||'fa-file-alt'} text-slate-400 dark:text-slate-500 text-[10px]"></i> ${sp.name}
                         </h4>
-                        <div class="flex gap-2 text-xs font-medium mt-1">
-                            <span class="text-slate-500">${sp.status}</span>
-                        </div>
                     </div>
-                    <div class="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition">
-                        <button onclick="event.stopPropagation(); togglePin('subproject', '${sp.id}')" class="text-slate-500 hover:text-amber-500 p-1"><i class="fas fa-star"></i></button>
-                        <button onclick="event.stopPropagation(); toggleArchiveEntity('subproject', '${sp.id}')" class="text-slate-500 hover:text-amber-400 p-1"><i class="fas fa-archive"></i></button>
-                        <i class="fas fa-grip-lines text-slate-600 text-sm ml-2 cursor-grab"></i>
+                    <div class="flex items-center gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition">
+                        <button onclick="event.stopPropagation(); togglePin('subproject', '${sp.id}')" class="text-slate-400 hover:text-amber-500 p-1"><i class="fas fa-star text-[10px]"></i></button>
+                        <button onclick="event.stopPropagation(); toggleArchiveEntity('subproject', '${sp.id}')" class="text-slate-400 hover:text-blue-500 p-1"><i class="fas fa-archive text-[10px]"></i></button>
+                        <i class="fas fa-grip-lines text-slate-300 dark:text-slate-600 text-[10px] ml-1 cursor-grab"></i>
                     </div>
-                </div>`).join('');
+                </div>`}).join('');
 
             return `
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                    <div class="xl:col-span-2 space-y-6">
-                        <div class="panel p-6 border-t-4 relative" style="border-top-color: ${s.color}">
-                            <div class="absolute top-4 right-4 flex gap-2">
-                                <button onclick="togglePin('project', '${p.id}')" class="text-slate-400 hover:text-amber-500 p-1"><i class="fas fa-star ${p.pinned ? 'text-amber-500':''}"></i></button>
-                                <button onclick="toggleArchiveEntity('project', '${p.id}')" class="text-slate-400 hover:text-amber-500 p-1" title="Archivia"><i class="fas fa-archive"></i></button>
-                                <button onclick="openEntityModal('edit', 'project', '${s.id}', '${p.id}')" class="text-slate-400 hover:text-white p-1"><i class="fas fa-edit"></i></button>
-                            </div>
-                            <h2 class="text-2xl font-bold mb-3 pr-24 text-slate-100"><i class="fas ${p.icon||'fa-folder-open'} mr-2 text-slate-500"></i>${p.name}</h2>
-                            <div class="flex flex-wrap gap-2 text-xs font-medium mb-4">
-                                <span class="bg-slate-800 text-slate-400 px-2 py-1 rounded border border-slate-700"><i class="fas fa-tag mr-1"></i>${p.type}</span>
-                                <span class="bg-blue-900/30 text-blue-400 px-2 py-1 rounded border border-blue-900/50">${p.status}</span>
-                                ${p.archived ? `<span class="bg-red-900/30 text-red-400 px-2 py-1 rounded border border-red-900/50"><i class="fas fa-archive mr-1"></i>Archiviato</span>` : ''}
+                <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
+                    <div class="xl:col-span-3 space-y-6">
+                        <div class="panel flex flex-col bg-white dark:bg-darkpanel shadow-sm border border-slate-200 dark:border-darkborder border-t-8" style="border-top-color: ${prjColor}">
+                            <div class="p-6 border-b border-slate-200 dark:border-darkborder relative">
+                                <div class="absolute top-6 right-6 flex gap-2 text-sm z-10">
+                                    <button onclick="togglePin('project', '${p.id}')" class="text-slate-400 hover:text-amber-500 transition p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Fissa in alto"><i class="fas fa-star ${p.pinned ? 'text-amber-500':''}"></i></button>
+                                    <button onclick="toggleArchiveEntity('project', '${p.id}')" class="text-slate-400 hover:text-blue-500 transition p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Archivia Progetto"><i class="fas fa-archive"></i></button>
+                                    <button onclick="openEntityModal('edit', 'project', '${s?s.id:null}', '${p.id}')" class="text-slate-400 hover:text-slate-800 dark:hover:text-white transition p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Modifica"><i class="fas fa-edit"></i></button>
+                                </div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase tracking-widest border border-slate-200 dark:border-slate-700" style="color:${s?s.color:'#94a3b8'}">${s?s.name:'Sconosciuta'}</span>
+                                </div>
+                                <h2 class="text-2xl font-bold mb-3 pr-24 text-slate-900 dark:text-white tracking-tight"><i class="fas ${p.icon||'fa-folder'} mr-2 opacity-70"></i> ${p.name}</h2>
+                                <div class="flex flex-wrap gap-3 text-xs font-bold text-slate-500">
+                                    <span class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700">${p.type}</span>
+                                    <span class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700">${p.status}</span>
+                                    ${p.archived ? `<span class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 px-2 py-1 rounded"><i class="fas fa-archive mr-1.5"></i>Archiviato</span>` : ''}
+                                </div>
                             </div>
                             
-                            <div class="mt-6 border-t border-slate-700 pt-4">
-                                <h3 class="text-sm font-bold text-slate-400 mb-2">Appunti</h3>
-                                <div id="quill-editor-project" class="mb-4 bg-slate-900"></div>
-                                <h3 class="text-sm font-bold text-slate-400 mb-2 mt-6">Log Aggiornamenti</h3>
-                                <div class="flex gap-2 mb-3"><input type="text" id="upd_in" class="input-base flex-1" placeholder="Nuovo aggiornamento..." onkeypress="if(event.key === 'Enter') addUpdate('project', '${p.id}')"><button onclick="addUpdate('project', '${p.id}')" class="bg-slate-700 px-3 rounded text-white"><i class="fas fa-paper-plane"></i></button></div>
-                                <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                                    ${p.updates.slice().reverse().map(u => `<div class="bg-slate-800/50 p-2 rounded border border-slate-700/50 text-sm"><span class="text-xs text-slate-500 font-mono block mb-1">${u.date}</span><span class="text-slate-300">${u.text}</span></div>`).join('')}
+                            <div class="p-6">
+                                <div class="flex justify-between items-center mb-1">
+                                    <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest"><i class="fas fa-book-open text-blue-500 mr-1.5"></i> Quaderno Appunti</h3>
+                                    <button onclick="toggleNotes()" id="toggle-notes-btn" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 transition"><i class="fas fa-chevron-down mr-1"></i> Mostra Appunti</button>
+                                </div>
+                                
+                                <div id="notes-container" class="hidden flex-col gap-6 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50">
+                                    <div>
+                                        <h3 class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center mb-2"><i class="fas fa-thumbtack mr-1.5"></i> Appunti Permanenti</h3>
+                                        <div class="bg-slate-50 dark:bg-[#202938] rounded-lg border border-slate-200 dark:border-darkborder p-2 shadow-inner">
+                                            <div id="quill-perm-editor-project" class="min-h-[80px]"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between items-center mb-2">
+                                            <h3 class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center"><i class="fas fa-pen-nib mr-1.5"></i> Foglio Appunti Libero</h3>
+                                            <button onclick="archiveNotes('project', '${p.id}')" class="text-[9px] font-bold bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded transition shadow-sm"><i class="fas fa-file-archive mr-1"></i> Archivia Foglio</button>
+                                        </div>
+                                        <div class="bg-white dark:bg-darkbg rounded-lg border border-slate-200 dark:border-darkborder p-2 shadow-inner">
+                                            <div id="quill-editor-project" class="min-h-[150px]"></div>
+                                        </div>
+                                    </div>
+                                    ${renderArchivedNotes(p.updates, 'project', p.id)}
                                 </div>
                             </div>
                         </div>
 
-                        <div class="panel p-6">
-                            <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
-                                <h3 class="text-lg font-bold text-slate-200"><i class="fas fa-sitemap text-slate-400 mr-2"></i>Sottoprogetti</h3>
-                                <div class="flex gap-2">
-                                    <button onclick="state.ui.showArchived = !state.ui.showArchived; render();" class="text-xs text-slate-400 bg-slate-800 px-2 py-1 rounded border border-slate-700"><i class="fas fa-archive"></i> ${state.ui.showArchived ? 'Attivi':'Archivio'}</button>
-                                    <button onclick="openEntityModal('create', 'subproject', '${s.id}', '${p.id}')" class="text-xs bg-slate-700 px-2 py-1 rounded text-white"><i class="fas fa-plus"></i></button>
+                        <div class="panel p-6 bg-white dark:bg-darkpanel shadow-sm border border-slate-200 dark:border-darkborder">
+                            <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-200 dark:border-darkborder">
+                                <h3 class="text-[11px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center"><i class="fas fa-sitemap text-blue-500 mr-2"></i> Sottoprogetti</h3>
+                                <div class="flex gap-2 text-sm z-10 relative">
+                                    <button onclick="toggleArchivedView()" class="text-[10px] font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white px-2 py-1 rounded border border-slate-200 dark:border-darkborder bg-slate-50 dark:bg-[#202938]"><i class="fas fa-archive mr-1"></i> ${state.ui.showArchived ? 'Attivi':'Archivio'}</button>
+                                    <button onclick="openEntityModal('create', 'subproject', '${s?s.id:null}', '${p.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] px-3 py-1 rounded shadow transition"><i class="fas fa-plus mr-1"></i> Nuovo</button>
                                 </div>
                             </div>
-                            <div class="space-y-4">
-                                ${pinned.length > 0 ? `<div><h4 class="text-[10px] font-bold text-amber-500 uppercase tracking-wider mb-2"><i class="fas fa-star mr-1"></i>In Evidenza</h4>${renderSubList(pinned, 'project_pinned')}</div>` : ''}
-                                <div><h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">${state.ui.showArchived ? 'Archiviati' : 'Tutti'}</h4>${renderSubList(unpinned, 'project_unpinned') || `<p class="text-sm text-slate-500 italic">Nessuno.</p>`}</div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div class="space-y-2">
+                                    ${pinned.length > 0 ? `<h4 class="text-[9px] font-bold text-amber-500 uppercase tracking-widest mb-2 flex items-center"><i class="fas fa-star mr-1"></i> In Evidenza</h4>${renderSubList(pinned, 'project_pinned')}` : ''}
+                                </div>
+                                <div class="space-y-2">
+                                    <h4 class="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">${state.ui.showArchived ? 'Archiviati' : 'Tutti i Sottoprogetti'}</h4>
+                                    ${renderSubList(unpinned, 'project_unpinned') || `<p class="text-xs text-slate-400 italic">Nessun sottoprogetto.</p>`}
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="space-y-6">
-                        <div class="panel p-5 bg-slate-800/30"><h3 class="font-bold mb-3 pb-2 border-b border-slate-700 text-slate-200"><i class="fas fa-tasks text-blue-500 mr-2"></i>Task Progetto</h3>${renderInlineTasks(p.id)}</div>
-                        <div class="panel p-5 bg-slate-800/30">
-                            <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-700">
-                                <h3 class="font-bold text-slate-200"><i class="fas fa-users text-purple-500 mr-2"></i>Contatti</h3>
-                                <button onclick="openContactModal(null, '${p.id}')" class="text-xs text-slate-400 hover:text-white"><i class="fas fa-plus"></i></button>
+                        <div class="panel p-5 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
+                            <h3 class="font-bold text-[11px] text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-4 pb-3 border-b border-slate-200 dark:border-darkborder flex items-center"><i class="fas fa-tasks text-blue-500 mr-2"></i> Tasks Progetto</h3>
+                            ${renderInlineTasks(p.id)}
+                        </div>
+                        <div class="panel p-5 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
+                            <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-200 dark:border-darkborder">
+                                <h3 class="font-bold text-[11px] text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center"><i class="fas fa-users text-purple-500 mr-2"></i> Contatti</h3>
+                                <button onclick="openContactModal(null, '${p.id}')" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline"><i class="fas fa-plus"></i></button>
                             </div>
                             ${renderContextContacts(p.id)}
                         </div>
@@ -555,43 +991,68 @@
         }
 
         function renderSubproject() {
-            const s = getEntity('sphere', state.path.sphereId);
-            const p = getEntity('project', state.path.projId);
             const sp = getEntity('subproject', state.path.subprojId);
+            if(!sp) return `<div class="text-center p-10"><p>Sottoprogetto non trovato.</p></div>`;
+            const p = getEntity('project', sp.projectId);
+            const s = p ? getEntity('sphere', p.sphereId) : null;
+            const spColor = sp.color || (p?p.color:null) || (s?s.color:'#94a3b8');
 
             return `
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                    <div class="xl:col-span-2 space-y-6">
-                        <div class="panel p-6 border-t-4 relative" style="border-top-color: ${s.color}">
-                            <div class="absolute top-4 right-4 flex gap-2">
-                                <button onclick="togglePin('subproject', '${sp.id}')" class="text-slate-400 hover:text-amber-500 p-1"><i class="fas fa-star ${sp.pinned ? 'text-amber-500':''}"></i></button>
-                                <button onclick="toggleArchiveEntity('subproject', '${sp.id}')" class="text-slate-400 hover:text-amber-500 p-1" title="Archivia"><i class="fas fa-archive"></i></button>
-                                <button onclick="openEntityModal('edit', 'subproject', '${s.id}', '${p.id}', '${sp.id}')" class="text-slate-400 hover:text-white p-1"><i class="fas fa-edit"></i></button>
-                            </div>
-                            <p class="text-xs text-slate-400 mb-1 font-semibold uppercase tracking-wider">${p.name}</p>
-                            <h2 class="text-2xl font-bold mb-3 pr-24 text-slate-100"><i class="fas ${sp.icon||'fa-file-alt'} text-slate-600 mr-2"></i>${sp.name}</h2>
-                            <div class="flex gap-2 text-xs font-medium mb-4">
-                                <span class="bg-slate-800 text-slate-400 px-2 py-1 rounded border border-slate-700">${sp.type || 'A termine'}</span>
-                                <span class="bg-blue-900/30 text-blue-400 px-2 py-1 rounded border border-blue-900/50">${sp.status || 'Attivo'}</span>
+                <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
+                    <div class="xl:col-span-3 space-y-6">
+                        <div class="panel flex flex-col bg-white dark:bg-darkpanel shadow-sm border border-slate-200 dark:border-darkborder border-t-8" style="border-top-color: ${spColor}">
+                            <div class="p-6 border-b border-slate-200 dark:border-darkborder relative">
+                                <div class="absolute top-6 right-6 flex gap-2 text-sm z-10">
+                                    <button onclick="togglePin('subproject', '${sp.id}')" class="text-slate-400 hover:text-amber-500 transition p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Fissa in alto"><i class="fas fa-star ${sp.pinned ? 'text-amber-500':''}"></i></button>
+                                    <button onclick="toggleArchiveEntity('subproject', '${sp.id}')" class="text-slate-400 hover:text-blue-500 transition p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Archivia"><i class="fas fa-archive"></i></button>
+                                    <button onclick="openEntityModal('edit', 'subproject', '${s?s.id:null}', '${p?p.id:null}', '${sp.id}')" class="text-slate-400 hover:text-slate-800 dark:hover:text-white transition p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fas fa-edit"></i></button>
+                                </div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase tracking-widest border border-slate-200 dark:border-slate-700" style="color:${spColor}">${p?p.name:'Sconosciuto'}</span>
+                                </div>
+                                <h2 class="text-2xl font-bold mb-3 pr-24 text-slate-900 dark:text-white tracking-tight"><i class="fas ${sp.icon||'fa-file-alt'} mr-2 opacity-70"></i> ${sp.name}</h2>
+                                <div class="flex gap-3 text-xs font-bold text-slate-500">
+                                    <span class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700">${sp.type || 'A termine'}</span>
+                                    <span class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700">${sp.status || 'Attivo'}</span>
+                                </div>
                             </div>
                             
-                            <div class="mt-6 border-t border-slate-700 pt-4">
-                                <h3 class="text-sm font-bold text-slate-400 mb-2">Appunti</h3>
-                                <div id="quill-editor-subproject" class="mb-4 bg-slate-900"></div>
-                                <h3 class="text-sm font-bold text-slate-400 mb-2 mt-6">Log Aggiornamenti</h3>
-                                <div class="flex gap-2 mb-3"><input type="text" id="upd_in" class="input-base flex-1" placeholder="Nuovo aggiornamento..." onkeypress="if(event.key === 'Enter') addUpdate('subproject', '${sp.id}')"><button onclick="addUpdate('subproject', '${sp.id}')" class="bg-slate-700 px-3 rounded text-white"><i class="fas fa-paper-plane"></i></button></div>
-                                <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                                    ${sp.updates.slice().reverse().map(u => `<div class="bg-slate-800/50 p-2 rounded border border-slate-700/50 text-sm"><span class="text-xs text-slate-500 font-mono block mb-1">${u.date}</span><span class="text-slate-300">${u.text}</span></div>`).join('')}
+                            <div class="p-6">
+                                <div class="flex justify-between items-center mb-1">
+                                    <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest"><i class="fas fa-book-open text-blue-500 mr-1.5"></i> Quaderno Appunti</h3>
+                                    <button onclick="toggleNotes()" id="toggle-notes-btn" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 transition"><i class="fas fa-chevron-down mr-1"></i> Mostra Appunti</button>
+                                </div>
+                                
+                                <div id="notes-container" class="hidden flex-col gap-6 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50">
+                                    <div>
+                                        <h3 class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center mb-2"><i class="fas fa-thumbtack mr-1.5"></i> Appunti Permanenti</h3>
+                                        <div class="bg-slate-50 dark:bg-[#202938] rounded-lg border border-slate-200 dark:border-darkborder p-2 shadow-inner">
+                                            <div id="quill-perm-editor-subproject" class="min-h-[80px]"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between items-center mb-2">
+                                            <h3 class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center"><i class="fas fa-pen-nib mr-1.5"></i> Foglio Appunti Libero</h3>
+                                            <button onclick="archiveNotes('subproject', '${sp.id}')" class="text-[9px] font-bold bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded transition shadow-sm"><i class="fas fa-file-archive mr-1"></i> Archivia Foglio</button>
+                                        </div>
+                                        <div class="bg-white dark:bg-darkbg rounded-lg border border-slate-200 dark:border-darkborder p-2 shadow-inner">
+                                            <div id="quill-editor-subproject" class="min-h-[150px]"></div>
+                                        </div>
+                                    </div>
+                                    ${renderArchivedNotes(sp.updates, 'subproject', sp.id)}
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="space-y-6">
-                        <div class="panel p-5 bg-slate-800/30"><h3 class="font-bold mb-3 pb-2 border-b border-slate-700 text-slate-200"><i class="fas fa-tasks text-blue-500 mr-2"></i>Task Specifici</h3>${renderInlineTasks(sp.id)}</div>
-                        <div class="panel p-5 bg-slate-800/30">
-                            <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-700">
-                                <h3 class="font-bold text-slate-200"><i class="fas fa-users text-purple-500 mr-2"></i>Contatti</h3>
-                                <button onclick="openContactModal(null, '${sp.id}')" class="text-xs text-slate-400 hover:text-white"><i class="fas fa-plus"></i></button>
+                        <div class="panel p-5 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
+                            <h3 class="font-bold text-[11px] text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-4 pb-3 border-b border-slate-200 dark:border-darkborder flex items-center"><i class="fas fa-tasks text-blue-500 mr-2"></i> Tasks Specifici</h3>
+                            ${renderInlineTasks(sp.id)}
+                        </div>
+                        <div class="panel p-5 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
+                            <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-200 dark:border-darkborder">
+                                <h3 class="font-bold text-[11px] text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center"><i class="fas fa-users text-purple-500 mr-2"></i> Contatti</h3>
+                                <button onclick="openContactModal(null, '${sp.id}')" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline"><i class="fas fa-plus"></i></button>
                             </div>
                             ${renderContextContacts(sp.id)}
                         </div>
@@ -601,34 +1062,78 @@
 
         function initQuillEditors() {
             const tOpts = [['bold', 'italic', 'underline', 'strike'], ['blockquote', 'code-block'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], [{ 'color': [] }, { 'background': [] }], ['link'], ['clean']];
-            ['project', 'subproject'].forEach(type => {
-                const el = document.getElementById(`quill-editor-${type}`);
-                if (el) {
-                    const id = type === 'project' ? state.path.projId : state.path.subprojId;
-                    const entity = getEntity(type, id);
-                    const quill = new Quill(el, { theme: 'snow', modules: { toolbar: tOpts }});
-                    quill.root.innerHTML = entity.notes || '';
-                    quill.on('text-change', () => { entity.notes = quill.root.innerHTML; scheduleAutosave(); });
+            
+            ['sphere', 'project', 'subproject'].forEach(type => {
+                const id = type === 'sphere' ? state.path.sphereId : (type === 'project' ? state.path.projId : state.path.subprojId);
+                if (!id) return;
+                const entity = getEntity(type, id);
+                if(!entity) return;
+
+                if (type !== 'sphere') {
+                    const el = document.getElementById(`quill-editor-${type}`);
+                    if (el) {
+                        el.__quill = new Quill(el, { theme: 'snow', modules: { toolbar: tOpts }, placeholder: 'Inizia a scrivere nel foglio libero...' });
+                        el.__quill.root.innerHTML = entity.notes || '';
+                        el.__quill.on('text-change', function(delta, oldDelta, source) { 
+                            if (source === 'user') {
+                                entity.notes = el.__quill.root.innerHTML; 
+                                AppData.triggerSave(); 
+                            }
+                        });
+                    }
+                }
+
+                const permEl = document.getElementById(`quill-perm-editor-${type}`);
+                if (permEl) {
+                    permEl.__quill = new Quill(permEl, { theme: 'snow', modules: { toolbar: tOpts }, placeholder: 'Scrivi qui le informazioni chiave permanenti...' });
+                    permEl.__quill.root.innerHTML = entity.permanentNotes || '';
+                    permEl.__quill.on('text-change', function(delta, oldDelta, source) { 
+                        if (source === 'user') {
+                            entity.permanentNotes = permEl.__quill.root.innerHTML; 
+                            AppData.triggerSave(); 
+                        }
+                    });
                 }
             });
         }
 
-        function togglePin(type, id) { getEntity(type, id).pinned = !getEntity(type, id).pinned; scheduleAutosave(); render(); }
-        function toggleArchiveEntity(type, id) { getEntity(type, id).archived = !getEntity(type, id).archived; scheduleAutosave(); render(); }
-        function addUpdate(type, id) {
-            const inp = document.getElementById('upd_in'); if(!inp.value.trim()) return;
-            const dStr = new Date().toLocaleDateString('it-IT') + ' ' + new Date().toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'});
-            getEntity(type, id).updates.push({ id: 'u_'+Date.now(), date: dStr, text: inp.value.trim() });
-            inp.value = ''; scheduleAutosave(); render();
+        function togglePin(type, id) { 
+            const e = getEntity(type, id);
+            if(e) { e.pinned = !e.pinned; AppData.triggerSave(); render(); }
+        }
+        function toggleArchiveEntity(type, id) { 
+            const e = getEntity(type, id);
+            if(e) { e.archived = !e.archived; AppData.triggerSave(); render(); }
         }
 
-        // --- 6. TASK MANAGER AVANZATO (CLONE TICKTICK) ---
+        // --- TASKS ---
         function getContextInfo(cId) {
-            if(!cId) return {name: 'Generale', color: '#94a3b8'};
+            if(!cId) return {name: 'Inbox', color: '#94a3b8'};
             let s = getEntity('sphere', cId); if(s) return {name: s.name, color: s.color};
-            let p = getEntity('project', cId); if(p) return {name: p.name, color: getEntity('sphere', p.sphereId).color};
-            let sp = getEntity('subproject', cId); if(sp) return {name: sp.name, color: getEntity('sphere', getEntity('project', sp.projectId).sphereId).color};
+            let p = getEntity('project', cId); if(p) { let ps = getEntity('sphere', p.sphereId); return {name: p.name, color: p.color || (ps?ps.color:'#94a3b8')}; }
+            let sp = getEntity('subproject', cId); 
+            if(sp) {
+                let pp = getEntity('project', sp.projectId);
+                let ps = pp ? getEntity('sphere', pp.sphereId) : null;
+                return {name: sp.name, color: sp.color || (pp?pp.color:null) || (ps?ps.color:'#94a3b8')};
+            }
             return {name: 'Sconosciuto', color: '#94a3b8'};
+        }
+
+        function generateCtxOpts(selectedId) {
+            let opts = `<option value="">📥 Inbox (Nessun contesto)</option>`;
+            state.data.spheres.forEach(s => {
+                opts += `<optgroup label="Sfera: ${s.name}">`;
+                opts += `<option value="${s.id}" ${s.id===selectedId?'selected':''}>● Sfera: ${s.name}</option>`;
+                state.data.projects.filter(p=>p.sphereId===s.id).forEach(p => {
+                    opts += `<option value="${p.id}" ${p.id===selectedId?'selected':''}>  📁 ${p.name}</option>`;
+                    state.data.subprojects.filter(sp=>sp.projectId===p.id).forEach(sp => { 
+                        opts += `<option value="${sp.id}" ${sp.id===selectedId?'selected':''}>    ↳ 📄 ${sp.name}</option>`; 
+                    });
+                });
+                opts += `</optgroup>`;
+            });
+            return opts;
         }
 
         function renderInlineTasks(contextId, showGlobal=false, showCompletedOption=true) {
@@ -638,188 +1143,246 @@
             tasks.sort((a,b) => a.completed - b.completed || b.priority - a.priority);
 
             let html = `
-                <div class="flex gap-2 mb-3">
-                    <input type="text" id="tIn_${contextId||'g'}" class="input-base flex-1" placeholder="Nuovo task..." onkeypress="if(event.key === 'Enter') addTask('${contextId||''}')">
-                    <select id="tPri_${contextId||'g'}" class="input-base w-16 px-1 text-xs"><option value="0">P0</option><option value="1">P1</option><option value="2">P2</option><option value="3">P3</option></select>
-                    <input type="date" id="tDate_${contextId||'g'}" class="input-base w-8 px-1 text-[0px]" title="Scadenza">
-                    <button onclick="addTask('${contextId||''}')" class="bg-blue-600 hover:bg-blue-500 px-3 rounded text-white"><i class="fas fa-plus"></i></button>
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="tIn_${contextId||'g'}" class="input-base flex-1 font-semibold text-sm py-1.5" placeholder="Nuovo task..." onkeypress="if(event.key === 'Enter') addTask('${contextId||''}')">
+                    <button onclick="addTask('${contextId||''}')" class="bg-blue-600 hover:bg-blue-700 px-3 rounded text-white transition shadow-sm"><i class="fas fa-plus text-xs"></i></button>
                 </div>
-                <div class="space-y-1.5 max-h-64 overflow-y-auto pr-1">`;
+                <div class="space-y-1.5 max-h-[300px] overflow-y-auto pr-1">`;
             
-            if(tasks.length === 0) html += `<p class="text-xs text-slate-500 text-center py-2 italic">Nessun task attivo.</p>`;
+            if(tasks.length === 0) html += `<p class="text-xs text-slate-400 text-center py-3 italic">Nessun task attivo.</p>`;
             
             tasks.forEach(t => {
                 const ctx = getContextInfo(t.contextId);
-                html += `
-                    <div class="flex items-start gap-2 p-2 bg-slate-800/80 rounded border border-slate-700 prio-${t.priority}">
-                        <input type="checkbox" class="task-checkbox shrink-0 mt-0.5" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
-                        <div class="flex-1 min-w-0">
-                            <p class="${t.completed ? 'line-through text-slate-500' : 'text-slate-200'} text-sm font-medium word-wrap leading-tight">${t.title}</p>
-                            <div class="flex gap-2 mt-1">
-                                ${showGlobal && t.contextId ? `<span class="text-[10px] uppercase font-bold tracking-wider truncate" style="color:${ctx.color}">${ctx.name}</span>` : ''}
-                                ${t.dueDate ? `<span class="text-[10px] text-amber-400"><i class="far fa-calendar-alt"></i> ${t.dueDate}</span>` : ''}
+                if (editingTaskId === t.id) {
+                    html += `
+                        <div class="flex flex-col gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-600 shadow-inner">
+                            <input type="text" id="etTitle_${t.id}" value="${t.title}" class="input-base font-bold text-sm py-1">
+                            <div class="flex flex-wrap gap-2">
+                                <select id="etPri_${t.id}" class="input-base w-16 text-xs font-bold py-1"><option value="0" ${t.priority===0?'selected':''}>P0</option><option value="1" ${t.priority===1?'selected':''}>P1</option><option value="2" ${t.priority===2?'selected':''}>P2</option><option value="3" ${t.priority===3?'selected':''}>P3</option></select>
+                                <input type="date" id="etDate_${t.id}" value="${t.dueDate||''}" class="input-base w-32 text-xs font-bold py-1">
+                                ${showGlobal ? `<select id="etCtx_${t.id}" class="input-base flex-1 min-w-[120px] text-xs font-bold py-1">${generateCtxOpts(t.contextId)}</select>` : ''}
                             </div>
-                        </div>
-                        <i class="fas fa-trash text-slate-600 hover:text-red-400 cursor-pointer text-xs mt-1" onclick="deleteTask('${t.id}')"></i>
-                    </div>`;
+                            <div class="flex justify-end gap-2 mt-1">
+                                <button onclick="editingTaskId=null; render()" class="text-[10px] font-bold px-2 py-1 rounded text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition">Annulla</button>
+                                <button onclick="saveTaskEdit('${t.id}', ${showGlobal ? `'etCtx_${t.id}'` : 'null'})" class="text-[10px] font-bold px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition">Salva</button>
+                            </div>
+                        </div>`;
+                } else {
+                    html += `
+                        <div class="panel p-2.5 flex items-center gap-2.5 prio-${t.priority} bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder rounded-md hover:shadow-sm transition group border-l-4" style="border-left-color: ${t.priority>0 ? '' : 'transparent'}">
+                            <input type="checkbox" class="task-checkbox shrink-0 h-4 w-4 mt-0" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
+                            <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <p class="${t.completed ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-200'} text-sm font-semibold word-wrap leading-tight">${t.title}</p>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    ${showGlobal && t.contextId ? `<span class="text-[9px] uppercase font-bold tracking-wider truncate px-1.5 py-0.5 rounded border" style="color:${ctx.color}; border-color:${ctx.color}40; background-color:${ctx.color}10">${ctx.name}</span>` : ''}
+                                    ${t.dueDate ? `<span class="text-[9px] text-slate-500 dark:text-slate-400 font-bold"><i class="far fa-calendar mr-1"></i>${t.dueDate}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                                <button class="text-slate-400 hover:text-blue-500 text-[10px] p-1.5" onclick="editTask('${t.id}')"><i class="fas fa-edit"></i></button>
+                                <button class="text-slate-400 hover:text-red-500 text-[10px] p-1.5" onclick="deleteTask('${t.id}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>`;
+                }
             });
 
             if(showCompletedOption && hasCompleted) {
-                html += `<div class="mt-2 text-center"><button onclick="state.ui.showCompletedTasks = !state.ui.showCompletedTasks; render();" class="text-xs text-slate-400 hover:text-white underline">${state.ui.showCompletedTasks ? 'Nascondi' : 'Mostra'} completati</button></div>`;
+                html += `<div class="mt-4 text-center border-t border-slate-200 dark:border-darkborder pt-3"><button onclick="state.ui.showCompletedTasks = !state.ui.showCompletedTasks; render();" class="text-[10px] font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition">${state.ui.showCompletedTasks ? 'Nascondi completati' : 'Mostra completati'}</button></div>`;
             }
             return html + `</div>`;
         }
 
         function renderAdvancedTaskManager() {
-            // Generazione Sidebar Gerarchica (Sfere > Progetti > Sottoprogetti)
             let navHtml = `
                 <div class="mb-6 space-y-1">
-                    <div class="tm-nav-item ${state.ui.tmView==='all'?'active':''}" onclick="state.ui.tmView='all'; render();"><i class="fas fa-inbox w-5 text-blue-400"></i> Tutti</div>
-                    <div class="tm-nav-item ${state.ui.tmView==='today'?'active':''}" onclick="state.ui.tmView='today'; render();"><i class="fas fa-star w-5 text-amber-400"></i> Oggi</div>
-                    <div class="tm-nav-item ${state.ui.tmView==='inbox'?'active':''}" onclick="state.ui.tmView='inbox'; render();"><i class="fas fa-folder w-5 text-slate-400"></i> Senza Contesto</div>
+                    <div class="tm-nav-item ${state.ui.tmView==='all'?'active':''}" onclick="state.ui.tmView='all'; render();"><i class="fas fa-inbox w-4 text-blue-500"></i> Tutti i task</div>
+                    <div class="tm-nav-item ${state.ui.tmView==='today'?'active':''}" onclick="state.ui.tmView='today'; render();"><i class="fas fa-calendar-day w-4 text-amber-500"></i> Oggi</div>
+                    <div class="tm-nav-item ${state.ui.tmView==='inbox'?'active':''}" onclick="state.ui.tmView='inbox'; render();"><i class="fas fa-archive w-4 text-slate-400"></i> Senza Contesto</div>
                 </div>
-                <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 px-2">Liste</div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-2">Filtra per Progetto</div>
                 <div class="space-y-1 max-h-[50vh] overflow-y-auto pr-2 pb-10">`;
             
-            state.data.spheres.sort((a,b)=>a.order-b.order).forEach(s => {
-                navHtml += `<div class="flex items-center group"><i class="fas fa-chevron-down text-[10px] text-slate-500 cursor-pointer w-5 text-center hover:text-white" onclick="toggleNavFolder(event, 'nav_s_${s.id}')"></i><div class="tm-nav-item flex-1 ${state.ui.tmView==='s_'+s.id?'active':''}" onclick="state.ui.tmView='s_${s.id}'; render();"><i class="fas ${s.icon} w-4" style="color:${s.color}"></i> ${s.name}</div></div>`;
-                navHtml += `<div id="nav_s_${s.id}" class="pl-2 border-l border-slate-700/50 ml-2.5 mt-1 mb-2 space-y-1">`;
+            state.data.spheres.sort((a,b)=>(a.order||0)-(b.order||0)).forEach(s => {
+                navHtml += `<div draggable="true" ondragstart="onDragStart(event, '${s.id}', 'sphere', 'tm_spheres')" ondrop="onDrop(event, '${s.id}', 'sphere', 'tm_spheres')" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" class="draggable mb-2">
+                            <div class="flex items-center group"><i class="fas fa-chevron-down text-[10px] text-slate-400 cursor-pointer w-5 text-center hover:text-slate-800 dark:hover:text-white transition" onclick="toggleNavFolder(event, 'nav_s_${s.id}')"></i><div class="tm-nav-item flex-1 text-sm ${state.ui.tmView==='s_'+s.id?'active':''}" onclick="state.ui.tmView='s_${s.id}'; render();" style="color: ${state.ui.tmView==='s_'+s.id ? s.color : ''}"><i class="fas ${s.icon} w-4" style="color:${s.color}"></i> ${s.name}</div></div>
+                            <div id="nav_s_${s.id}" class="pl-2 border-l-2 border-slate-200 dark:border-darkborder ml-2.5 mt-1 mb-2 space-y-1">`;
                 
                 getChildren('sphere', s.id).filter(p=>!p.archived).forEach(p => {
                     const subs = getChildren('project', p.id).filter(sp=>!sp.archived);
+                    navHtml += `<div draggable="true" ondragstart="onDragStart(event, '${p.id}', 'project', 'tm_proj_${s.id}')" ondrop="onDrop(event, '${p.id}', 'project', 'tm_proj_${s.id}')" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" class="draggable">`;
                     if(subs.length > 0) {
-                        navHtml += `<div class="flex items-center group"><i class="fas fa-chevron-down text-[10px] text-slate-500 cursor-pointer w-5 text-center hover:text-white" onclick="toggleNavFolder(event, 'nav_p_${p.id}')"></i><div class="tm-nav-item flex-1 ${state.ui.tmView==='p_'+p.id?'active':''}" onclick="state.ui.tmView='p_${p.id}'; render();"><i class="fas ${p.icon||'fa-folder-open'} w-4" style="color:${s.color}"></i> ${p.name}</div></div>`;
-                        navHtml += `<div id="nav_p_${p.id}" class="pl-2 border-l border-slate-700/50 ml-2.5 mt-1 space-y-1">`;
+                        navHtml += `<div class="flex items-center group"><i class="fas fa-chevron-down text-[9px] text-slate-400 cursor-pointer w-5 text-center hover:text-slate-800 dark:hover:text-white transition" onclick="toggleNavFolder(event, 'nav_p_${p.id}')"></i><div class="tm-nav-item flex-1 text-xs ${state.ui.tmView==='p_'+p.id?'active':''}" onclick="state.ui.tmView='p_${p.id}'; render();"><i class="fas ${p.icon||'fa-folder'} w-4 text-slate-400"></i> ${p.name}</div></div>`;
+                        navHtml += `<div id="nav_p_${p.id}" class="pl-2 border-l-2 border-slate-200 dark:border-darkborder ml-2.5 mt-1 space-y-1">`;
                         subs.forEach(sp => {
-                            navHtml += `<div class="flex items-center ml-2"><div class="tm-nav-item flex-1 ${state.ui.tmView==='sp_'+sp.id?'active':''}" onclick="state.ui.tmView='sp_${sp.id}'; render();"><i class="fas ${sp.icon||'fa-file-alt'} w-4" style="color:${s.color}"></i> ${sp.name}</div></div>`;
+                            navHtml += `<div draggable="true" ondragstart="onDragStart(event, '${sp.id}', 'subproject', 'tm_sub_${p.id}')" ondrop="onDrop(event, '${sp.id}', 'subproject', 'tm_sub_${p.id}')" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" class="draggable flex items-center ml-1"><div class="tm-nav-item flex-1 text-[11px] ${state.ui.tmView==='sp_'+sp.id?'active':''}" onclick="state.ui.tmView='sp_'+sp.id'; render();"><i class="fas ${sp.icon||'fa-file-alt'} w-4 text-slate-400"></i> ${sp.name}</div></div>`;
                         });
                         navHtml += `</div>`;
                     } else {
-                        navHtml += `<div class="flex items-center group"><i class="fas fa-circle text-[4px] text-slate-600 w-5 text-center"></i><div class="tm-nav-item flex-1 ${state.ui.tmView==='p_'+p.id?'active':''}" onclick="state.ui.tmView='p_${p.id}'; render();"><i class="fas ${p.icon||'fa-folder-open'} w-4" style="color:${s.color}"></i> ${p.name}</div></div>`;
+                        navHtml += `<div class="flex items-center group"><i class="fas fa-circle text-[4px] text-slate-300 dark:text-slate-600 w-5 text-center"></i><div class="tm-nav-item flex-1 text-xs ${state.ui.tmView==='p_'+p.id?'active':''}" onclick="state.ui.tmView='p_${p.id}'; render();"><i class="fas ${p.icon||'fa-folder'} w-4 text-slate-400"></i> ${p.name}</div></div>`;
                     }
+                    navHtml += `</div>`;
                 });
-                navHtml += `</div>`;
+                navHtml += `</div></div>`;
             });
             navHtml += `</div>`;
 
-            // Determinazione Auto-Contesto predefinito in base alla vista attuale
             let currentCtxId = "";
             if(state.ui.tmView.startsWith('s_')) currentCtxId = state.ui.tmView.replace('s_','');
             else if(state.ui.tmView.startsWith('p_')) currentCtxId = state.ui.tmView.replace('p_','');
             else if(state.ui.tmView.startsWith('sp_')) currentCtxId = state.ui.tmView.replace('sp_','');
 
-            // Generazione Selettore Contesti AddTask
-            let ctxOpts = `<option value="">📥 Inbox (Nessun contesto)</option>`;
-            state.data.spheres.forEach(s => {
-                ctxOpts += `<optgroup label="Sfera: ${s.name}">`;
-                ctxOpts += `<option value="${s.id}" ${s.id===currentCtxId?'selected':''}>● Sfera: ${s.name}</option>`;
-                state.data.projects.filter(p=>p.sphereId===s.id).forEach(p => {
-                    ctxOpts += `<option value="${p.id}" ${p.id===currentCtxId?'selected':''}>  📁 ${p.name}</option>`;
-                    state.data.subprojects.filter(sp=>sp.projectId===p.id).forEach(sp => { 
-                        ctxOpts += `<option value="${sp.id}" ${sp.id===currentCtxId?'selected':''}>    ↳ 📄 ${sp.name}</option>`; 
-                    });
-                });
-                ctxOpts += `</optgroup>`;
-            });
+            let ctxOpts = generateCtxOpts(currentCtxId);
 
-            // Filtra Tasks in base a TM View
             let tasks = [...state.data.tasks];
             const todayStr = new Date().toISOString().split('T')[0];
             let listTitle = "Tutti i Task";
 
             if(state.ui.tmView === 'today') { tasks = tasks.filter(t => t.dueDate === todayStr); listTitle = "Oggi"; }
             else if(state.ui.tmView === 'inbox') { tasks = tasks.filter(t => !t.contextId); listTitle = "Senza Contesto"; }
-            else if(state.ui.tmView.startsWith('s_')) { const id = state.ui.tmView.replace('s_',''); tasks = tasks.filter(t => t.contextId === id || (getEntity('project', t.contextId)?.sphereId === id) || (getEntity('subproject', t.contextId) && getEntity('project', getEntity('subproject', t.contextId).projectId).sphereId === id)); listTitle = getEntity('sphere', id).name; }
-            else if(state.ui.tmView.startsWith('p_')) { const id = state.ui.tmView.replace('p_',''); tasks = tasks.filter(t => t.contextId === id || (getEntity('subproject', t.contextId)?.projectId === id)); listTitle = getEntity('project', id).name; }
-            else if(state.ui.tmView.startsWith('sp_')) { const id = state.ui.tmView.replace('sp_',''); tasks = tasks.filter(t => t.contextId === id); listTitle = getEntity('subproject', id).name; }
+            else if(state.ui.tmView.startsWith('s_')) { 
+                const id = state.ui.tmView.replace('s_',''); 
+                tasks = tasks.filter(t => {
+                    if(t.contextId === id) return true;
+                    let p = getEntity('project', t.contextId);
+                    if(p && p.sphereId === id) return true;
+                    let sp = getEntity('subproject', t.contextId);
+                    if(sp) { let pp = getEntity('project', sp.projectId); if(pp && pp.sphereId === id) return true; }
+                    return false;
+                }); 
+                let sObj = getEntity('sphere', id); 
+                listTitle = sObj ? sObj.name : 'Tutti i Task'; 
+            }
+            else if(state.ui.tmView.startsWith('p_')) { 
+                const id = state.ui.tmView.replace('p_',''); 
+                tasks = tasks.filter(t => t.contextId === id || (getEntity('subproject', t.contextId)?.projectId === id)); 
+                let pObj = getEntity('project', id); 
+                listTitle = pObj ? pObj.name : 'Tutti i Task'; 
+            }
+            else if(state.ui.tmView.startsWith('sp_')) { 
+                const id = state.ui.tmView.replace('sp_',''); 
+                tasks = tasks.filter(t => t.contextId === id); 
+                let spObj = getEntity('subproject', id); 
+                listTitle = spObj ? spObj.name : 'Tutti i Task'; 
+            }
 
             const hasCompleted = tasks.some(t => t.completed);
             if(!state.ui.showCompletedTasks) tasks = tasks.filter(t => !t.completed);
             tasks.sort((a,b) => a.completed - b.completed || b.priority - a.priority);
 
             let mainHtml = `
-                <div class="flex flex-col lg:flex-row gap-3 mb-6 bg-slate-800/50 p-4 rounded-lg border border-slate-700">
-                    <input type="text" id="gtIn" class="input-base flex-1" placeholder="Scrivi il nuovo task qui..." onkeypress="if(event.key==='Enter') addTaskFromGlobal()">
-                    <select id="gtCtx" class="input-base lg:w-48 text-xs">${ctxOpts}</select>
-                    <select id="gtPri" class="input-base w-24 text-xs"><option value="0">Prio 0</option><option value="1">Prio 1</option><option value="2">Prio 2</option><option value="3">Prio 3</option></select>
-                    <input type="date" id="gtDate" class="input-base w-32 text-xs">
-                    <button onclick="addTaskFromGlobal()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded text-white font-medium transition"><i class="fas fa-plus"></i></button>
+                <div class="flex flex-col lg:flex-row gap-2 mb-6 bg-slate-50 dark:bg-[#202938] p-3 rounded-xl border border-slate-200 dark:border-darkborder shadow-sm">
+                    <input type="text" id="gtIn" class="input-base flex-1 font-semibold text-sm py-1.5" placeholder="Nuovo task globale..." onkeypress="if(event.key==='Enter') addTaskFromGlobal()">
+                    <select id="gtCtx" class="input-base lg:w-40 text-xs font-semibold py-1.5">${ctxOpts}</select>
+                    <select id="gtPri" class="input-base w-20 text-xs font-semibold py-1.5"><option value="0">Prio 0</option><option value="1">Prio 1</option><option value="2">Prio 2</option><option value="3">Prio 3</option></select>
+                    <input type="date" id="gtDate" class="input-base w-32 text-xs font-semibold py-1.5">
+                    <button onclick="addTaskFromGlobal()" class="bg-blue-600 hover:bg-blue-700 px-4 rounded text-white font-bold shadow-sm transition"><i class="fas fa-plus text-xs"></i></button>
                 </div>
                 <div class="flex-1 space-y-2 overflow-y-auto pr-2 pb-10">`;
             
-            if(tasks.length === 0) mainHtml += `<div class="text-center py-10 text-slate-500"><i class="fas fa-check-circle text-4xl mb-3 opacity-20"></i><p>Tutto completato per ora!</p></div>`;
+            if(tasks.length === 0) mainHtml += `<div class="text-center py-16 text-slate-400"><i class="fas fa-check-circle text-4xl mb-4 opacity-20"></i><p class="font-bold text-sm">Tutto completato per ora!</p></div>`;
             
             tasks.forEach(t => {
                 const ctx = getContextInfo(t.contextId);
-                mainHtml += `
-                    <div class="panel p-3 flex items-center gap-4 prio-${t.priority} bg-slate-800/40 hover:bg-slate-800 transition">
-                        <input type="checkbox" class="task-checkbox shrink-0 h-5 w-5" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
-                        <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                            <p class="${t.completed ? 'line-through text-slate-500' : 'text-slate-200'} text-base font-medium word-wrap">${t.title}</p>
-                            <div class="flex items-center gap-3 shrink-0">
-                                ${t.dueDate ? `<span class="text-xs text-amber-400 bg-amber-900/20 px-2 py-1 rounded"><i class="far fa-calendar-alt mr-1"></i>${t.dueDate}</span>` : ''}
-                                ${t.contextId ? `<span class="text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded bg-slate-900 border border-slate-700" style="color:${ctx.color}">${ctx.name}</span>` : ''}
+                if (editingTaskId === t.id) {
+                    mainHtml += `
+                        <div class="panel p-3 flex flex-col gap-3 bg-slate-100 dark:bg-[#1a1c23] border border-slate-300 dark:border-slate-600 shadow-inner">
+                            <input type="text" id="etTitle_${t.id}" value="${t.title}" class="input-base font-bold text-sm py-1.5">
+                            <div class="flex flex-wrap items-center gap-3">
+                                <select id="etPri_${t.id}" class="input-base w-20 text-xs font-bold py-1"><option value="0" ${t.priority===0?'selected':''}>P0</option><option value="1" ${t.priority===1?'selected':''}>P1</option><option value="2" ${t.priority===2?'selected':''}>P2</option><option value="3" ${t.priority===3?'selected':''}>P3</option></select>
+                                <input type="date" id="etDate_${t.id}" value="${t.dueDate||''}" class="input-base w-32 text-xs font-bold py-1">
+                                <select id="etCtx_${t.id}" class="input-base lg:w-48 text-xs font-bold py-1">${generateCtxOpts(t.contextId)}</select>
+                                <div class="flex-1 flex justify-end gap-2">
+                                    <button onclick="editingTaskId=null; render()" class="text-xs font-bold px-3 py-1.5 rounded text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition">Annulla</button>
+                                    <button onclick="saveTaskEdit('${t.id}', 'etCtx_${t.id}')" class="text-xs font-bold px-4 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition">Salva</button>
+                                </div>
                             </div>
-                        </div>
-                        <button onclick="deleteTask('${t.id}')" class="text-slate-500 hover:text-red-400 px-2"><i class="fas fa-trash-alt"></i></button>
-                    </div>`;
+                        </div>`;
+                } else {
+                    mainHtml += `
+                        <div class="panel p-3 flex items-center gap-3 prio-${t.priority} bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm hover:shadow-md transition group border-l-4" style="border-left-color: ${t.priority>0 ? '' : 'transparent'}">
+                            <input type="checkbox" class="task-checkbox shrink-0 h-4.5 w-4.5 mt-0" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
+                            <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <p class="${t.completed ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-100'} text-sm font-semibold word-wrap">${t.title}</p>
+                                <div class="flex items-center gap-3 shrink-0">
+                                    ${t.dueDate ? `<span class="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded"><i class="far fa-calendar mr-1"></i>${t.dueDate}</span>` : ''}
+                                    ${t.contextId ? `<span class="text-[9px] uppercase font-bold tracking-widest px-2 py-1 rounded border" style="color:${ctx.color}; border-color:${ctx.color}40; background-color:${ctx.color}10">${ctx.name}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                                <button onclick="editTask('${t.id}')" class="text-slate-400 hover:text-blue-500 px-2 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition"><i class="fas fa-edit text-xs"></i></button>
+                                <button onclick="deleteTask('${t.id}')" class="text-slate-400 hover:text-red-500 px-2 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition"><i class="fas fa-trash-alt text-xs"></i></button>
+                            </div>
+                        </div>`;
+                }
             });
 
             if(hasCompleted) {
-                mainHtml += `<div class="mt-4 text-center border-t border-slate-700 pt-3"><button onclick="state.ui.showCompletedTasks = !state.ui.showCompletedTasks; render();" class="text-sm text-slate-400 hover:text-white underline">${state.ui.showCompletedTasks ? 'Nascondi' : 'Mostra'} task completati (Clicca la spunta per ripristinare)</button></div>`;
+                mainHtml += `<div class="mt-6 text-center border-t border-slate-200 dark:border-darkborder pt-4"><button onclick="state.ui.showCompletedTasks = !state.ui.showCompletedTasks; render();" class="text-[10px] font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition px-3 py-1.5 rounded border border-slate-200 dark:border-darkborder bg-white dark:bg-darkpanel shadow-sm">${state.ui.showCompletedTasks ? 'Nascondi completati' : 'Mostra completati'}</button></div>`;
             }
             mainHtml += `</div>`;
 
             return `
-                <div class="panel p-0 max-w-[1200px] mx-auto min-h-[85vh] flex flex-col md:flex-row overflow-hidden">
-                    <div class="md:w-64 bg-slate-800/50 border-r border-slate-700 p-4 shrink-0">${navHtml}</div>
-                    <div class="flex-1 p-6 flex flex-col">
-                        <h2 class="text-2xl font-bold text-slate-100 mb-6 border-b border-slate-700 pb-4">${listTitle}</h2>
+                <div class="panel p-0 w-full min-h-[85vh] flex flex-col md:flex-row overflow-hidden border border-slate-200 dark:border-darkborder shadow-xl">
+                    <div class="md:w-64 bg-slate-50 dark:bg-[#13151a] border-r border-slate-200 dark:border-darkborder p-5 shrink-0">${navHtml}</div>
+                    <div class="flex-1 p-6 flex flex-col bg-white dark:bg-darkpanel">
+                        <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6 pb-3 border-b border-slate-200 dark:border-darkborder">${listTitle}</h2>
                         ${mainHtml}
                     </div>
                 </div>`;
         }
 
         function addTask(cId) {
-            const tIn = document.getElementById(`tIn_${cId||'g'}`), pIn = document.getElementById(`tPri_${cId||'g'}`), dIn = document.getElementById(`tDate_${cId||'g'}`);
+            const tIn = document.getElementById(`tIn_${cId||'g'}`);
             if(!tIn.value.trim()) return;
-            state.data.tasks.push({ id: 't_'+Date.now(), title: tIn.value.trim(), completed: false, priority: parseInt(pIn.value), dueDate: dIn?dIn.value:'', contextId: cId || '' });
-            scheduleAutosave(); render();
+            state.data.tasks.push({ id: 't_'+Date.now(), title: tIn.value.trim(), completed: false, priority: 0, dueDate: '', contextId: cId || '' });
+            AppData.triggerSave(); render();
         }
         function addTaskFromGlobal() {
             const tIn = document.getElementById('gtIn'), cIn = document.getElementById('gtCtx'), pIn = document.getElementById('gtPri'), dIn = document.getElementById('gtDate');
             if(!tIn.value.trim()) return;
             state.data.tasks.push({ id: 't_'+Date.now(), title: tIn.value.trim(), completed: false, priority: parseInt(pIn.value), dueDate: dIn.value, contextId: cIn.value });
-            scheduleAutosave(); render();
+            AppData.triggerSave(); render();
         }
-        function toggleTask(id) { const t = state.data.tasks.find(x => x.id === id); if(t) t.completed = !t.completed; scheduleAutosave(); render(); }
-        function deleteTask(id) { state.data.tasks = state.data.tasks.filter(x => x.id !== id); scheduleAutosave(); render(); }
+        function toggleTask(id) { const t = state.data.tasks.find(x => x.id === id); if(t) t.completed = !t.completed; AppData.triggerSave(); render(); }
+        function deleteTask(id) { state.data.tasks = state.data.tasks.filter(x => x.id !== id); AppData.triggerSave(); render(); }
+        
+        function editTask(id) { editingTaskId = id; render(); }
+        function saveTaskEdit(id, contextElementId) {
+            const t = state.data.tasks.find(x => x.id === id);
+            if(!t) return;
+            const titleInput = document.getElementById('etTitle_' + id);
+            if(titleInput.value.trim()) t.title = titleInput.value.trim();
+            t.priority = parseInt(document.getElementById('etPri_' + id).value);
+            t.dueDate = document.getElementById('etDate_' + id).value;
+            if(contextElementId) { t.contextId = document.getElementById(contextElementId).value; }
+            editingTaskId = null;
+            AppData.triggerSave(); render();
+        }
 
-
-        // --- 7. RUBRICA E CONTATTI ---
+        // --- RUBRICA ---
         function renderGlobalContacts() {
             let html = `
-                <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
-                    <h2 class="text-2xl font-bold text-slate-100"><i class="fas fa-address-book text-emerald-500 mr-2"></i> Rubrica Globale</h2>
-                    <button onclick="openContactModal()" class="bg-emerald-700 hover:bg-emerald-600 px-3 py-1.5 rounded-md text-white text-sm font-medium transition shadow"><i class="fas fa-plus mr-1"></i> Nuovo</button>
+                <div class="flex justify-between items-center mb-8 pb-5 border-b border-slate-200 dark:border-darkborder">
+                    <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center tracking-tight"><i class="fas fa-address-book text-slate-400 dark:text-slate-500 mr-3"></i> Rubrica Globale</h2>
+                    <button onclick="openContactModal()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white text-sm font-bold shadow transition"><i class="fas fa-plus mr-1.5"></i> Nuovo Contatto</button>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">`;
-            if(state.data.contacts.length===0) html += `<p class="text-slate-500 col-span-full">Rubrica vuota.</p>`;
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">`;
+            if(state.data.contacts.length===0) html += `<p class="text-sm text-slate-500 col-span-full italic">Rubrica vuota.</p>`;
             state.data.contacts.forEach(c => {
                 html += `
-                    <div class="panel p-4 flex flex-col gap-3 relative group">
-                        <button onclick="openContactModal('${c.id}')" class="absolute top-3 right-3 text-slate-500 hover:text-white opacity-0 group-hover:opacity-100 transition"><i class="fas fa-edit"></i></button>
+                    <div class="panel p-5 flex flex-col gap-4 relative group bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow hover:shadow-md transition">
+                        <button onclick="openContactModal('${c.id}')" class="absolute top-3 right-3 text-slate-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fas fa-edit"></i></button>
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-slate-400 text-lg"><i class="fas fa-user"></i></div>
+                            <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 text-xl shadow-inner border border-slate-200 dark:border-slate-700"><i class="fas fa-user"></i></div>
                             <div class="min-w-0 flex-1">
-                                <p class="text-base font-bold text-slate-100 truncate">${c.name}</p>
-                                <p class="text-xs text-emerald-500 font-medium truncate">${c.role} ${c.org ? ` • ${c.org}` : ''}</p>
+                                <p class="text-base font-bold text-slate-900 dark:text-slate-100 truncate">${c.name}</p>
+                                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider truncate mt-0.5">${c.role} ${c.org ? ` • ${c.org}` : ''}</p>
                             </div>
                         </div>
-                        <div class="text-xs text-slate-400 space-y-1 bg-slate-900/50 p-2 rounded border border-slate-800">
-                            ${c.phone ? `<p><i class="fas fa-phone mr-1 w-3"></i> ${c.phone}</p>` : ''}
-                            ${c.email ? `<p><i class="fas fa-envelope mr-1 w-3"></i> <a href="mailto:${c.email}" class="hover:underline text-blue-400">${c.email}</a></p>` : ''}
-                            ${!c.phone && !c.email ? '<p class="italic opacity-50">Nessun recapito</p>' : ''}
+                        <div class="text-xs font-medium text-slate-600 dark:text-slate-400 space-y-1.5 p-3 rounded-lg border border-slate-200 dark:border-darkborder bg-slate-50 dark:bg-[#202938]">
+                            ${c.phone ? `<p class="flex items-center"><i class="fas fa-phone mr-2 text-slate-400"></i> ${c.phone}</p>` : ''}
+                            ${c.email ? `<p class="flex items-center"><i class="fas fa-envelope mr-2 text-slate-400"></i> <a href="mailto:${c.email}" class="hover:text-blue-500 transition">${c.email}</a></p>` : ''}
+                            ${!c.phone && !c.email ? '<p class="italic text-[10px] opacity-50">Nessun recapito</p>' : ''}
                         </div>
                     </div>`;
             });
@@ -831,32 +1394,31 @@
             const availableToLink = state.data.contacts.filter(c => !(c.contextIds && c.contextIds.includes(cId)));
             
             let html = `
-                <div class="flex gap-2 mb-3">
-                    <select id="linkContact_${cId}" class="input-base text-xs py-1.5 flex-1">
-                        <option value="">Collega rubrica...</option>
+                <div class="flex gap-2 mb-4">
+                    <select id="linkContact_${cId}" class="input-base text-[10px] font-bold py-1.5 flex-1">
+                        <option value="">Collega dalla rubrica...</option>
                         ${availableToLink.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
                     </select>
-                    <button onclick="linkExistingContact('${cId}')" class="bg-slate-700 hover:bg-slate-600 px-2 rounded text-white text-xs"><i class="fas fa-link"></i></button>
+                    <button onclick="linkExistingContact('${cId}')" class="bg-blue-600 hover:bg-blue-700 px-3 rounded text-white text-[10px] font-bold shadow-sm transition"><i class="fas fa-link"></i></button>
                 </div>
-                <div class="space-y-2">
-            `;
-            if(contacts.length===0) html += `<p class="text-xs text-slate-500 italic">Nessun contatto collegato.</p>`;
+                <div class="space-y-2">`;
+            if(contacts.length===0) html += `<p class="text-[10px] text-slate-500 italic">Nessun contatto collegato.</p>`;
             
             contacts.forEach(c => {
                 html += `
-                    <div class="p-2 bg-slate-800/80 border border-slate-700 rounded relative group">
-                        <div class="flex items-center gap-3 mb-2 cursor-pointer" onclick="openContactModal('${c.id}')">
-                            <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 shrink-0"><i class="fas fa-user text-xs"></i></div>
+                    <div class="p-3 bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder rounded relative group shadow-sm">
+                        <div class="flex items-center gap-2 mb-2 cursor-pointer" onclick="openContactModal('${c.id}')">
+                            <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-500 shrink-0"><i class="fas fa-user text-xs"></i></div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-bold text-slate-200 truncate">${c.name}</p>
-                                <p class="text-[10px] text-slate-400 truncate uppercase tracking-wide">${c.role}</p>
+                                <p class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">${c.name}</p>
+                                <p class="text-[9px] text-slate-500 font-bold truncate uppercase tracking-widest mt-0.5">${c.role}</p>
                             </div>
                         </div>
-                        <div class="text-[10px] text-slate-400 mt-1 pl-11 space-y-1">
-                            ${c.phone ? `<div><i class="fas fa-phone mr-1"></i> ${c.phone}</div>` : ''}
-                            ${c.email ? `<div><i class="fas fa-envelope mr-1"></i> <a href="mailto:${c.email}" class="hover:underline text-blue-400" onclick="event.stopPropagation()">${c.email}</a></div>` : ''}
+                        <div class="text-[10px] font-bold text-slate-500 mt-1 pl-10 space-y-1">
+                            ${c.phone ? `<div class="flex items-center"><i class="fas fa-phone mr-1.5"></i> ${c.phone}</div>` : ''}
+                            ${c.email ? `<div class="flex items-center"><i class="fas fa-envelope mr-1.5"></i> <a href="mailto:${c.email}" class="hover:text-blue-500 transition" onclick="event.stopPropagation()">${c.email}</a></div>` : ''}
                         </div>
-                        <button onclick="unlinkContact('${c.id}', '${cId}')" class="absolute top-2 right-2 text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition text-xs" title="Scollega dal progetto"><i class="fas fa-unlink"></i></button>
+                        <button onclick="unlinkContact('${c.id}', '${cId}')" class="absolute top-2 right-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700" title="Scollega dal progetto"><i class="fas fa-unlink text-[10px]"></i></button>
                     </div>`;
             });
             return html + `</div>`;
@@ -869,12 +1431,12 @@
             if(c && (!c.contextIds || !c.contextIds.includes(cId))) {
                 if(!c.contextIds) c.contextIds = [];
                 c.contextIds.push(cId);
-                scheduleAutosave(); render();
+                AppData.triggerSave(); render();
             }
         }
         function unlinkContact(contactId, cId) {
             const c = state.data.contacts.find(x => x.id === contactId);
-            if(c) { c.contextIds = c.contextIds.filter(id => id !== cId); scheduleAutosave(); render(); }
+            if(c) { c.contextIds = c.contextIds.filter(id => id !== cId); AppData.triggerSave(); render(); }
         }
 
         function openContactModal(cId=null, linkCtx=null) {
@@ -883,6 +1445,7 @@
             const btnDel = document.getElementById('cmDeleteBtn');
             if(cId) {
                 const c = state.data.contacts.find(x => x.id === cId);
+                if(!c) return;
                 document.getElementById('cmTitle').innerText = 'Modifica Contatto';
                 document.getElementById('cmName').value = c.name; document.getElementById('cmRole').value = c.role;
                 document.getElementById('cmOrg').value = c.org || ''; document.getElementById('cmPhone').value = c.phone || ''; document.getElementById('cmEmail').value = c.email || '';
@@ -898,105 +1461,48 @@
         function saveContact() {
             const name = document.getElementById('cmName').value.trim(); if(!name) return alert("Inserisci il nome");
             const payload = { name, role: document.getElementById('cmRole').value, org: document.getElementById('cmOrg').value, phone: document.getElementById('cmPhone').value, email: document.getElementById('cmEmail').value };
-            if(contactEditId) { Object.assign(state.data.contacts.find(x => x.id === contactEditId), payload); } 
-            else {
+            if(contactEditId) { 
+                let obj = state.data.contacts.find(x => x.id === contactEditId);
+                if(obj) Object.assign(obj, payload); 
+            } else {
                 const ctxLink = localStorage.getItem('temp_ctx_link');
                 state.data.contacts.push({ id: 'c_'+Date.now(), ...payload, contextIds: ctxLink ? [ctxLink] : [] });
             }
-            closeContactModal(); scheduleAutosave(); render();
+            closeContactModal(); AppData.triggerSave(); render();
         }
-        function deleteContact() { if(confirm("Eliminare definitivamente?")) { state.data.contacts = state.data.contacts.filter(x => x.id !== contactEditId); closeContactModal(); scheduleAutosave(); render(); } }
+        function deleteContact() { if(confirm("Eliminare definitivamente?")) { state.data.contacts = state.data.contacts.filter(x => x.id !== contactEditId); closeContactModal(); AppData.triggerSave(); render(); } }
 
-        // --- 8. TIMELINE E CRUD MODAL ---
+        // --- TIMELINE ---
         function renderTimeline() {
-            let html = `<div class="panel p-6 max-w-5xl mx-auto min-h-[80vh] overflow-x-auto"><h2 class="text-2xl font-bold mb-6 text-slate-100"><i class="fas fa-stream text-amber-500 mr-2"></i> Timeline (Beta)</h2><p class="text-sm text-slate-400 mb-6">Imposta Data Inizio e Fine nei progetti e sottoprogetti per vederli qui.</p><div class="min-w-[800px] border-t border-slate-700 pt-4">`;
+            let html = `<div class="panel p-6 max-w-5xl mx-auto min-h-[80vh] overflow-x-auto bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-xl"><h2 class="text-2xl font-bold mb-6 text-slate-800 dark:text-slate-100 flex items-center tracking-tight"><i class="fas fa-stream text-slate-400 mr-3"></i> Timeline</h2><p class="text-xs font-medium text-slate-500 mb-8 border-b border-slate-200 dark:border-darkborder pb-4">Imposta Data Inizio e Fine nei progetti e sottoprogetti per visualizzarli qui.</p><div class="min-w-[800px]">`;
             const entities = [...state.data.projects, ...state.data.subprojects].filter(e => e.startDate && e.endDate && !e.archived).sort((a,b) => new Date(a.startDate) - new Date(b.startDate));
-            if(entities.length === 0) html += `<p class="text-slate-500 text-center mt-10 italic">Nessun elemento con date impostate.</p>`;
+            if(entities.length === 0) html += `<p class="text-slate-500 text-center mt-10 font-bold text-sm opacity-50">Nessun elemento con date impostate.</p>`;
             entities.forEach(p => {
                 const isProj = !!p.sphereId;
-                const parentName = isProj ? getEntity('sphere', p.sphereId).name : getEntity('project', p.projectId).name;
-                html += `<div class="flex items-center gap-4 mb-3">
-                    <div class="w-48 truncate text-sm font-bold text-slate-300" title="${p.name}"><span class="text-xs text-slate-500 font-normal block truncate">${parentName}</span>${p.name}</div>
-                    <div class="flex-1 bg-slate-800 h-8 rounded relative border border-slate-700">
-                        <div class="absolute top-0 bottom-0 left-0 bg-blue-600/50 rounded flex items-center px-2 text-xs text-white truncate" style="left: 10%; right: 40%;">${p.startDate} - ${p.endDate}</div>
+                const parent = isProj ? getEntity('sphere', p.sphereId) : getEntity('project', p.projectId);
+                const parentName = parent ? parent.name : 'Sconosciuto';
+                let color = p.color;
+                if (!color && parent) {
+                    if (isProj) color = parent.color;
+                    else {
+                        const grandParent = getEntity('sphere', parent.sphereId);
+                        color = parent.color || (grandParent ? grandParent.color : '#94a3b8');
+                    }
+                }
+                color = color || '#94a3b8';
+                
+                html += `<div class="flex items-center gap-4 mb-4 group">
+                    <div class="w-48 truncate text-xs font-bold text-slate-800 dark:text-slate-200" title="${p.name}"><span class="text-[9px] text-slate-500 uppercase tracking-widest block truncate mb-0.5">${parentName}</span>${p.name}</div>
+                    <div class="flex-1 bg-slate-100 dark:bg-slate-800 h-8 rounded relative border border-slate-200 dark:border-slate-700 overflow-hidden shadow-inner">
+                        <div class="absolute top-0 bottom-0 left-0 rounded flex items-center px-3 text-[10px] text-white truncate font-bold shadow-sm transition-all group-hover:brightness-110" style="left: 10%; right: 40%; background-color: ${color}">${p.startDate} - ${p.endDate}</div>
                     </div>
                 </div>`;
             });
             return html + `</div></div>`;
         }
 
-        function openEntityModal(mode, type, sId=null, pId=null, spId=null) {
-            editState = { mode, type, sId, pId, spId };
-            const m = document.getElementById('entityModal'), fSphere = document.getElementById('emSphereFields'), fProj = document.getElementById('emProjectFields'), btnDel = document.getElementById('emDeleteBtn'), relocArea = document.getElementById('emRelocationArea'), pSelect = document.getElementById('emParentSelect');
-            
-            document.getElementById('emName').value = ''; fSphere.classList.add('hidden'); fProj.classList.add('hidden'); btnDel.classList.add('hidden'); relocArea.classList.add('hidden');
-            if(type === 'sphere') fSphere.classList.remove('hidden'); else fProj.classList.remove('hidden');
-            document.getElementById('emTitle').innerText = mode==='create'? `Nuovo ${type}` : `Modifica ${type}`;
-
-            if(mode === 'edit') {
-                btnDel.classList.remove('hidden');
-                if(type === 'sphere') {
-                    const s = getEntity('sphere', sId); document.getElementById('emName').value = s.name; document.getElementById('emIcon').value = s.icon; document.getElementById('emColor').value = mapColor(s.color);
-                } else if(type === 'project') {
-                    const p = getEntity('project', pId); document.getElementById('emName').value = p.name; document.getElementById('emIcon').value = p.icon; document.getElementById('emType').value = p.type; document.getElementById('emStatus').value = p.status; document.getElementById('emStartDate').value = p.startDate||''; document.getElementById('emEndDate').value = p.endDate||'';
-                    relocArea.classList.remove('hidden'); document.getElementById('emParentLabel').innerText = "Sposta in un'altra Sfera...";
-                    pSelect.innerHTML = state.data.spheres.map(sph => `<option value="${sph.id}" ${sph.id===p.sphereId?'selected':''}>${sph.name}</option>`).join('');
-                } else if(type === 'subproject') {
-                    const sp = getEntity('subproject', spId); document.getElementById('emName').value = sp.name; document.getElementById('emIcon').value = sp.icon; document.getElementById('emType').value = sp.type; document.getElementById('emStatus').value = sp.status; document.getElementById('emStartDate').value = sp.startDate||''; document.getElementById('emEndDate').value = sp.endDate||'';
-                    relocArea.classList.remove('hidden'); document.getElementById('emParentLabel').innerText = "Sposta in un altro Progetto...";
-                    let opts = ''; state.data.projects.forEach(prj => opts += `<option value="${prj.id}" ${prj.id===sp.projectId?'selected':''}>[${getEntity('sphere', prj.sphereId).name}] ${prj.name}</option>`);
-                    pSelect.innerHTML = opts;
-                }
-            } else {
-                if(type === 'sphere') document.getElementById('emColor').value = '#3b82f6';
-                document.getElementById('emIcon').value = type === 'project' ? 'fa-folder-open' : type === 'subproject' ? 'fa-file-alt' : 'fa-folder';
-            }
-            m.classList.remove('hidden');
-        }
-        function closeEntityModal() { document.getElementById('entityModal').classList.add('hidden'); }
-        
-        function saveEntityModal() {
-            const name = document.getElementById('emName').value.trim(); if(!name) return alert("Inserisci nome.");
-            const {mode, type, sId, pId, spId} = editState;
-            const icon = document.getElementById('emIcon').value;
-            
-            if(mode === 'create') {
-                const id = type.charAt(0) + '_' + Date.now();
-                if(type === 'sphere') state.data.spheres.push({ id, name, icon: icon||'fa-folder', color: document.getElementById('emColor').value, order: 99 });
-                else if(type === 'project') state.data.projects.push({ id, sphereId: sId, name, icon: icon||'fa-folder-open', type: document.getElementById('emType').value, status: document.getElementById('emStatus').value, pinned: false, archived: false, notes: '', updates: [], startDate: document.getElementById('emStartDate').value, endDate: document.getElementById('emEndDate').value, order: 99, pinnedOrder: 99 });
-                else if(type === 'subproject') state.data.subprojects.push({ id, projectId: pId, name, icon: icon||'fa-file-alt', type: document.getElementById('emType').value, status: document.getElementById('emStatus').value, pinned: false, archived: false, notes: '', updates: [], startDate: document.getElementById('emStartDate').value, endDate: document.getElementById('emEndDate').value, order: 99, pinnedOrder: 99 });
-            } else { 
-                if(type === 'sphere') {
-                    const s = getEntity('sphere', sId); s.name = name; s.icon = icon; s.color = document.getElementById('emColor').value;
-                } else if(type === 'project') {
-                    const p = getEntity('project', pId); p.name = name; p.icon = icon; p.type = document.getElementById('emType').value; p.status = document.getElementById('emStatus').value; p.startDate = document.getElementById('emStartDate').value; p.endDate = document.getElementById('emEndDate').value;
-                    const newSId = document.getElementById('emParentSelect').value;
-                    if(newSId !== p.sphereId) { p.sphereId = newSId; if(state.view==='project') navigate('project', newSId, p.id); }
-                } else if(type === 'subproject') {
-                    const sp = getEntity('subproject', spId); sp.name = name; sp.icon = icon; sp.type = document.getElementById('emType').value; sp.status = document.getElementById('emStatus').value; sp.startDate = document.getElementById('emStartDate').value; sp.endDate = document.getElementById('emEndDate').value;
-                    const newPId = document.getElementById('emParentSelect').value;
-                    if(newPId !== sp.projectId) { sp.projectId = newPId; if(state.view==='subproject') navigate('subproject', getEntity('project', newPId).sphereId, newPId, sp.id); }
-                }
-            }
-            closeEntityModal(); scheduleAutosave(); render();
-        }
-
-        function deleteCurrentEntity() {
-            if(!confirm("Cestinare questo elemento? (I task e figli perderanno riferimento o verranno rimossi)")) return;
-            const {type, sId, pId, spId} = editState;
-            if(type === 'sphere') { state.data.spheres = state.data.spheres.filter(x => x.id !== sId); navigate('home'); }
-            else if(type === 'project') { state.data.projects = state.data.projects.filter(x => x.id !== pId); navigate('sphere', sId); }
-            else if(type === 'subproject') { state.data.subprojects = state.data.subprojects.filter(x => x.id !== spId); navigate('project', sId, pId); }
-            closeEntityModal(); scheduleAutosave(); render();
-        }
-
-        function toggleSettings() {
-            const m = document.getElementById('settingsModal');
-            if(m.classList.contains('hidden')) { document.getElementById('ghToken').value = localStorage.getItem('hub_gh_token') || ''; document.getElementById('gistId').value = localStorage.getItem('hub_gist_id') || ''; document.getElementById('gcalUrl').value = localStorage.getItem('hub_gcal_url') || ''; m.classList.remove('hidden'); } else m.classList.add('hidden');
-        }
-        function saveSettings() { localStorage.setItem('hub_gh_token', document.getElementById('ghToken').value); localStorage.setItem('hub_gist_id', document.getElementById('gistId').value); localStorage.setItem('hub_gcal_url', document.getElementById('gcalUrl').value); toggleSettings(); loadDataFromCloud(); }
-
-        window.onload = loadDataFromCloud;
+        // AVVIO
+        window.onload = () => AppData.initialize();
     </script>
 </body>
 </html>
