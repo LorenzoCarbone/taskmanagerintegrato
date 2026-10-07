@@ -33,10 +33,11 @@
         .panel { border-radius: 12px; overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
         .panel-hover:hover { transform: translateY(-2px); cursor: pointer; }
         
-        .task-checkbox { appearance: none; min-width: 1.15rem; width: 1.15rem; height: 1.15rem; border: 2px solid; border-radius: 4px; cursor: pointer; position: relative; transition: all 0.2s; background: transparent; }
-        .dark .task-checkbox { border-color: #94a3b8; }
-        .task-checkbox:checked { background-color: #3b82f6 !important; border-color: #3b82f6 !important; }
-        .task-checkbox:checked::after { content: '✔'; position: absolute; color: white; font-size: 10px; top: -1px; left: 3px; font-weight: bold; }
+        /* Checkbox circolare per tasks in stile reference */
+        .task-checkbox { appearance: none; min-width: 1.25rem; width: 1.25rem; height: 1.25rem; border: 2px solid; border-radius: 50%; cursor: pointer; position: relative; transition: all 0.2s; background: transparent; }
+        .dark .task-checkbox { border-color: #64748b; }
+        .task-checkbox:checked { background-color: #f59e0b !important; border-color: #f59e0b !important; }
+        .task-checkbox:checked::after { content: '✔'; position: absolute; color: white; font-size: 10px; top: 0px; left: 4px; font-weight: bold; }
         
         .draggable { cursor: grab; }
         .draggable:active { cursor: grabbing; }
@@ -56,11 +57,13 @@
         .dark .input-base:focus { border-color: #60a5fa; box-shadow: 0 0 0 1px #60a5fa; }
         .input-base:focus { border-color: #3b82f6; box-shadow: 0 0 0 1px #3b82f6; }
         
-        .tm-nav-item { padding: 0.4rem 0.6rem; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 500; }
-        .dark .tm-nav-item:hover { background-color: rgba(255,255,255,0.1); }
-        .tm-nav-item:hover { background-color: rgba(0,0,0,0.05); }
-        .dark .tm-nav-item.active { background-color: rgba(59, 130, 246, 0.2); color: #93c5fd; }
-        .tm-nav-item.active { background-color: rgba(59, 130, 246, 0.1); color: #2563eb; }
+        /* Stile menu a tendina laterale */
+        .tm-nav-item { padding: 0.6rem 0.8rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; font-weight: 600; color: #475569; }
+        .dark .tm-nav-item { color: #cbd5e1; }
+        .dark .tm-nav-item:hover { background-color: rgba(255,255,255,0.05); }
+        .tm-nav-item:hover { background-color: rgba(0,0,0,0.03); }
+        .dark .tm-nav-item.active { background-color: rgba(59, 130, 246, 0.15); color: #93c5fd; }
+        .tm-nav-item.active { background-color: #e0f2fe; color: #0284c7; }
 
         .ql-toolbar.ql-snow { border: none !important; border-bottom: 1px solid #e2e8f0 !important; background: transparent; padding: 8px 0 !important; }
         .dark .ql-toolbar.ql-snow { border-bottom-color: #475569 !important; }
@@ -73,25 +76,25 @@
         .dark .glass-header { background: rgba(30, 41, 59, 0.8); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .glass-header { background: rgba(255, 255, 255, 0.8); border-bottom: 1px solid rgba(0,0,0,0.05); }
         
-        /* --- OTTIMIZZAZIONI MOBILE APPUNTI --- */
-        .ql-toolbar {
-            display: flex;
-            flex-wrap: wrap; /* Permette ai tasti di andare a capo su schermi stretti */
-        }
-        .ql-editor {
-            min-height: 120px;
-            max-height: 35vh; /* Su mobile l'editor occupa max 1/3 dello schermo, permettendoti di scrollare per vedere i progetti sotto */
-            overflow-y: auto !important; /* Abilita lo scroll interno agli appunti */
-            -webkit-overflow-scrolling: touch;
-        }
+        /* --- SIDEBAR MOBILE TASK MANAGER --- */
+        .tm-sidebar-mobile { position: fixed; top: 0; left: 0; bottom: 0; width: 85%; max-width: 320px; z-index: 50; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 4px 0 15px rgba(0,0,0,0.1); }
+        .tm-sidebar-mobile.open { transform: translateX(0); }
+        .tm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
+        .tm-overlay.open { opacity: 1; pointer-events: auto; }
+
         @media (min-width: 768px) {
-            .ql-editor { max-height: 60vh; /* Su PC ritorna ad essere bello grande */ }
+            .tm-sidebar-mobile { position: static; transform: none; width: 16rem; box-shadow: none; z-index: auto; }
+            .tm-overlay { display: none; }
         }
+
+        /* --- MODALE APPUNTI MOBILE A TUTTO SCHERMO --- */
+        #mobileNotesModal { z-index: 60; }
+        .mobile-ql-container { height: calc(100vh - 140px); overflow-y: auto; }
     </style>
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-darkbg text-slate-800 dark:text-slate-200 flex flex-col relative pb-10">
 
-    <header class="sticky top-0 z-40 w-full glass-header mb-8 px-4 md:px-8 py-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <header class="sticky top-0 z-40 w-full glass-header mb-8 px-4 md:px-8 py-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hidden-in-tm">
         <div id="breadcrumbs" class="flex flex-wrap gap-2 items-center text-sm font-semibold text-slate-500 dark:text-slate-300"></div>
         <div class="flex flex-wrap gap-2 md:gap-3 items-center text-sm font-medium">
             <button onclick="navigate('timeline')" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition px-3 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"><i class="fas fa-stream mr-1"></i> Timeline</button>
@@ -105,7 +108,29 @@
         </div>
     </header>
 
+    <!-- Overlay per Sidebar Mobile -->
+    <div id="tmOverlay" class="tm-overlay" onclick="toggleTmSidebar()"></div>
+
     <main id="app-content" class="w-full max-w-[1400px] mx-auto flex-1 px-4 md:px-8"></main>
+
+    <!-- Modale Appunti Fullscreen (Mobile) -->
+    <div id="mobileNotesModal" class="fixed inset-0 bg-slate-50 dark:bg-darkbg hidden flex-col z-[60]">
+        <div class="glass-header px-4 py-3 flex justify-between items-center border-b border-slate-200 dark:border-darkborder shadow-sm">
+            <h2 id="mobileNotesTitle" class="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="fas fa-pen-nib text-blue-500"></i> Appunti</h2>
+            <div class="flex gap-2">
+                <button onclick="closeMobileNotes()" class="text-slate-600 dark:text-slate-300 font-bold px-4 py-2 bg-slate-200 dark:bg-slate-700 rounded-lg text-xs">Chiudi</button>
+                <button onclick="saveMobileNotes()" class="text-white font-bold px-4 py-2 bg-blue-600 rounded-lg shadow text-xs">Salva</button>
+            </div>
+        </div>
+        <div class="flex-1 overflow-hidden p-3">
+            <div class="bg-white dark:bg-darkpanel rounded-xl border border-slate-200 dark:border-darkborder shadow-inner h-full flex flex-col p-2">
+                 <div id="quill-mobile-editor" class="mobile-ql-container"></div>
+            </div>
+        </div>
+        <div class="p-3 border-t border-slate-200 dark:border-darkborder bg-white dark:bg-darkpanel flex justify-center">
+            <button onclick="archiveMobileNotes()" class="text-xs font-bold text-slate-500 dark:text-slate-400 py-2 w-full rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition"><i class="fas fa-file-archive mr-2"></i> Archivia Foglio Corrente</button>
+        </div>
+    </div>
 
     <!-- Modal Archivio Letto/Scritto -->
     <div id="archiveViewModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 hidden flex justify-center items-center backdrop-blur-sm z-50 p-4">
@@ -274,21 +299,16 @@
                     if (gistData.files && gistData.files['life_hub_data.json']) {
                         let parsed = {};
                         let content = gistData.files['life_hub_data.json'].content;
-                        
-                        // Protezione: analizza solo se il Gist non è vuoto
                         if(content && content.trim() !== "" && content.trim() !== "{}") {
-                            try {
-                                parsed = JSON.parse(content);
-                            } catch(e) { console.warn("JSON non valido sul gist, forzo azzeramento"); }
+                            try { parsed = JSON.parse(content); } catch(e) { console.warn("JSON err", e); }
                         }
-                        
                         this.data = this.migrateData(parsed);
-                        this.saveLocal(); // Forza il locale a combaciare con il Cloud
+                        this.saveLocal(); 
                     }
                     btn.innerHTML = '<i class="fas fa-check text-green-500 text-base"></i>';
                 } catch (error) {
                     console.error("Gist Load Error:", error);
-                    this.loadLocal(); // Fallback solo se API fallisce (offline)
+                    this.loadLocal(); 
                     btn.innerHTML = '<i class="fas fa-exclamation-triangle text-amber-500 text-base"></i>';
                 }
                 setTimeout(() => btn.innerHTML = '<i class="fas fa-cloud-sync text-base"></i>', 2000);
@@ -383,6 +403,9 @@
             get data() { return AppData.data; },
             set data(val) { AppData.data = val; }
         };
+        
+        // Impostazioni Task Manager persistenti
+        let tmListSettings = JSON.parse(localStorage.getItem('hub_tm_settings')) || {};
 
         // --- GESTIONE APP & UTILITY ---
         let editState = { mode: 'create', type: 'sphere', id: null };
@@ -418,6 +441,15 @@
             e.target.classList.toggle('fa-chevron-right');
         }
         
+        // GESTIONE APPUNTI IBRIDA (Inline Desktop / Modal Mobile)
+        function handleNotesClick(type, id) {
+            if (window.innerWidth < 768) {
+                openMobileNotes(type, id);
+            } else {
+                toggleNotes();
+            }
+        }
+
         function toggleNotes() {
             const container = document.getElementById('notes-container');
             const btn = document.getElementById('toggle-notes-btn');
@@ -428,6 +460,41 @@
                 container.classList.add('hidden'); container.classList.remove('flex');
                 btn.innerHTML = '<i class="fas fa-chevron-down mr-1"></i> Mostra Appunti';
             }
+        }
+
+        let mobileNotesContext = { type: null, id: null, quill: null };
+        function openMobileNotes(type, id) {
+            const entity = getEntity(type, id);
+            if(!entity) return;
+            mobileNotesContext = { type, id };
+            document.getElementById('mobileNotesTitle').innerHTML = `<i class="fas fa-pen-nib text-blue-500 mr-2"></i> Appunti - ${entity.name}`;
+            document.getElementById('mobileNotesModal').classList.remove('hidden');
+            document.getElementById('mobileNotesModal').classList.add('flex');
+            
+            if (!mobileNotesContext.quill) {
+                const tOpts = [['bold', 'italic', 'underline', 'strike'], ['blockquote', 'code-block'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], [{ 'color': [] }, { 'background': [] }], ['link'], ['clean']];
+                mobileNotesContext.quill = new Quill('#quill-mobile-editor', { theme: 'snow', modules: { toolbar: tOpts }, placeholder: 'Inizia a scrivere...' });
+            }
+            mobileNotesContext.quill.root.innerHTML = entity.notes || '';
+        }
+        function closeMobileNotes() { 
+            document.getElementById('mobileNotesModal').classList.add('hidden'); 
+            document.getElementById('mobileNotesModal').classList.remove('flex');
+            render(); // Ricarica la vista sottostante per aggiornare eventuali note desktop
+        }
+        function saveMobileNotes() {
+            if(!mobileNotesContext.id) return;
+            const entity = getEntity(mobileNotesContext.type, mobileNotesContext.id);
+            if(entity) {
+                entity.notes = mobileNotesContext.quill.root.innerHTML;
+                AppData.triggerSave();
+            }
+        }
+        function archiveMobileNotes() {
+            if(!mobileNotesContext.id) return;
+            saveMobileNotes(); // Salva prima
+            archiveNotes(mobileNotesContext.type, mobileNotesContext.id);
+            closeMobileNotes();
         }
 
         function toggleArchivedView() { state.ui.showArchived = !state.ui.showArchived; render(); }
@@ -589,6 +656,14 @@
             state.view = view; 
             state.path = { sphereId: sId, projId: pId, subprojId: spId }; 
             editingTaskId = null; 
+            
+            // Nascondi header globale nel TM su mobile per pulizia
+            const headers = document.querySelectorAll('.hidden-in-tm');
+            headers.forEach(h => {
+                if(view === 'global_tasks') h.classList.add('hidden', 'md:flex');
+                else h.classList.remove('hidden', 'md:flex');
+            });
+            
             render(); 
         }
 
@@ -952,7 +1027,7 @@
                             <div class="p-6">
                                 <div class="flex justify-between items-center mb-1">
                                     <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest"><i class="fas fa-book-open text-blue-500 mr-1.5"></i> Quaderno Appunti</h3>
-                                    <button onclick="toggleNotes()" id="toggle-notes-btn" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 transition"><i class="fas fa-chevron-down mr-1"></i> Mostra Appunti</button>
+                                    <button onclick="handleNotesClick('project', '${p.id}')" id="toggle-notes-btn" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 transition"><i class="fas fa-chevron-down mr-1 hidden md:inline"></i> Mostra Appunti</button>
                                 </div>
                                 
                                 <div id="notes-container" class="hidden flex-col gap-6 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50">
@@ -1042,7 +1117,7 @@
                             <div class="p-6">
                                 <div class="flex justify-between items-center mb-1">
                                     <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest"><i class="fas fa-book-open text-blue-500 mr-1.5"></i> Quaderno Appunti</h3>
-                                    <button onclick="toggleNotes()" id="toggle-notes-btn" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 transition"><i class="fas fa-chevron-down mr-1"></i> Mostra Appunti</button>
+                                    <button onclick="handleNotesClick('subproject', '${sp.id}')" id="toggle-notes-btn" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 transition"><i class="fas fa-chevron-down mr-1 hidden md:inline"></i> Mostra Appunti</button>
                                 </div>
                                 
                                 <div id="notes-container" class="hidden flex-col gap-6 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50">
@@ -1214,48 +1289,60 @@
             return html + `</div>`;
         }
 
+        // --- TASK MANAGER (ADVANCED) ---
+        function toggleTmSidebar() {
+            const sidebar = document.getElementById('tmSidebar');
+            const overlay = document.getElementById('tmOverlay');
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+            } else {
+                sidebar.classList.add('open');
+                overlay.classList.add('open');
+            }
+        }
+
+        function setListSetting(key, value) {
+            const listId = state.ui.tmView;
+            if(!tmListSettings[listId]) tmListSettings[listId] = { groupBy: 'priority', sortBy: 'priority' };
+            tmListSettings[listId][key] = value;
+            localStorage.setItem('hub_tm_settings', JSON.stringify(tmListSettings));
+            render();
+        }
+
         function renderAdvancedTaskManager() {
+            // Sidebar Navigation (Identico nei dati, nuovo nel look per somigliare alla reference)
             let navHtml = `
-                <div class="mb-6 space-y-1">
-                    <div class="tm-nav-item ${state.ui.tmView==='all'?'active':''}" onclick="state.ui.tmView='all'; render();"><i class="fas fa-inbox w-4 text-blue-500"></i> Tutti i task</div>
-                    <div class="tm-nav-item ${state.ui.tmView==='today'?'active':''}" onclick="state.ui.tmView='today'; render();"><i class="fas fa-calendar-day w-4 text-amber-500"></i> Oggi</div>
-                    <div class="tm-nav-item ${state.ui.tmView==='inbox'?'active':''}" onclick="state.ui.tmView='inbox'; render();"><i class="fas fa-archive w-4 text-slate-400"></i> Senza Contesto</div>
+                <div class="mb-6 space-y-1 mt-4 md:mt-0 px-2 md:px-0">
+                    <div class="tm-nav-item ${state.ui.tmView==='all'?'active':''}" onclick="state.ui.tmView='all'; toggleTmSidebar(); render();"><i class="fas fa-inbox w-4 text-blue-500"></i> Posta in arrivo</div>
+                    <div class="tm-nav-item ${state.ui.tmView==='today'?'active':''}" onclick="state.ui.tmView='today'; toggleTmSidebar(); render();"><i class="fas fa-calendar-day w-4 text-amber-500"></i> Oggi</div>
                 </div>
-                
-                <!-- BOTTONE MOBILE PER NASCONDERE/MOSTRARE I FILTRI -->
-                <button onclick="document.getElementById('tm-filters-list').classList.toggle('hidden')" class="md:hidden w-full p-2.5 mb-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold shadow-sm flex justify-center items-center gap-2">
-                    <i class="fas fa-folder-tree"></i> Sfoglia Progetti
-                </button>
-                
-                <!-- LISTA GERARCHICA (Nascosta di default su mobile) -->
-                <div id="tm-filters-list" class="hidden md:block">
-                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-2 mt-4 md:mt-0">Filtra per Progetto</div>
-                    <div class="space-y-1 max-h-[50vh] overflow-y-auto pr-2 pb-10">`;
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-4 md:px-2 border-t border-slate-200 dark:border-slate-700 pt-4">Le Tue Liste</div>
+                <div class="space-y-1 max-h-[60vh] overflow-y-auto px-2 md:px-0 pb-20">`;
             
-            // Generazione liste vincolate (resta invariata la logica di filtering rigoroso)
             state.data.spheres.sort((a,b)=>(a.order||0)-(b.order||0)).forEach(s => {
-                navHtml += `<div draggable="true" ondragstart="onDragStart(event, '${s.id}', 'sphere', 'tm_spheres')" ondrop="onDrop(event, '${s.id}', 'sphere', 'tm_spheres')" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" class="draggable mb-2">
-                            <div class="flex items-center group"><i class="fas fa-chevron-down text-[10px] text-slate-400 cursor-pointer w-5 text-center hover:text-slate-800 dark:hover:text-white transition" onclick="toggleNavFolder(event, 'nav_s_${s.id}')"></i><div class="tm-nav-item flex-1 text-sm ${state.ui.tmView==='s_'+s.id?'active':''}" onclick="state.ui.tmView='s_${s.id}'; render();" style="color: ${state.ui.tmView==='s_'+s.id ? s.color : ''}"><i class="fas ${s.icon} w-4" style="color:${s.color}"></i> ${s.name}</div></div>
-                            <div id="nav_s_${s.id}" class="pl-2 border-l-2 border-slate-200 dark:border-darkborder ml-2.5 mt-1 mb-2 space-y-1">`;
+                navHtml += `<div class="mb-2">
+                            <div class="flex items-center group"><i class="fas fa-chevron-down text-[10px] text-slate-400 cursor-pointer w-6 text-center hover:text-slate-800 dark:hover:text-white transition" onclick="toggleNavFolder(event, 'nav_s_${s.id}')"></i><div class="tm-nav-item flex-1 ${state.ui.tmView==='s_'+s.id?'active':''}" onclick="state.ui.tmView='s_${s.id}'; toggleTmSidebar(); render();" style="color: ${state.ui.tmView==='s_'+s.id ? s.color : ''}"><i class="fas ${s.icon} w-4" style="color:${s.color}"></i> ${s.name}</div></div>
+                            <div id="nav_s_${s.id}" class="pl-2 ml-3 mt-1 mb-2 space-y-1">`;
                 
                 getChildren('sphere', s.id).filter(p=>!p.archived).forEach(p => {
                     const subs = getChildren('project', p.id).filter(sp=>!sp.archived);
-                    navHtml += `<div draggable="true" ondragstart="onDragStart(event, '${p.id}', 'project', 'tm_proj_${s.id}')" ondrop="onDrop(event, '${p.id}', 'project', 'tm_proj_${s.id}')" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" class="draggable">`;
+                    navHtml += `<div>`;
                     if(subs.length > 0) {
-                        navHtml += `<div class="flex items-center group"><i class="fas fa-chevron-down text-[9px] text-slate-400 cursor-pointer w-5 text-center hover:text-slate-800 dark:hover:text-white transition" onclick="toggleNavFolder(event, 'nav_p_${p.id}')"></i><div class="tm-nav-item flex-1 text-xs ${state.ui.tmView==='p_'+p.id?'active':''}" onclick="state.ui.tmView='p_${p.id}'; render();"><i class="fas ${p.icon||'fa-folder'} w-4 text-slate-400"></i> ${p.name}</div></div>`;
-                        navHtml += `<div id="nav_p_${p.id}" class="pl-2 border-l-2 border-slate-200 dark:border-darkborder ml-2.5 mt-1 space-y-1">`;
+                        navHtml += `<div class="flex items-center group"><i class="fas fa-chevron-down text-[9px] text-slate-400 cursor-pointer w-6 text-center hover:text-slate-800 dark:hover:text-white transition" onclick="toggleNavFolder(event, 'nav_p_${p.id}')"></i><div class="tm-nav-item flex-1 text-sm ${state.ui.tmView==='p_'+p.id?'active':''}" onclick="state.ui.tmView='p_${p.id}'; toggleTmSidebar(); render();"><i class="fas ${p.icon||'fa-folder'} w-4 text-slate-400"></i> ${p.name}</div></div>`;
+                        navHtml += `<div id="nav_p_${p.id}" class="pl-2 ml-3 mt-1 space-y-1">`;
                         subs.forEach(sp => {
-                            navHtml += `<div draggable="true" ondragstart="onDragStart(event, '${sp.id}', 'subproject', 'tm_sub_${p.id}')" ondrop="onDrop(event, '${sp.id}', 'subproject', 'tm_sub_${p.id}')" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" class="draggable flex items-center ml-1"><div class="tm-nav-item flex-1 text-[11px] ${state.ui.tmView==='sp_'+sp.id?'active':''}" onclick="state.ui.tmView='sp_'+sp.id'; render();"><i class="fas ${sp.icon||'fa-file-alt'} w-4 text-slate-400"></i> ${sp.name}</div></div>`;
+                            navHtml += `<div class="flex items-center ml-1"><div class="tm-nav-item flex-1 text-xs ${state.ui.tmView==='sp_'+sp.id?'active':''}" onclick="state.ui.tmView='sp_'+sp.id'; toggleTmSidebar(); render();"><i class="fas ${sp.icon||'fa-file-alt'} w-4 text-slate-400"></i> ${sp.name}</div></div>`;
                         });
                         navHtml += `</div>`;
                     } else {
-                        navHtml += `<div class="flex items-center group"><i class="fas fa-circle text-[4px] text-slate-300 dark:text-slate-600 w-5 text-center"></i><div class="tm-nav-item flex-1 text-xs ${state.ui.tmView==='p_'+p.id?'active':''}" onclick="state.ui.tmView='p_${p.id}'; render();"><i class="fas ${p.icon||'fa-folder'} w-4 text-slate-400"></i> ${p.name}</div></div>`;
+                        navHtml += `<div class="flex items-center group"><div class="w-6"></div><div class="tm-nav-item flex-1 text-sm ${state.ui.tmView==='p_'+p.id?'active':''}" onclick="state.ui.tmView='p_${p.id}'; toggleTmSidebar(); render();"><i class="fas ${p.icon||'fa-folder'} w-4 text-slate-400"></i> ${p.name}</div></div>`;
                     }
                     navHtml += `</div>`;
                 });
                 navHtml += `</div></div>`;
             });
-            navHtml += `</div></div>`;
+            navHtml += `</div>`;
 
             let currentCtxId = "";
             if(state.ui.tmView.startsWith('s_')) currentCtxId = state.ui.tmView.replace('s_','');
@@ -1265,10 +1352,11 @@
             let ctxOpts = generateCtxOpts(currentCtxId);
             let tasks = [...state.data.tasks];
             const todayStr = new Date().toISOString().split('T')[0];
-            let listTitle = "Tutti i Task";
+            let listTitle = "Posta in arrivo";
 
             if(state.ui.tmView === 'today') { tasks = tasks.filter(t => t.dueDate === todayStr); listTitle = "Oggi"; }
             else if(state.ui.tmView === 'inbox') { tasks = tasks.filter(t => !t.contextId); listTitle = "Senza Contesto"; }
+            else if(state.ui.tmView === 'all') { listTitle = "Posta in arrivo"; }
             else if(state.ui.tmView.startsWith('s_')) { 
                 const id = state.ui.tmView.replace('s_',''); 
                 tasks = tasks.filter(t => {
@@ -1279,87 +1367,192 @@
                     if(sp) { let pp = getEntity('project', sp.projectId); if(pp && pp.sphereId === id) return true; }
                     return false;
                 }); 
-                let sObj = getEntity('sphere', id); 
-                listTitle = sObj ? sObj.name : 'Tutti i Task'; 
+                let sObj = getEntity('sphere', id); listTitle = sObj ? sObj.name : 'Lista'; 
             }
             else if(state.ui.tmView.startsWith('p_')) { 
                 const id = state.ui.tmView.replace('p_',''); 
                 tasks = tasks.filter(t => t.contextId === id || (getEntity('subproject', t.contextId)?.projectId === id)); 
-                let pObj = getEntity('project', id); 
-                listTitle = pObj ? pObj.name : 'Tutti i Task'; 
+                let pObj = getEntity('project', id); listTitle = pObj ? pObj.name : 'Lista'; 
             }
             else if(state.ui.tmView.startsWith('sp_')) { 
                 const id = state.ui.tmView.replace('sp_',''); 
                 tasks = tasks.filter(t => t.contextId === id); 
-                let spObj = getEntity('subproject', id); 
-                listTitle = spObj ? spObj.name : 'Tutti i Task'; 
+                let spObj = getEntity('subproject', id); listTitle = spObj ? spObj.name : 'Lista'; 
             }
 
+            // Impostazioni specifiche per questa lista
+            const listConf = tmListSettings[state.ui.tmView] || { groupBy: 'priority', sortBy: 'priority' };
+
+            // Filtraggio base
             const hasCompleted = tasks.some(t => t.completed);
             if(!state.ui.showCompletedTasks) tasks = tasks.filter(t => !t.completed);
-            tasks.sort((a,b) => a.completed - b.completed || b.priority - a.priority);
 
-            let mainHtml = `
-                <!-- BARRA INSERIMENTO TASK (Adattata al mobile) -->
-                <div class="flex flex-col lg:flex-row flex-wrap gap-2 mb-6 bg-slate-50 dark:bg-[#202938] p-3 rounded-xl border border-slate-200 dark:border-darkborder shadow-sm">
-                    <input type="text" id="gtIn" class="input-base flex-1 min-w-[200px] font-semibold text-sm py-1.5" placeholder="Nuovo task globale..." onkeypress="if(event.key==='Enter') addTaskFromGlobal()">
-                    <div class="flex flex-wrap gap-2 w-full lg:w-auto">
-                        <select id="gtCtx" class="input-base flex-1 min-w-[120px] text-xs font-semibold py-1.5">${ctxOpts}</select>
-                        <select id="gtPri" class="input-base w-20 text-xs font-semibold py-1.5"><option value="0">Prio 0</option><option value="1">Prio 1</option><option value="2">Prio 2</option><option value="3">Prio 3</option></select>
-                        <input type="date" id="gtDate" class="input-base flex-1 min-w-[100px] max-w-[130px] text-xs font-semibold py-1.5">
-                        <button onclick="addTaskFromGlobal()" class="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto px-4 py-1.5 rounded text-white font-bold shadow-sm transition"><i class="fas fa-plus"></i></button>
-                    </div>
-                </div>
-                <div class="flex-1 space-y-2 overflow-y-auto pr-2 pb-10">`;
-            
-            if(tasks.length === 0) mainHtml += `<div class="text-center py-16 text-slate-400"><i class="fas fa-check-circle text-4xl mb-4 opacity-20"></i><p class="font-bold text-sm">Tutto completato per ora!</p></div>`;
-            
-            tasks.forEach(t => {
-                const ctx = getContextInfo(t.contextId);
-                if (editingTaskId === t.id) {
-                    mainHtml += `
-                        <div class="panel p-3 flex flex-col gap-3 bg-slate-100 dark:bg-[#1a1c23] border border-slate-300 dark:border-slate-600 shadow-inner">
-                            <input type="text" id="etTitle_${t.id}" value="${t.title}" class="input-base font-bold text-sm py-1.5">
-                            <div class="flex flex-wrap items-center gap-3">
-                                <select id="etPri_${t.id}" class="input-base w-20 text-xs font-bold py-1"><option value="0" ${t.priority===0?'selected':''}>P0</option><option value="1" ${t.priority===1?'selected':''}>P1</option><option value="2" ${t.priority===2?'selected':''}>P2</option><option value="3" ${t.priority===3?'selected':''}>P3</option></select>
-                                <input type="date" id="etDate_${t.id}" value="${t.dueDate||''}" class="input-base w-32 text-xs font-bold py-1">
-                                <select id="etCtx_${t.id}" class="input-base lg:w-48 text-xs font-bold py-1">${generateCtxOpts(t.contextId)}</select>
-                                <div class="flex-1 flex justify-end gap-2">
-                                    <button onclick="editingTaskId=null; render()" class="text-xs font-bold px-3 py-1.5 rounded text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition">Annulla</button>
-                                    <button onclick="saveTaskEdit('${t.id}', 'etCtx_${t.id}')" class="text-xs font-bold px-4 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition">Salva</button>
-                                </div>
-                            </div>
-                        </div>`;
-                } else {
-                    mainHtml += `
-                        <div class="panel p-3 flex items-center gap-3 prio-${t.priority} bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm hover:shadow-md transition group border-l-4" style="border-left-color: ${t.priority>0 ? '' : 'transparent'}">
-                            <input type="checkbox" class="task-checkbox shrink-0 h-4.5 w-4.5 mt-0" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
-                            <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                <p class="${t.completed ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-100'} text-sm font-semibold word-wrap">${t.title}</p>
-                                <div class="flex items-center gap-3 shrink-0">
-                                    ${t.dueDate ? `<span class="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded"><i class="far fa-calendar mr-1"></i>${t.dueDate}</span>` : ''}
-                                    ${t.contextId ? `<span class="text-[9px] uppercase font-bold tracking-widest px-2 py-1 rounded border" style="color:${ctx.color}; border-color:${ctx.color}40; background-color:${ctx.color}10">${ctx.name}</span>` : ''}
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                                <button onclick="editTask('${t.id}')" class="text-slate-400 hover:text-blue-500 px-2 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition"><i class="fas fa-edit text-xs"></i></button>
-                                <button onclick="deleteTask('${t.id}')" class="text-slate-400 hover:text-red-500 px-2 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition"><i class="fas fa-trash-alt text-xs"></i></button>
-                            </div>
-                        </div>`;
-                }
+            // Ordinamento basato sulle preferenze della lista
+            tasks.sort((a,b) => {
+                if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                if(listConf.sortBy === 'priority') return b.priority - a.priority;
+                if(listConf.sortBy === 'date') return (a.dueDate || '9999-12-31').localeCompare(b.dueDate || '9999-12-31');
+                if(listConf.sortBy === 'name') return a.title.localeCompare(b.title);
+                return 0;
             });
 
-            if(hasCompleted) {
-                mainHtml += `<div class="mt-6 text-center border-t border-slate-200 dark:border-darkborder pt-4"><button onclick="state.ui.showCompletedTasks = !state.ui.showCompletedTasks; render();" class="text-[10px] font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition px-3 py-1.5 rounded border border-slate-200 dark:border-darkborder bg-white dark:bg-darkpanel shadow-sm">${state.ui.showCompletedTasks ? 'Nascondi completati' : 'Mostra completati'}</button></div>`;
+            // Logica Raggruppamento (Grouping)
+            let groups = {};
+            if(listConf.groupBy === 'priority') {
+                groups = { "Alta": [], "Media": [], "Bassa": [], "Nessuna": [] };
+                tasks.forEach(t => {
+                    if(t.priority === 3) groups["Alta"].push(t);
+                    else if(t.priority === 2) groups["Media"].push(t);
+                    else if(t.priority === 1) groups["Bassa"].push(t);
+                    else groups["Nessuna"].push(t);
+                });
+            } else if (listConf.groupBy === 'date') {
+                groups = { "Oggi": [], "Prossimamente": [], "Senza Data": [] };
+                tasks.forEach(t => {
+                    if(!t.dueDate) groups["Senza Data"].push(t);
+                    else if(t.dueDate === todayStr) groups["Oggi"].push(t);
+                    else groups["Prossimamente"].push(t);
+                });
+            } else if (listConf.groupBy === 'none') {
+                groups = { "": tasks }; // Un unico gruppo senza titolo
             }
-            mainHtml += `</div>`;
 
+            // Renderizzazione Task HTML
+            let tasksHtml = '';
+            if(tasks.length === 0) tasksHtml = `<div class="text-center py-16 text-slate-400"><i class="fas fa-clipboard-check text-5xl mb-4 opacity-20"></i><p class="font-bold text-sm">Tutto completato per ora!</p></div>`;
+            else {
+                for (const [groupName, groupTasks] of Object.entries(groups)) {
+                    if(groupTasks.length === 0) continue;
+                    
+                    let groupColor = "text-slate-500";
+                    if(groupName === "Alta") groupColor = "text-red-500";
+                    if(groupName === "Media") groupColor = "text-amber-500";
+                    if(groupName === "Bassa") groupColor = "text-blue-500";
+
+                    if(groupName !== "") {
+                        tasksHtml += `<div class="flex justify-between items-center px-1 mb-2 mt-4"><h3 class="text-xs font-bold ${groupColor}">${groupName}</h3><span class="text-[10px] text-slate-400 font-bold">${groupTasks.length}</span></div>`;
+                    }
+                    
+                    tasksHtml += `<div class="bg-white dark:bg-darkpanel rounded-2xl shadow-sm border border-slate-100 dark:border-darkborder overflow-hidden mb-4">`;
+                    
+                    groupTasks.forEach((t, idx) => {
+                        const ctx = getContextInfo(t.contextId);
+                        const isLast = idx === groupTasks.length - 1;
+                        const borderBottom = isLast ? '' : 'border-b border-slate-100 dark:border-slate-700/50';
+                        
+                        if (editingTaskId === t.id) {
+                            tasksHtml += `
+                                <div class="p-3 bg-slate-50 dark:bg-[#1a1c23] ${borderBottom} flex flex-col gap-3">
+                                    <input type="text" id="etTitle_${t.id}" value="${t.title}" class="input-base font-bold text-sm py-1.5">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <select id="etPri_${t.id}" class="input-base w-24 text-[10px] font-bold py-1.5"><option value="0" ${t.priority===0?'selected':''}>No Prio</option><option value="1" ${t.priority===1?'selected':''}>Bassa</option><option value="2" ${t.priority===2?'selected':''}>Media</option><option value="3" ${t.priority===3?'selected':''}>Alta</option></select>
+                                        <input type="date" id="etDate_${t.id}" value="${t.dueDate||''}" class="input-base w-28 text-[10px] font-bold py-1.5">
+                                        <select id="etCtx_${t.id}" class="input-base flex-1 min-w-[120px] text-[10px] font-bold py-1.5">${generateCtxOpts(t.contextId)}</select>
+                                    </div>
+                                    <div class="flex justify-end gap-2 mt-1">
+                                        <button onclick="editingTaskId=null; render()" class="text-[10px] font-bold px-3 py-1.5 rounded text-slate-500 hover:text-slate-800 transition">Annulla</button>
+                                        <button onclick="saveTaskEdit('${t.id}', 'etCtx_${t.id}')" class="text-[10px] font-bold px-4 py-1.5 rounded bg-blue-600 text-white shadow-sm transition">Salva</button>
+                                    </div>
+                                </div>`;
+                        } else {
+                            // Checkbox color in base alla priorità nello screen
+                            let cbClass = "";
+                            if(t.priority === 3) cbClass = "border-red-400 checked:bg-red-500 checked:border-red-500";
+                            else if(t.priority === 2) cbClass = "border-amber-400 checked:bg-amber-500 checked:border-amber-500";
+                            else if(t.priority === 1) cbClass = "border-blue-400 checked:bg-blue-500 checked:border-blue-500";
+
+                            tasksHtml += `
+                                <div class="p-3.5 flex items-start gap-3 ${borderBottom} group hover:bg-slate-50 dark:hover:bg-[#202938] transition">
+                                    <input type="checkbox" class="task-checkbox mt-0.5 shrink-0 ${cbClass}" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="${t.completed ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'} text-[15px] font-medium word-wrap leading-tight mb-1">${t.title}</p>
+                                        <div class="flex items-center gap-3">
+                                            ${t.dueDate ? `<span class="text-[10px] text-slate-400 font-bold"><i class="far fa-calendar mr-1"></i>${t.dueDate}</span>` : ''}
+                                            ${t.contextId && state.ui.tmView === 'all' ? `<span class="text-[9px] text-slate-400 font-bold truncate"><i class="fas fa-folder mr-1 opacity-50"></i>${ctx.name}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition">
+                                        <button onclick="editTask('${t.id}')" class="text-slate-300 hover:text-blue-500 p-1"><i class="fas fa-edit text-xs"></i></button>
+                                        <button onclick="deleteTask('${t.id}')" class="text-slate-300 hover:text-red-500 p-1"><i class="fas fa-trash-alt text-xs"></i></button>
+                                    </div>
+                                </div>`;
+                        }
+                    });
+                    tasksHtml += `</div>`;
+                }
+            }
+
+            if(hasCompleted) {
+                tasksHtml += `<div class="mt-8 text-center pb-4"><button onclick="state.ui.showCompletedTasks = !state.ui.showCompletedTasks; render();" class="text-[10px] font-bold text-slate-400 hover:text-slate-600 transition bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full shadow-sm">${state.ui.showCompletedTasks ? 'Nascondi completati' : 'Mostra completati'}</button></div>`;
+            }
+
+            // Costruzione layout finale Task Manager
             return `
-                <div class="panel p-0 w-full min-h-[85vh] flex flex-col md:flex-row overflow-hidden border border-slate-200 dark:border-darkborder shadow-xl">
-                    <div class="md:w-64 bg-slate-50 dark:bg-[#13151a] border-b md:border-b-0 md:border-r border-slate-200 dark:border-darkborder p-4 md:p-5 shrink-0">${navHtml}</div>
-                    <div class="flex-1 p-4 md:p-6 flex flex-col bg-white dark:bg-darkpanel">
-                        <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6 pb-3 border-b border-slate-200 dark:border-darkborder">${listTitle}</h2>
-                        ${mainHtml}
+                <div class="fixed inset-0 top-[60px] md:top-auto md:relative flex overflow-hidden bg-slate-50 dark:bg-darkbg md:rounded-xl md:border border-slate-200 dark:border-darkborder md:shadow-xl md:min-h-[85vh]">
+                    
+                    <!-- SIDEBAR -->
+                    <div id="tmSidebar" class="tm-sidebar-mobile bg-[#eff4f9] dark:bg-[#13151a] md:border-r border-slate-200 dark:border-darkborder md:p-4 shrink-0 overflow-y-auto">
+                        <!-- Intestazione User Reference 2 -->
+                        <div class="flex items-center gap-3 p-4 mb-2 md:hidden">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg"><i class="fas fa-user-circle"></i></div>
+                            <div class="font-bold text-slate-800 dark:text-white flex-1">Menu Liste</div>
+                            <button onclick="toggleTmSidebar()" class="p-2 text-slate-400"><i class="fas fa-times text-lg"></i></button>
+                        </div>
+                        ${navHtml}
+                    </div>
+
+                    <!-- MAIN AREA -->
+                    <div class="flex-1 flex flex-col bg-[#fdfaf5] dark:bg-darkpanel overflow-hidden w-full relative">
+                        
+                        <!-- HEADER MOBILE (Hamburger & Titolo) -->
+                        <div class="flex items-center justify-between p-4 md:px-8 md:pt-8 bg-transparent z-10 shrink-0">
+                            <div class="flex items-center gap-3">
+                                <button onclick="toggleTmSidebar()" class="md:hidden text-slate-600 dark:text-slate-300 text-xl p-1"><i class="fas fa-bars"></i></button>
+                                <h2 class="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center"><i class="far fa-clipboard text-slate-400 mr-2"></i> ${listTitle}</h2>
+                            </div>
+                            
+                            <!-- MENU IMPOSTAZIONI LISTA (Raggruppa/Ordina) -->
+                            <div class="relative group">
+                                <button class="text-slate-500 hover:text-slate-800 p-2 text-lg"><i class="fas fa-ellipsis-v"></i></button>
+                                <div class="absolute right-0 mt-1 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-100 dark:border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-2">
+                                    <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-2 mb-1">Raggruppa per</div>
+                                    <select class="input-base text-xs font-bold mb-3" onchange="setListSetting('groupBy', this.value)">
+                                        <option value="none" ${listConf.groupBy==='none'?'selected':''}>Nessuno</option>
+                                        <option value="priority" ${listConf.groupBy==='priority'?'selected':''}>Priorità</option>
+                                        <option value="date" ${listConf.groupBy==='date'?'selected':''}>Data</option>
+                                    </select>
+                                    <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-2 mb-1">Ordina per</div>
+                                    <select class="input-base text-xs font-bold" onchange="setListSetting('sortBy', this.value)">
+                                        <option value="priority" ${listConf.sortBy==='priority'?'selected':''}>Priorità</option>
+                                        <option value="date" ${listConf.sortBy==='date'?'selected':''}>Data</option>
+                                        <option value="name" ${listConf.sortBy==='name'?'selected':''}>Nome</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- LISTA TASKS SCROLLABILE -->
+                        <div class="flex-1 overflow-y-auto px-4 md:px-8 pb-24">
+                            ${tasksHtml}
+                        </div>
+
+                        <!-- FLOATING ACTION BUTTON (Mobile Insert) -->
+                        <div class="absolute bottom-6 right-6 md:hidden">
+                            <button onclick="document.getElementById('quickAddBar').classList.toggle('hidden'); document.getElementById('gtIn').focus();" class="w-14 h-14 bg-amber-500 hover:bg-amber-600 rounded-full text-white text-2xl shadow-lg flex items-center justify-center transition-transform hover:scale-105 z-20">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+
+                        <!-- BARRA INSERIMENTO RAPIDO -->
+                        <div id="quickAddBar" class="hidden md:flex absolute md:relative bottom-0 left-0 right-0 bg-white dark:bg-slate-800 p-3 md:p-6 border-t border-slate-200 dark:border-slate-700 flex-col md:flex-row gap-2 z-10 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
+                            <input type="text" id="gtIn" class="input-base flex-1 min-w-[200px] font-semibold text-sm py-2" placeholder="Scrivi nuovo task..." onkeypress="if(event.key==='Enter') addTaskFromGlobal()">
+                            <div class="flex gap-2">
+                                <select id="gtPri" class="input-base w-24 text-[10px] font-bold py-2"><option value="0">No Prio</option><option value="1">Bassa</option><option value="2">Media</option><option value="3">Alta</option></select>
+                                <input type="date" id="gtDate" class="input-base w-[100px] text-[10px] font-bold py-2">
+                                <select id="gtCtx" class="input-base hidden md:block w-32 text-[10px] font-bold py-2">${ctxOpts}</select>
+                                <button onclick="addTaskFromGlobal()" class="bg-amber-500 hover:bg-amber-600 px-4 py-2 rounded-lg text-white font-bold shadow transition"><i class="fas fa-arrow-up"></i></button>
+                            </div>
+                        </div>
                     </div>
                 </div>`;
         }
@@ -1371,9 +1564,15 @@
             AppData.triggerSave(); render();
         }
         function addTaskFromGlobal() {
-            const tIn = document.getElementById('gtIn'), cIn = document.getElementById('gtCtx'), pIn = document.getElementById('gtPri'), dIn = document.getElementById('gtDate');
+            const tIn = document.getElementById('gtIn'), pIn = document.getElementById('gtPri'), dIn = document.getElementById('gtDate');
+            const cIn = document.getElementById('gtCtx'); // Potrebbe essere undefined su mobile se nascosto
+            const ctxValue = cIn ? cIn.value : (state.ui.tmView.startsWith('p_') || state.ui.tmView.startsWith('sp_') || state.ui.tmView.startsWith('s_') ? state.ui.tmView.replace(/^[ps_]+/, '') : '');
+            
             if(!tIn.value.trim()) return;
-            state.data.tasks.push({ id: 't_'+Date.now(), title: tIn.value.trim(), completed: false, priority: parseInt(pIn.value), dueDate: dIn.value, contextId: cIn.value });
+            state.data.tasks.push({ id: 't_'+Date.now(), title: tIn.value.trim(), completed: false, priority: parseInt(pIn.value), dueDate: dIn.value, contextId: ctxValue });
+            
+            tIn.value = ''; // Pulisci input dopo l'invio
+            if(window.innerWidth < 768) document.getElementById('quickAddBar').classList.add('hidden'); // Chiudi barra su mobile
             AppData.triggerSave(); render();
         }
         function toggleTask(id) { const t = state.data.tasks.find(x => x.id === id); if(t) t.completed = !t.completed; AppData.triggerSave(); render(); }
