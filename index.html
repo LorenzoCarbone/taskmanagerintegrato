@@ -250,7 +250,8 @@
                 
                 try {
                     const res = await fetch(`https://api.github.com/gists/${this.gistId}`, {
-                        headers: { 'Authorization': `Bearer ${this.token}`, 'Cache-Control': 'no-cache' }
+                        headers: { 'Authorization': `Bearer ${this.token}` },
+                        cache: 'no-store'
                     });
                     if (!res.ok) throw new Error("Errore API GitHub");
                     const gistData = await res.json();
@@ -376,7 +377,13 @@
         let archiveQuill = null;
         let dragSource = null;
 
-        function forceSync() { AppData.pushToCloud(); }
+        function forceSync() { 
+            if(confirm("Vuoi SCARICARE i dati dal cloud (OK) o FORZARE il caricamento dei dati locali sul cloud (Annulla)?")) {
+                AppData.initialize(); 
+            } else {
+                AppData.pushToCloud(); 
+            }
+        }
 
         function mapColor(c) {
             if(!c) return '#94a3b8';
