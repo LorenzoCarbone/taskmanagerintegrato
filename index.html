@@ -33,11 +33,11 @@
         .panel { border-radius: 12px; overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
         .panel-hover:hover { transform: translateY(-2px); cursor: pointer; }
         
-        /* Checkbox circolare per tasks in stile reference */
-        .task-checkbox { appearance: none; min-width: 1.25rem; width: 1.25rem; height: 1.25rem; border: 2px solid; border-radius: 50%; cursor: pointer; position: relative; transition: all 0.2s; background: transparent; }
+        /* Checkbox circolare per tasks in stile reference (Fixato Ovale) */
+        .task-checkbox { appearance: none; min-width: 1.25rem; width: 1.25rem; min-height: 1.25rem; height: 1.25rem; border: 2px solid; border-radius: 50%; cursor: pointer; position: relative; transition: all 0.2s; background: transparent; }
         .dark .task-checkbox { border-color: #64748b; }
         .task-checkbox:checked { background-color: #f59e0b !important; border-color: #f59e0b !important; }
-        .task-checkbox:checked::after { content: '✔'; position: absolute; color: white; font-size: 10px; top: 0px; left: 4px; font-weight: bold; }
+        .task-checkbox:checked::after { content: '✔'; position: absolute; color: white; font-size: 10px; top: -1px; left: 3px; font-weight: bold; }
         
         .draggable { cursor: grab; }
         .draggable:active { cursor: grabbing; }
@@ -76,10 +76,10 @@
         .dark .glass-header { background: rgba(30, 41, 59, 0.8); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .glass-header { background: rgba(255, 255, 255, 0.8); border-bottom: 1px solid rgba(0,0,0,0.05); }
         
-        /* --- SIDEBAR MOBILE TASK MANAGER --- */
+        /* --- SIDEBAR MOBILE TASK MANAGER (Fixato Blur) --- */
         .tm-sidebar-mobile { position: fixed; top: 0; left: 0; bottom: 0; width: 85%; max-width: 320px; z-index: 50; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 4px 0 15px rgba(0,0,0,0.1); }
         .tm-sidebar-mobile.open { transform: translateX(0); }
-        .tm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
+        .tm-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .tm-overlay.open { opacity: 1; pointer-events: auto; }
 
         @media (min-width: 768px) {
@@ -87,9 +87,18 @@
             .tm-overlay { display: none; }
         }
 
-        /* --- MODALE APPUNTI MOBILE A TUTTO SCHERMO --- */
+        /* --- MODALE APPUNTI MOBILE --- */
         #mobileNotesModal { z-index: 60; }
         .mobile-ql-container { height: calc(100vh - 140px); overflow-y: auto; }
+        .ql-toolbar { display: flex; flex-wrap: wrap; }
+        .ql-editor { min-height: 120px; max-height: 35vh; overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
+        @media (min-width: 768px) { .ql-editor { max-height: 60vh; } }
+        
+        /* --- ANIMAZIONI QUICK ADD MOBILE --- */
+        @keyframes slideUpAdd { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .animate-slide-up-add { animation: slideUpAdd 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards; }
+        @keyframes fadeInAdd { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fade-in-add { animation: fadeInAdd 0.25s ease-out forwards; }
     </style>
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-darkbg text-slate-800 dark:text-slate-200 flex flex-col relative pb-10">
@@ -112,6 +121,23 @@
     <div id="tmOverlay" class="tm-overlay" onclick="toggleTmSidebar()"></div>
 
     <main id="app-content" class="w-full max-w-[1400px] mx-auto flex-1 px-4 md:px-8"></main>
+
+    <!-- MOBILE QUICK ADD MODAL (Task Manager) -->
+    <div id="mobileQuickAddModal" class="fixed inset-0 z-[100] hidden flex-col justify-end">
+        <div class="absolute inset-0 bg-slate-900/50 animate-fade-in-add" onclick="closeMobileQuickAdd()"></div>
+        <div class="relative bg-white dark:bg-darkpanel w-full rounded-t-3xl p-5 shadow-2xl flex flex-col gap-4 animate-slide-up-add">
+            <div class="flex justify-between items-center mb-1">
+                <h3 class="font-bold text-slate-800 dark:text-white text-lg">Nuova Task</h3>
+                <button onclick="closeMobileQuickAdd()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><i class="fas fa-times"></i></button>
+            </div>
+            <input type="text" id="gtInMobile" class="input-base text-base py-3.5 font-semibold bg-slate-50 dark:bg-slate-800/50 border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-darkbg transition" placeholder="Cosa devi fare?" onkeypress="if(event.key==='Enter') addTaskFromGlobalMobile()">
+            <div class="flex gap-3">
+                 <select id="gtPriMobile" class="input-base text-xs font-bold py-3.5 flex-1 bg-slate-50 dark:bg-slate-800/50 border-transparent"><option value="0">Nessuna Prio</option><option value="1">Bassa Prio</option><option value="2">Media Prio</option><option value="3">Alta Prio</option></select>
+                 <input type="date" id="gtDateMobile" class="input-base text-xs font-bold py-3.5 flex-1 bg-slate-50 dark:bg-slate-800/50 border-transparent">
+            </div>
+            <button onclick="addTaskFromGlobalMobile()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-600/30 transition mt-1"><i class="fas fa-arrow-up mr-2"></i> Aggiungi</button>
+        </div>
+    </div>
 
     <!-- Modale Appunti Fullscreen (Mobile) -->
     <div id="mobileNotesModal" class="fixed inset-0 bg-slate-50 dark:bg-darkbg hidden flex-col z-[60]">
@@ -458,7 +484,7 @@
                 btn.innerHTML = '<i class="fas fa-chevron-up mr-1"></i> Nascondi Appunti';
             } else {
                 container.classList.add('hidden'); container.classList.remove('flex');
-                btn.innerHTML = '<i class="fas fa-chevron-down mr-1"></i> Mostra Appunti';
+                btn.innerHTML = '<i class="fas fa-chevron-down mr-1 hidden md:inline"></i> Mostra Appunti';
             }
         }
 
@@ -480,7 +506,7 @@
         function closeMobileNotes() { 
             document.getElementById('mobileNotesModal').classList.add('hidden'); 
             document.getElementById('mobileNotesModal').classList.remove('flex');
-            render(); // Ricarica la vista sottostante per aggiornare eventuali note desktop
+            render(); 
         }
         function saveMobileNotes() {
             if(!mobileNotesContext.id) return;
@@ -492,9 +518,31 @@
         }
         function archiveMobileNotes() {
             if(!mobileNotesContext.id) return;
-            saveMobileNotes(); // Salva prima
+            saveMobileNotes(); 
             archiveNotes(mobileNotesContext.type, mobileNotesContext.id);
             closeMobileNotes();
+        }
+
+        // FUNZIONI QUICK ADD MOBILE
+        function openMobileQuickAdd() {
+            document.getElementById('mobileQuickAddModal').classList.remove('hidden');
+            document.getElementById('mobileQuickAddModal').classList.add('flex');
+            setTimeout(() => document.getElementById('gtInMobile').focus(), 100);
+        }
+        function closeMobileQuickAdd() {
+            document.getElementById('mobileQuickAddModal').classList.add('hidden');
+            document.getElementById('mobileQuickAddModal').classList.remove('flex');
+        }
+        function addTaskFromGlobalMobile() {
+            const tIn = document.getElementById('gtInMobile'), pIn = document.getElementById('gtPriMobile'), dIn = document.getElementById('gtDateMobile');
+            const ctxValue = state.ui.tmView.startsWith('p_') || state.ui.tmView.startsWith('sp_') || state.ui.tmView.startsWith('s_') ? state.ui.tmView.replace(/^[ps_]+/, '') : '';
+            
+            if(!tIn.value.trim()) return;
+            state.data.tasks.push({ id: 't_'+Date.now(), title: tIn.value.trim(), completed: false, priority: parseInt(pIn.value), dueDate: dIn.value, contextId: ctxValue });
+            
+            tIn.value = ''; dIn.value = ''; pIn.value = '0';
+            closeMobileQuickAdd();
+            AppData.triggerSave(); render();
         }
 
         function toggleArchivedView() { state.ui.showArchived = !state.ui.showArchived; render(); }
@@ -657,7 +705,6 @@
             state.path = { sphereId: sId, projId: pId, subprojId: spId }; 
             editingTaskId = null; 
             
-            // Nascondi header globale nel TM su mobile per pulizia
             const headers = document.querySelectorAll('.hidden-in-tm');
             headers.forEach(h => {
                 if(view === 'global_tasks') h.classList.add('hidden', 'md:flex');
@@ -1266,16 +1313,16 @@
                         </div>`;
                 } else {
                     html += `
-                        <div class="panel p-2.5 flex items-center gap-2.5 prio-${t.priority} bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder rounded-md hover:shadow-sm transition group border-l-4" style="border-left-color: ${t.priority>0 ? '' : 'transparent'}">
-                            <input type="checkbox" class="task-checkbox shrink-0 h-4 w-4 mt-0" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
-                            <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                <p class="${t.completed ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-200'} text-sm font-semibold word-wrap leading-tight">${t.title}</p>
+                        <div class="panel p-2 flex items-center gap-2.5 prio-${t.priority} bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder rounded-md hover:shadow-sm transition group border-l-4" style="border-left-color: ${t.priority>0 ? '' : 'transparent'}">
+                            <input type="checkbox" class="task-checkbox shrink-0 mt-0" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
+                            <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                                <p class="${t.completed ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-200'} text-[13px] font-semibold word-wrap leading-tight">${t.title}</p>
                                 <div class="flex items-center gap-2 shrink-0">
                                     ${showGlobal && t.contextId ? `<span class="text-[9px] uppercase font-bold tracking-wider truncate px-1.5 py-0.5 rounded border" style="color:${ctx.color}; border-color:${ctx.color}40; background-color:${ctx.color}10">${ctx.name}</span>` : ''}
                                     ${t.dueDate ? `<span class="text-[9px] text-slate-500 dark:text-slate-400 font-bold"><i class="far fa-calendar mr-1"></i>${t.dueDate}</span>` : ''}
                                 </div>
                             </div>
-                            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                            <div class="flex items-center opacity-0 group-hover:opacity-100 transition">
                                 <button class="text-slate-400 hover:text-blue-500 text-[10px] p-1.5" onclick="editTask('${t.id}')"><i class="fas fa-edit"></i></button>
                                 <button class="text-slate-400 hover:text-red-500 text-[10px] p-1.5" onclick="deleteTask('${t.id}')"><i class="fas fa-trash"></i></button>
                             </div>
@@ -1311,7 +1358,7 @@
         }
 
         function renderAdvancedTaskManager() {
-            // Sidebar Navigation (Identico nei dati, nuovo nel look per somigliare alla reference)
+            // Sidebar Navigation
             let navHtml = `
                 <div class="mb-6 space-y-1 mt-4 md:mt-0 px-2 md:px-0">
                     <div class="tm-nav-item ${state.ui.tmView==='all'?'active':''}" onclick="state.ui.tmView='all'; toggleTmSidebar(); render();"><i class="fas fa-inbox w-4 text-blue-500"></i> Posta in arrivo</div>
@@ -1380,14 +1427,11 @@
                 let spObj = getEntity('subproject', id); listTitle = spObj ? spObj.name : 'Lista'; 
             }
 
-            // Impostazioni specifiche per questa lista
             const listConf = tmListSettings[state.ui.tmView] || { groupBy: 'priority', sortBy: 'priority' };
 
-            // Filtraggio base
             const hasCompleted = tasks.some(t => t.completed);
             if(!state.ui.showCompletedTasks) tasks = tasks.filter(t => !t.completed);
 
-            // Ordinamento basato sulle preferenze della lista
             tasks.sort((a,b) => {
                 if (a.completed !== b.completed) return a.completed ? 1 : -1;
                 if(listConf.sortBy === 'priority') return b.priority - a.priority;
@@ -1396,7 +1440,6 @@
                 return 0;
             });
 
-            // Logica Raggruppamento (Grouping)
             let groups = {};
             if(listConf.groupBy === 'priority') {
                 groups = { "Alta": [], "Media": [], "Bassa": [], "Nessuna": [] };
@@ -1414,10 +1457,9 @@
                     else groups["Prossimamente"].push(t);
                 });
             } else if (listConf.groupBy === 'none') {
-                groups = { "": tasks }; // Un unico gruppo senza titolo
+                groups = { "": tasks }; 
             }
 
-            // Renderizzazione Task HTML
             let tasksHtml = '';
             if(tasks.length === 0) tasksHtml = `<div class="text-center py-16 text-slate-400"><i class="fas fa-clipboard-check text-5xl mb-4 opacity-20"></i><p class="font-bold text-sm">Tutto completato per ora!</p></div>`;
             else {
@@ -1455,25 +1497,26 @@
                                     </div>
                                 </div>`;
                         } else {
-                            // Checkbox color in base alla priorità nello screen
                             let cbClass = "";
                             if(t.priority === 3) cbClass = "border-red-400 checked:bg-red-500 checked:border-red-500";
                             else if(t.priority === 2) cbClass = "border-amber-400 checked:bg-amber-500 checked:border-amber-500";
                             else if(t.priority === 1) cbClass = "border-blue-400 checked:bg-blue-500 checked:border-blue-500";
 
+                            // Task Row Ultra Compatta
                             tasksHtml += `
-                                <div class="p-3.5 flex items-start gap-3 ${borderBottom} group hover:bg-slate-50 dark:hover:bg-[#202938] transition">
-                                    <input type="checkbox" class="task-checkbox mt-0.5 shrink-0 ${cbClass}" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
-                                    <div class="flex-1 min-w-0">
-                                        <p class="${t.completed ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'} text-[15px] font-medium word-wrap leading-tight mb-1">${t.title}</p>
-                                        <div class="flex items-center gap-3">
+                                <div class="p-2 md:p-3 flex items-center gap-3 ${borderBottom} group hover:bg-slate-50 dark:hover:bg-[#202938] transition">
+                                    <input type="checkbox" class="task-checkbox shrink-0 ${cbClass}" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
+                                    <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                                        <p class="${t.completed ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'} text-[14px] font-medium word-wrap leading-tight">${t.title}</p>
+                                        ${(t.dueDate || (t.contextId && state.ui.tmView === 'all')) ? `
+                                        <div class="flex items-center gap-2 shrink-0">
                                             ${t.dueDate ? `<span class="text-[10px] text-slate-400 font-bold"><i class="far fa-calendar mr-1"></i>${t.dueDate}</span>` : ''}
                                             ${t.contextId && state.ui.tmView === 'all' ? `<span class="text-[9px] text-slate-400 font-bold truncate"><i class="fas fa-folder mr-1 opacity-50"></i>${ctx.name}</span>` : ''}
-                                        </div>
+                                        </div>` : ''}
                                     </div>
-                                    <div class="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition">
-                                        <button onclick="editTask('${t.id}')" class="text-slate-300 hover:text-blue-500 p-1"><i class="fas fa-edit text-xs"></i></button>
-                                        <button onclick="deleteTask('${t.id}')" class="text-slate-300 hover:text-red-500 p-1"><i class="fas fa-trash-alt text-xs"></i></button>
+                                    <div class="flex items-center opacity-0 group-hover:opacity-100 transition">
+                                        <button onclick="editTask('${t.id}')" class="text-slate-300 hover:text-blue-500 p-1.5"><i class="fas fa-edit text-xs"></i></button>
+                                        <button onclick="deleteTask('${t.id}')" class="text-slate-300 hover:text-red-500 p-1.5"><i class="fas fa-trash-alt text-xs"></i></button>
                                     </div>
                                 </div>`;
                         }
@@ -1486,13 +1529,11 @@
                 tasksHtml += `<div class="mt-8 text-center pb-4"><button onclick="state.ui.showCompletedTasks = !state.ui.showCompletedTasks; render();" class="text-[10px] font-bold text-slate-400 hover:text-slate-600 transition bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full shadow-sm">${state.ui.showCompletedTasks ? 'Nascondi completati' : 'Mostra completati'}</button></div>`;
             }
 
-            // Costruzione layout finale Task Manager
             return `
                 <div class="fixed inset-0 top-[60px] md:top-auto md:relative flex overflow-hidden bg-slate-50 dark:bg-darkbg md:rounded-xl md:border border-slate-200 dark:border-darkborder md:shadow-xl md:min-h-[85vh]">
                     
                     <!-- SIDEBAR -->
                     <div id="tmSidebar" class="tm-sidebar-mobile bg-[#eff4f9] dark:bg-[#13151a] md:border-r border-slate-200 dark:border-darkborder md:p-4 shrink-0 overflow-y-auto">
-                        <!-- Intestazione User Reference 2 -->
                         <div class="flex items-center gap-3 p-4 mb-2 md:hidden">
                             <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg"><i class="fas fa-user-circle"></i></div>
                             <div class="font-bold text-slate-800 dark:text-white flex-1">Menu Liste</div>
@@ -1504,14 +1545,13 @@
                     <!-- MAIN AREA -->
                     <div class="flex-1 flex flex-col bg-[#fdfaf5] dark:bg-darkpanel overflow-hidden w-full relative">
                         
-                        <!-- HEADER MOBILE (Hamburger & Titolo) -->
+                        <!-- HEADER MOBILE -->
                         <div class="flex items-center justify-between p-4 md:px-8 md:pt-8 bg-transparent z-10 shrink-0">
                             <div class="flex items-center gap-3">
                                 <button onclick="toggleTmSidebar()" class="md:hidden text-slate-600 dark:text-slate-300 text-xl p-1"><i class="fas fa-bars"></i></button>
                                 <h2 class="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center"><i class="far fa-clipboard text-slate-400 mr-2"></i> ${listTitle}</h2>
                             </div>
                             
-                            <!-- MENU IMPOSTAZIONI LISTA (Raggruppa/Ordina) -->
                             <div class="relative group">
                                 <button class="text-slate-500 hover:text-slate-800 p-2 text-lg"><i class="fas fa-ellipsis-v"></i></button>
                                 <div class="absolute right-0 mt-1 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-100 dark:border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-2">
@@ -1530,6 +1570,15 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- BARRA INSERIMENTO TASK (Desktop - Nascosta su Mobile) -->
+                        <div class="hidden md:flex mx-8 mb-4 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 flex-row gap-2 shadow-sm">
+                            <input type="text" id="gtIn" class="input-base flex-1 min-w-[200px] font-semibold text-sm py-2" placeholder="Scrivi nuovo task..." onkeypress="if(event.key==='Enter') addTaskFromGlobal()">
+                            <select id="gtCtx" class="input-base w-32 text-xs font-bold py-2">${ctxOpts}</select>
+                            <select id="gtPri" class="input-base w-24 text-xs font-bold py-2"><option value="0">No Prio</option><option value="1">Bassa</option><option value="2">Media</option><option value="3">Alta</option></select>
+                            <input type="date" id="gtDate" class="input-base w-[120px] text-xs font-bold py-2">
+                            <button onclick="addTaskFromGlobal()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white font-bold shadow transition"><i class="fas fa-plus"></i></button>
+                        </div>
 
                         <!-- LISTA TASKS SCROLLABILE -->
                         <div class="flex-1 overflow-y-auto px-4 md:px-8 pb-24">
@@ -1537,21 +1586,10 @@
                         </div>
 
                         <!-- FLOATING ACTION BUTTON (Mobile Insert) -->
-                        <div class="absolute bottom-6 right-6 md:hidden">
-                            <button onclick="document.getElementById('quickAddBar').classList.toggle('hidden'); document.getElementById('gtIn').focus();" class="w-14 h-14 bg-amber-500 hover:bg-amber-600 rounded-full text-white text-2xl shadow-lg flex items-center justify-center transition-transform hover:scale-105 z-20">
+                        <div class="fixed bottom-6 right-6 md:hidden z-[35]">
+                            <button onclick="openMobileQuickAdd()" class="w-14 h-14 bg-blue-600 hover:bg-blue-700 rounded-full text-white text-2xl shadow-[0_4px_15px_rgba(37,99,235,0.4)] flex items-center justify-center transition-transform active:scale-95">
                                 <i class="fas fa-plus"></i>
                             </button>
-                        </div>
-
-                        <!-- BARRA INSERIMENTO RAPIDO -->
-                        <div id="quickAddBar" class="hidden md:flex absolute md:relative bottom-0 left-0 right-0 bg-white dark:bg-slate-800 p-3 md:p-6 border-t border-slate-200 dark:border-slate-700 flex-col md:flex-row gap-2 z-10 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
-                            <input type="text" id="gtIn" class="input-base flex-1 min-w-[200px] font-semibold text-sm py-2" placeholder="Scrivi nuovo task..." onkeypress="if(event.key==='Enter') addTaskFromGlobal()">
-                            <div class="flex gap-2">
-                                <select id="gtPri" class="input-base w-24 text-[10px] font-bold py-2"><option value="0">No Prio</option><option value="1">Bassa</option><option value="2">Media</option><option value="3">Alta</option></select>
-                                <input type="date" id="gtDate" class="input-base w-[100px] text-[10px] font-bold py-2">
-                                <select id="gtCtx" class="input-base hidden md:block w-32 text-[10px] font-bold py-2">${ctxOpts}</select>
-                                <button onclick="addTaskFromGlobal()" class="bg-amber-500 hover:bg-amber-600 px-4 py-2 rounded-lg text-white font-bold shadow transition"><i class="fas fa-arrow-up"></i></button>
-                            </div>
                         </div>
                     </div>
                 </div>`;
@@ -1564,15 +1602,12 @@
             AppData.triggerSave(); render();
         }
         function addTaskFromGlobal() {
-            const tIn = document.getElementById('gtIn'), pIn = document.getElementById('gtPri'), dIn = document.getElementById('gtDate');
-            const cIn = document.getElementById('gtCtx'); // Potrebbe essere undefined su mobile se nascosto
+            const tIn = document.getElementById('gtIn'), pIn = document.getElementById('gtPri'), dIn = document.getElementById('gtDate'), cIn = document.getElementById('gtCtx'); 
             const ctxValue = cIn ? cIn.value : (state.ui.tmView.startsWith('p_') || state.ui.tmView.startsWith('sp_') || state.ui.tmView.startsWith('s_') ? state.ui.tmView.replace(/^[ps_]+/, '') : '');
             
             if(!tIn.value.trim()) return;
             state.data.tasks.push({ id: 't_'+Date.now(), title: tIn.value.trim(), completed: false, priority: parseInt(pIn.value), dueDate: dIn.value, contextId: ctxValue });
             
-            tIn.value = ''; // Pulisci input dopo l'invio
-            if(window.innerWidth < 768) document.getElementById('quickAddBar').classList.add('hidden'); // Chiudi barra su mobile
             AppData.triggerSave(); render();
         }
         function toggleTask(id) { const t = state.data.tasks.find(x => x.id === id); if(t) t.completed = !t.completed; AppData.triggerSave(); render(); }
