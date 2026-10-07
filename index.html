@@ -72,6 +72,21 @@
         .glass-header { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
         .dark .glass-header { background: rgba(30, 41, 59, 0.8); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .glass-header { background: rgba(255, 255, 255, 0.8); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        
+        /* --- OTTIMIZZAZIONI MOBILE APPUNTI --- */
+        .ql-toolbar {
+            display: flex;
+            flex-wrap: wrap; /* Permette ai tasti di andare a capo su schermi stretti */
+        }
+        .ql-editor {
+            min-height: 120px;
+            max-height: 35vh; /* Su mobile l'editor occupa max 1/3 dello schermo, permettendoti di scrollare per vedere i progetti sotto */
+            overflow-y: auto !important; /* Abilita lo scroll interno agli appunti */
+            -webkit-overflow-scrolling: touch;
+        }
+        @media (min-width: 768px) {
+            .ql-editor { max-height: 60vh; /* Su PC ritorna ad essere bello grande */ }
+        }
     </style>
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-darkbg text-slate-800 dark:text-slate-200 flex flex-col relative pb-10">
@@ -1206,9 +1221,18 @@
                     <div class="tm-nav-item ${state.ui.tmView==='today'?'active':''}" onclick="state.ui.tmView='today'; render();"><i class="fas fa-calendar-day w-4 text-amber-500"></i> Oggi</div>
                     <div class="tm-nav-item ${state.ui.tmView==='inbox'?'active':''}" onclick="state.ui.tmView='inbox'; render();"><i class="fas fa-archive w-4 text-slate-400"></i> Senza Contesto</div>
                 </div>
-                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-2">Filtra per Progetto</div>
-                <div class="space-y-1 max-h-[50vh] overflow-y-auto pr-2 pb-10">`;
+                
+                <!-- BOTTONE MOBILE PER NASCONDERE/MOSTRARE I FILTRI -->
+                <button onclick="document.getElementById('tm-filters-list').classList.toggle('hidden')" class="md:hidden w-full p-2.5 mb-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold shadow-sm flex justify-center items-center gap-2">
+                    <i class="fas fa-folder-tree"></i> Sfoglia Progetti
+                </button>
+                
+                <!-- LISTA GERARCHICA (Nascosta di default su mobile) -->
+                <div id="tm-filters-list" class="hidden md:block">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-2 mt-4 md:mt-0">Filtra per Progetto</div>
+                    <div class="space-y-1 max-h-[50vh] overflow-y-auto pr-2 pb-10">`;
             
+            // Generazione liste vincolate (resta invariata la logica di filtering rigoroso)
             state.data.spheres.sort((a,b)=>(a.order||0)-(b.order||0)).forEach(s => {
                 navHtml += `<div draggable="true" ondragstart="onDragStart(event, '${s.id}', 'sphere', 'tm_spheres')" ondrop="onDrop(event, '${s.id}', 'sphere', 'tm_spheres')" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" class="draggable mb-2">
                             <div class="flex items-center group"><i class="fas fa-chevron-down text-[10px] text-slate-400 cursor-pointer w-5 text-center hover:text-slate-800 dark:hover:text-white transition" onclick="toggleNavFolder(event, 'nav_s_${s.id}')"></i><div class="tm-nav-item flex-1 text-sm ${state.ui.tmView==='s_'+s.id?'active':''}" onclick="state.ui.tmView='s_${s.id}'; render();" style="color: ${state.ui.tmView==='s_'+s.id ? s.color : ''}"><i class="fas ${s.icon} w-4" style="color:${s.color}"></i> ${s.name}</div></div>
@@ -1231,7 +1255,7 @@
                 });
                 navHtml += `</div></div>`;
             });
-            navHtml += `</div>`;
+            navHtml += `</div></div>`;
 
             let currentCtxId = "";
             if(state.ui.tmView.startsWith('s_')) currentCtxId = state.ui.tmView.replace('s_','');
@@ -1239,7 +1263,6 @@
             else if(state.ui.tmView.startsWith('sp_')) currentCtxId = state.ui.tmView.replace('sp_','');
 
             let ctxOpts = generateCtxOpts(currentCtxId);
-
             let tasks = [...state.data.tasks];
             const todayStr = new Date().toISOString().split('T')[0];
             let listTitle = "Tutti i Task";
@@ -1277,12 +1300,15 @@
             tasks.sort((a,b) => a.completed - b.completed || b.priority - a.priority);
 
             let mainHtml = `
-                <div class="flex flex-col lg:flex-row gap-2 mb-6 bg-slate-50 dark:bg-[#202938] p-3 rounded-xl border border-slate-200 dark:border-darkborder shadow-sm">
-                    <input type="text" id="gtIn" class="input-base flex-1 font-semibold text-sm py-1.5" placeholder="Nuovo task globale..." onkeypress="if(event.key==='Enter') addTaskFromGlobal()">
-                    <select id="gtCtx" class="input-base lg:w-40 text-xs font-semibold py-1.5">${ctxOpts}</select>
-                    <select id="gtPri" class="input-base w-20 text-xs font-semibold py-1.5"><option value="0">Prio 0</option><option value="1">Prio 1</option><option value="2">Prio 2</option><option value="3">Prio 3</option></select>
-                    <input type="date" id="gtDate" class="input-base w-32 text-xs font-semibold py-1.5">
-                    <button onclick="addTaskFromGlobal()" class="bg-blue-600 hover:bg-blue-700 px-4 rounded text-white font-bold shadow-sm transition"><i class="fas fa-plus text-xs"></i></button>
+                <!-- BARRA INSERIMENTO TASK (Adattata al mobile) -->
+                <div class="flex flex-col lg:flex-row flex-wrap gap-2 mb-6 bg-slate-50 dark:bg-[#202938] p-3 rounded-xl border border-slate-200 dark:border-darkborder shadow-sm">
+                    <input type="text" id="gtIn" class="input-base flex-1 min-w-[200px] font-semibold text-sm py-1.5" placeholder="Nuovo task globale..." onkeypress="if(event.key==='Enter') addTaskFromGlobal()">
+                    <div class="flex flex-wrap gap-2 w-full lg:w-auto">
+                        <select id="gtCtx" class="input-base flex-1 min-w-[120px] text-xs font-semibold py-1.5">${ctxOpts}</select>
+                        <select id="gtPri" class="input-base w-20 text-xs font-semibold py-1.5"><option value="0">Prio 0</option><option value="1">Prio 1</option><option value="2">Prio 2</option><option value="3">Prio 3</option></select>
+                        <input type="date" id="gtDate" class="input-base flex-1 min-w-[100px] max-w-[130px] text-xs font-semibold py-1.5">
+                        <button onclick="addTaskFromGlobal()" class="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto px-4 py-1.5 rounded text-white font-bold shadow-sm transition"><i class="fas fa-plus"></i></button>
+                    </div>
                 </div>
                 <div class="flex-1 space-y-2 overflow-y-auto pr-2 pb-10">`;
             
@@ -1330,8 +1356,8 @@
 
             return `
                 <div class="panel p-0 w-full min-h-[85vh] flex flex-col md:flex-row overflow-hidden border border-slate-200 dark:border-darkborder shadow-xl">
-                    <div class="md:w-64 bg-slate-50 dark:bg-[#13151a] border-r border-slate-200 dark:border-darkborder p-5 shrink-0">${navHtml}</div>
-                    <div class="flex-1 p-6 flex flex-col bg-white dark:bg-darkpanel">
+                    <div class="md:w-64 bg-slate-50 dark:bg-[#13151a] border-b md:border-b-0 md:border-r border-slate-200 dark:border-darkborder p-4 md:p-5 shrink-0">${navHtml}</div>
+                    <div class="flex-1 p-4 md:p-6 flex flex-col bg-white dark:bg-darkpanel">
                         <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6 pb-3 border-b border-slate-200 dark:border-darkborder">${listTitle}</h2>
                         ${mainHtml}
                     </div>
