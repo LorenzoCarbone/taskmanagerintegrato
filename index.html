@@ -1339,13 +1339,15 @@
         // --- TASK MANAGER (ADVANCED) ---
         function toggleTmSidebar() {
             const sidebar = document.getElementById('tmSidebar');
-            const overlay = document.getElementById('tmOverlay');
+            // Cerca prima il nuovo overlay interno sicuro, altrimenti usa quello vecchio
+            const overlay = document.getElementById('tmOverlayInner') || document.getElementById('tmOverlay');
+            
             if (sidebar.classList.contains('open')) {
                 sidebar.classList.remove('open');
-                overlay.classList.remove('open');
+                if(overlay) overlay.classList.remove('open');
             } else {
                 sidebar.classList.add('open');
-                overlay.classList.add('open');
+                if(overlay) overlay.classList.add('open');
             }
         }
 
@@ -1358,11 +1360,18 @@
         }
 
         function renderAdvancedTaskManager() {
-            // Sidebar Navigation
+            // Sidebar Navigation - Aggiunto Header in stile TickTick per tornare alla Dashboard
             let navHtml = `
+                <div class="flex items-center gap-3 p-4 mb-2 md:hidden border-b border-slate-200 dark:border-slate-700">
+                    <button onclick="navigate('home')" class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold text-lg transition hover:text-blue-500 shadow-sm"><i class="fas fa-home"></i></button>
+                    <div class="font-bold text-slate-800 dark:text-white flex-1 leading-tight text-sm">Dashboard<br><span class="text-[10px] text-slate-400 font-normal">Torna alla home</span></div>
+                    <button onclick="toggleTmSidebar()" class="p-2 text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-full w-8 h-8 flex items-center justify-center"><i class="fas fa-times text-sm"></i></button>
+                </div>
+                
                 <div class="mb-6 space-y-1 mt-4 md:mt-0 px-2 md:px-0">
                     <div class="tm-nav-item ${state.ui.tmView==='all'?'active':''}" onclick="state.ui.tmView='all'; toggleTmSidebar(); render();"><i class="fas fa-inbox w-4 text-blue-500"></i> Posta in arrivo</div>
                     <div class="tm-nav-item ${state.ui.tmView==='today'?'active':''}" onclick="state.ui.tmView='today'; toggleTmSidebar(); render();"><i class="fas fa-calendar-day w-4 text-amber-500"></i> Oggi</div>
+                    <div class="tm-nav-item ${state.ui.tmView==='next7'?'active':''}" onclick="state.ui.tmView='next7'; toggleTmSidebar(); render();"><i class="fas fa-calendar-alt w-4 text-purple-500"></i> Prossimi 7 Giorni</div>
                 </div>
                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-4 md:px-2 border-t border-slate-200 dark:border-slate-700 pt-4">Le Tue Liste</div>
                 <div class="space-y-1 max-h-[60vh] overflow-y-auto px-2 md:px-0 pb-20">`;
@@ -1402,6 +1411,15 @@
             let listTitle = "Posta in arrivo";
 
             if(state.ui.tmView === 'today') { tasks = tasks.filter(t => t.dueDate === todayStr); listTitle = "Oggi"; }
+            else if(state.ui.tmView === 'next7') { 
+                const today = new Date();
+                const nextWeek = new Date();
+                nextWeek.setDate(today.getDate() + 7);
+                const tStr = today.toISOString().split('T')[0];
+                const nStr = nextWeek.toISOString().split('T')[0];
+                tasks = tasks.filter(t => t.dueDate >= tStr && t.dueDate <= nStr); 
+                listTitle = "Prossimi 7 Giorni"; 
+            }
             else if(state.ui.tmView === 'inbox') { tasks = tasks.filter(t => !t.contextId); listTitle = "Senza Contesto"; }
             else if(state.ui.tmView === 'all') { listTitle = "Posta in arrivo"; }
             else if(state.ui.tmView.startsWith('s_')) { 
@@ -1428,7 +1446,6 @@
             }
 
             const listConf = tmListSettings[state.ui.tmView] || { groupBy: 'priority', sortBy: 'priority' };
-
             const hasCompleted = tasks.some(t => t.completed);
             if(!state.ui.showCompletedTasks) tasks = tasks.filter(t => !t.completed);
 
@@ -1502,7 +1519,6 @@
                             else if(t.priority === 2) cbClass = "border-amber-400 checked:bg-amber-500 checked:border-amber-500";
                             else if(t.priority === 1) cbClass = "border-blue-400 checked:bg-blue-500 checked:border-blue-500";
 
-                            // Task Row Ultra Compatta
                             tasksHtml += `
                                 <div class="p-2 md:p-3 flex items-center gap-3 ${borderBottom} group hover:bg-slate-50 dark:hover:bg-[#202938] transition">
                                     <input type="checkbox" class="task-checkbox shrink-0 ${cbClass}" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
@@ -1530,15 +1546,14 @@
             }
 
             return `
-                <div class="fixed inset-0 top-[60px] md:top-auto md:relative flex overflow-hidden bg-slate-50 dark:bg-darkbg md:rounded-xl md:border border-slate-200 dark:border-darkborder md:shadow-xl md:min-h-[85vh]">
+                <!-- Rimosso top-[60px] su mobile per sfruttare tutto lo schermo e Fixato il Wrapper Z-index -->
+                <div class="fixed inset-0 md:relative flex overflow-hidden bg-slate-50 dark:bg-darkbg md:rounded-xl md:border border-slate-200 dark:border-darkborder md:shadow-xl md:min-h-[85vh] z-[60] md:z-auto">
                     
+                    <!-- Nuovo Overlay interno per Mobile con z-index corretto (risolve il bug del clic) -->
+                    <div id="tmOverlayInner" class="tm-overlay md:hidden" style="z-index: 50;" onclick="toggleTmSidebar()"></div>
+
                     <!-- SIDEBAR -->
-                    <div id="tmSidebar" class="tm-sidebar-mobile bg-[#eff4f9] dark:bg-[#13151a] md:border-r border-slate-200 dark:border-darkborder md:p-4 shrink-0 overflow-y-auto">
-                        <div class="flex items-center gap-3 p-4 mb-2 md:hidden">
-                            <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg"><i class="fas fa-user-circle"></i></div>
-                            <div class="font-bold text-slate-800 dark:text-white flex-1">Menu Liste</div>
-                            <button onclick="toggleTmSidebar()" class="p-2 text-slate-400"><i class="fas fa-times text-lg"></i></button>
-                        </div>
+                    <div id="tmSidebar" class="tm-sidebar-mobile bg-[#eff4f9] dark:bg-[#13151a] md:border-r border-slate-200 dark:border-darkborder md:p-4 shrink-0 overflow-y-auto" style="z-index: 60;">
                         ${navHtml}
                     </div>
 
@@ -1546,10 +1561,10 @@
                     <div class="flex-1 flex flex-col bg-[#fdfaf5] dark:bg-darkpanel overflow-hidden w-full relative">
                         
                         <!-- HEADER MOBILE -->
-                        <div class="flex items-center justify-between p-4 md:px-8 md:pt-8 bg-transparent z-10 shrink-0">
+                        <div class="flex items-center justify-between p-4 md:px-8 md:pt-8 bg-white dark:bg-slate-800 md:bg-transparent z-10 shrink-0 border-b border-slate-200 dark:border-slate-700 md:border-none shadow-sm md:shadow-none">
                             <div class="flex items-center gap-3">
-                                <button onclick="toggleTmSidebar()" class="md:hidden text-slate-600 dark:text-slate-300 text-xl p-1"><i class="fas fa-bars"></i></button>
-                                <h2 class="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center"><i class="far fa-clipboard text-slate-400 mr-2"></i> ${listTitle}</h2>
+                                <button onclick="toggleTmSidebar()" class="md:hidden text-slate-600 dark:text-slate-300 text-xl p-1 -ml-1"><i class="fas fa-bars"></i></button>
+                                <h2 class="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center"><i class="far fa-clipboard text-slate-400 mr-2 hidden md:inline-block"></i> ${listTitle}</h2>
                             </div>
                             
                             <div class="relative group">
@@ -1571,7 +1586,7 @@
                             </div>
                         </div>
                         
-                        <!-- BARRA INSERIMENTO TASK (Desktop - Nascosta su Mobile) -->
+                        <!-- BARRA INSERIMENTO TASK (Desktop) -->
                         <div class="hidden md:flex mx-8 mb-4 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 flex-row gap-2 shadow-sm">
                             <input type="text" id="gtIn" class="input-base flex-1 min-w-[200px] font-semibold text-sm py-2" placeholder="Scrivi nuovo task..." onkeypress="if(event.key==='Enter') addTaskFromGlobal()">
                             <select id="gtCtx" class="input-base w-32 text-xs font-bold py-2">${ctxOpts}</select>
@@ -1581,11 +1596,11 @@
                         </div>
 
                         <!-- LISTA TASKS SCROLLABILE -->
-                        <div class="flex-1 overflow-y-auto px-4 md:px-8 pb-24">
+                        <div class="flex-1 overflow-y-auto px-4 md:px-8 pb-24 pt-4 md:pt-0">
                             ${tasksHtml}
                         </div>
 
-                        <!-- FLOATING ACTION BUTTON (Mobile Insert) -->
+                        <!-- FLOATING ACTION BUTTON (Mobile) -->
                         <div class="fixed bottom-6 right-6 md:hidden z-[35]">
                             <button onclick="openMobileQuickAdd()" class="w-14 h-14 bg-blue-600 hover:bg-blue-700 rounded-full text-white text-2xl shadow-[0_4px_15px_rgba(37,99,235,0.4)] flex items-center justify-center transition-transform active:scale-95">
                                 <i class="fas fa-plus"></i>
