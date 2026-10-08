@@ -1560,12 +1560,15 @@
                     <!-- MAIN AREA -->
                     <div class="flex-1 flex flex-col bg-[#fdfaf5] dark:bg-darkpanel overflow-hidden w-full relative">
                         
-                        <!-- HEADER MOBILE -->
-                        <div class="flex items-center justify-between p-4 md:px-8 md:pt-8 bg-white dark:bg-slate-800 md:bg-transparent z-10 shrink-0 border-b border-slate-200 dark:border-slate-700 md:border-none shadow-sm md:shadow-none">
-                            <div class="flex items-center gap-3">
-                                <button onclick="toggleTmSidebar()" class="md:hidden text-slate-600 dark:text-slate-300 text-xl p-1 -ml-1"><i class="fas fa-bars"></i></button>
-                                <h2 class="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center"><i class="far fa-clipboard text-slate-400 mr-2 hidden md:inline-block"></i> ${listTitle}</h2>
-                            </div>
+                       <!-- HEADER MOBILE -->
+<div class="flex items-center justify-between p-4 md:px-8 md:pt-8 bg-white dark:bg-slate-800 md:bg-transparent z-10 shrink-0 border-b border-slate-200 dark:border-slate-700 md:border-none shadow-sm md:shadow-none">
+    <div class="flex items-center gap-3">
+        <!-- AGGIUNTO: Pulsante Indietro verso la Home -->
+        <button onclick="navigate('home')" class="md:hidden text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 text-xl p-1 mr-1 transition"><i class="fas fa-arrow-left"></i></button>
+        
+        <button onclick="toggleTmSidebar()" class="md:hidden text-slate-600 dark:text-slate-300 text-xl p-1 -ml-1"><i class="fas fa-bars"></i></button>
+        <h2 class="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center"><i class="far fa-clipboard text-slate-400 mr-2 hidden md:inline-block"></i> ${listTitle}</h2>
+    </div>
                             
                             <div class="relative group">
                                 <button class="text-slate-500 hover:text-slate-800 p-2 text-lg"><i class="fas fa-ellipsis-v"></i></button>
