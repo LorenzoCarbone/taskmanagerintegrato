@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Life Hub - OS</title>
-    <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -24,19 +23,23 @@
     </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <!-- Quill Editor (Rich Text) -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; transition: background-color 0.3s, color 0.3s; }
-        .panel { border-radius: 12px; overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
-        .panel-hover:hover { transform: translateY(-2px); cursor: pointer; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; transition: background-color 0.3s ease, color 0.3s ease; }
         
-        /* Checkbox circolare per tasks in stile reference (Fixato Ovale) */
-        .task-checkbox { appearance: none; min-width: 1.25rem; width: 1.25rem; min-height: 1.25rem; height: 1.25rem; border: 2px solid; border-radius: 50%; cursor: pointer; position: relative; transition: all 0.2s; background: transparent; }
+        /* Animazioni fluide migliorate */
+        .panel { border-radius: 12px; overflow: hidden; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease; }
+        .panel-hover:hover { transform: translateY(-3px); cursor: pointer; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+        
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-up { animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        /* Checkbox circolare per tasks */
+        .task-checkbox { appearance: none; min-width: 1.25rem; width: 1.25rem; min-height: 1.25rem; height: 1.25rem; border: 2px solid; border-radius: 50%; cursor: pointer; position: relative; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); background: transparent; }
         .dark .task-checkbox { border-color: #64748b; }
-        .task-checkbox:checked { background-color: #f59e0b !important; border-color: #f59e0b !important; }
+        .task-checkbox:checked { background-color: #f59e0b !important; border-color: #f59e0b !important; transform: scale(1.1); }
         .task-checkbox:checked::after { content: '✔'; position: absolute; color: white; font-size: 10px; top: -1px; left: 3px; font-weight: bold; }
         
         .draggable { cursor: grab; }
@@ -51,17 +54,17 @@
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-        .input-base { width: 100%; border-radius: 8px; padding: 0.5rem 0.75rem; font-size: 0.875rem; transition: all 0.2s; outline: none; border: 1px solid; }
+        .input-base { width: 100%; border-radius: 8px; padding: 0.6rem 0.75rem; font-size: 0.875rem; transition: all 0.2s ease; outline: none; border: 1px solid; }
         .dark .input-base { background-color: #1e293b; border-color: #475569; color: #f8fafc; }
         .input-base { background-color: #f8fafc; border-color: #e2e8f0; color: #0f172a; }
         .dark .input-base:focus { border-color: #60a5fa; box-shadow: 0 0 0 1px #60a5fa; }
         .input-base:focus { border-color: #3b82f6; box-shadow: 0 0 0 1px #3b82f6; }
         
         /* Stile menu a tendina laterale */
-        .tm-nav-item { padding: 0.6rem 0.8rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; font-weight: 600; color: #475569; }
+        .tm-nav-item { padding: 0.7rem 0.8rem; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.75rem; font-size: 0.95rem; font-weight: 600; color: #475569; }
         .dark .tm-nav-item { color: #cbd5e1; }
-        .dark .tm-nav-item:hover { background-color: rgba(255,255,255,0.05); }
-        .tm-nav-item:hover { background-color: rgba(0,0,0,0.03); }
+        .dark .tm-nav-item:hover { background-color: rgba(255,255,255,0.05); transform: translateX(3px); }
+        .tm-nav-item:hover { background-color: rgba(0,0,0,0.03); transform: translateX(3px); }
         .dark .tm-nav-item.active { background-color: rgba(59, 130, 246, 0.15); color: #93c5fd; }
         .tm-nav-item.active { background-color: #e0f2fe; color: #0284c7; }
 
@@ -76,14 +79,14 @@
         .dark .glass-header { background: rgba(30, 41, 59, 0.8); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .glass-header { background: rgba(255, 255, 255, 0.8); border-bottom: 1px solid rgba(0,0,0,0.05); }
         
-        /* --- SIDEBAR MOBILE TASK MANAGER (Fixato Blur) --- */
-        .tm-sidebar-mobile { position: fixed; top: 0; left: 0; bottom: 0; width: 85%; max-width: 320px; z-index: 50; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 4px 0 15px rgba(0,0,0,0.1); }
+        /* --- SIDEBAR MOBILE TASK MANAGER --- */
+        .tm-sidebar-mobile { position: fixed; top: 0; left: 0; bottom: 0; width: 85%; max-width: 320px; z-index: 50; transform: translateX(-100%); transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 4px 0 25px rgba(0,0,0,0.15); }
         .tm-sidebar-mobile.open { transform: translateX(0); }
-        .tm-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        .tm-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
         .tm-overlay.open { opacity: 1; pointer-events: auto; }
 
         @media (min-width: 768px) {
-            .tm-sidebar-mobile { position: static; transform: none; width: 16rem; box-shadow: none; z-index: auto; }
+            .tm-sidebar-mobile { position: static; transform: none; width: 17rem; box-shadow: none; z-index: auto; }
             .tm-overlay { display: none; }
         }
 
@@ -94,58 +97,54 @@
         .ql-editor { min-height: 120px; max-height: 35vh; overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
         @media (min-width: 768px) { .ql-editor { max-height: 60vh; } }
         
-        /* --- ANIMAZIONI QUICK ADD MOBILE --- */
+        /* --- ANIMAZIONI MODALI --- */
         @keyframes slideUpAdd { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .animate-slide-up-add { animation: slideUpAdd 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards; }
+        .animate-slide-up-add { animation: slideUpAdd 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes fadeInAdd { from { opacity: 0; } to { opacity: 1; } }
-        .animate-fade-in-add { animation: fadeInAdd 0.25s ease-out forwards; }
+        .animate-fade-in-add { animation: fadeInAdd 0.3s ease-out forwards; }
     </style>
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-darkbg text-slate-800 dark:text-slate-200 flex flex-col relative pb-10">
 
-    <header class="sticky top-0 z-40 w-full glass-header mb-8 px-4 md:px-8 py-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hidden-in-tm">
+    <header class="sticky top-0 z-40 w-full glass-header mb-8 px-4 md:px-8 py-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hidden-in-tm transition-all duration-300">
         <div id="breadcrumbs" class="flex flex-wrap gap-2 items-center text-sm font-semibold text-slate-500 dark:text-slate-300"></div>
         <div class="flex flex-wrap gap-2 md:gap-3 items-center text-sm font-medium">
-            <button onclick="navigate('timeline')" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition px-3 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"><i class="fas fa-stream mr-1"></i> Timeline</button>
-            <button onclick="navigate('global_tasks')" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition px-3 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"><i class="fas fa-check-double mr-1"></i> Tasks</button>
-            <button onclick="navigate('global_contacts')" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition px-3 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"><i class="fas fa-address-book mr-1"></i> Rubrica</button>
+            <button onclick="navigate('global_tasks')" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition px-4 py-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95"><i class="fas fa-check-double mr-1"></i> Tasks</button>
+            <button onclick="navigate('global_contacts')" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition px-4 py-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95"><i class="fas fa-address-book mr-1"></i> Rubrica</button>
             <div class="h-5 w-px bg-slate-300 dark:bg-slate-600 mx-1 hidden md:block"></div>
-            <button onclick="toggleTheme()" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700" title="Cambia Tema"><i class="fas fa-moon text-base dark:hidden"></i><i class="fas fa-sun text-base hidden dark:block"></i></button>
-            <button onclick="openImportModal()" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700" title="Importazione Massiva"><i class="fas fa-file-import text-base"></i></button>
-            <button onclick="forceSync()" id="syncBtn" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700" title="Sincronizza Gist"><i class="fas fa-cloud-sync text-base"></i></button>
-            <button onclick="toggleSettings()" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700" title="Impostazioni"><i class="fas fa-cog text-base"></i></button>
+            <button onclick="toggleTheme()" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95" title="Cambia Tema"><i class="fas fa-moon text-base dark:hidden"></i><i class="fas fa-sun text-base hidden dark:block"></i></button>
+            <button onclick="openImportModal()" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95" title="Importazione Massiva"><i class="fas fa-file-import text-base"></i></button>
+            <button onclick="forceSync()" id="syncBtn" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95" title="Sincronizza Gist"><i class="fas fa-cloud-sync text-base"></i></button>
+            <button onclick="toggleSettings()" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95" title="Impostazioni"><i class="fas fa-cog text-base"></i></button>
         </div>
     </header>
 
-    <!-- Overlay per Sidebar Mobile -->
     <div id="tmOverlay" class="tm-overlay" onclick="toggleTmSidebar()"></div>
 
     <main id="app-content" class="w-full max-w-[1400px] mx-auto flex-1 px-4 md:px-8"></main>
 
-    <!-- MOBILE QUICK ADD MODAL (Task Manager) -->
     <div id="mobileQuickAddModal" class="fixed inset-0 z-[100] hidden flex-col justify-end">
         <div class="absolute inset-0 bg-slate-900/50 animate-fade-in-add" onclick="closeMobileQuickAdd()"></div>
-        <div class="relative bg-white dark:bg-darkpanel w-full rounded-t-3xl p-5 shadow-2xl flex flex-col gap-4 animate-slide-up-add">
+        <div class="relative bg-white dark:bg-darkpanel w-full rounded-t-3xl p-6 shadow-2xl flex flex-col gap-4 animate-slide-up-add">
             <div class="flex justify-between items-center mb-1">
                 <h3 class="font-bold text-slate-800 dark:text-white text-lg">Nuova Task</h3>
-                <button onclick="closeMobileQuickAdd()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><i class="fas fa-times"></i></button>
+                <button onclick="closeMobileQuickAdd()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center transition active:scale-90"><i class="fas fa-times text-lg"></i></button>
             </div>
-            <input type="text" id="gtInMobile" class="input-base text-base py-3.5 font-semibold bg-slate-50 dark:bg-slate-800/50 border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-darkbg transition" placeholder="Cosa devi fare?" onkeypress="if(event.key==='Enter') addTaskFromGlobalMobile()">
+            <input type="text" id="gtInMobile" class="input-base text-base py-4 font-semibold bg-slate-50 dark:bg-slate-800/50 border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-darkbg transition" placeholder="Cosa devi fare?" onkeypress="if(event.key==='Enter') addTaskFromGlobalMobile()">
             <div class="flex gap-3">
-                 <select id="gtPriMobile" class="input-base text-xs font-bold py-3.5 flex-1 bg-slate-50 dark:bg-slate-800/50 border-transparent"><option value="0">Nessuna Prio</option><option value="1">Bassa Prio</option><option value="2">Media Prio</option><option value="3">Alta Prio</option></select>
-                 <input type="date" id="gtDateMobile" class="input-base text-xs font-bold py-3.5 flex-1 bg-slate-50 dark:bg-slate-800/50 border-transparent">
+                 <select id="gtPriMobile" class="input-base text-sm font-bold py-4 flex-1 bg-slate-50 dark:bg-slate-800/50 border-transparent"><option value="0">Nessuna Prio</option><option value="1">Bassa Prio</option><option value="2">Media Prio</option><option value="3">Alta Prio</option></select>
+                 <input type="date" id="gtDateMobile" class="input-base text-sm font-bold py-4 flex-1 bg-slate-50 dark:bg-slate-800/50 border-transparent">
             </div>
-            <button onclick="addTaskFromGlobalMobile()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-600/30 transition mt-1"><i class="fas fa-arrow-up mr-2"></i> Aggiungi</button>
+            <button onclick="addTaskFromGlobalMobile()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-600/30 transition mt-2 active:scale-[0.98]"><i class="fas fa-arrow-up mr-2"></i> Aggiungi</button>
         </div>
     </div>
 
-    <!-- Modale Appunti Fullscreen (Mobile) -->
     <div id="mobileNotesModal" class="fixed inset-0 bg-slate-50 dark:bg-darkbg hidden flex-col z-[60]">
-        <div class="glass-header px-4 py-3 flex justify-between items-center border-b border-slate-200 dark:border-darkborder shadow-sm">
+        <div class="glass-header px-4 py-4 flex justify-between items-center border-b border-slate-200 dark:border-darkborder shadow-sm">
             <h2 id="mobileNotesTitle" class="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="fas fa-pen-nib text-blue-500"></i> Appunti</h2>
             <div class="flex gap-2">
-                <button onclick="closeMobileNotes()" class="text-slate-600 dark:text-slate-300 font-bold px-4 py-2 bg-slate-200 dark:bg-slate-700 rounded-lg text-xs">Chiudi</button>
-                <button onclick="saveMobileNotes()" class="text-white font-bold px-4 py-2 bg-blue-600 rounded-lg shadow text-xs">Salva</button>
+                <button onclick="closeMobileNotes()" class="text-slate-600 dark:text-slate-300 font-bold px-4 py-2 bg-slate-200 dark:bg-slate-700 rounded-lg text-xs transition active:scale-95">Chiudi</button>
+                <button onclick="saveMobileNotes()" class="text-white font-bold px-4 py-2 bg-blue-600 rounded-lg shadow text-xs transition active:scale-95">Salva</button>
             </div>
         </div>
         <div class="flex-1 overflow-hidden p-3">
@@ -154,70 +153,66 @@
             </div>
         </div>
         <div class="p-3 border-t border-slate-200 dark:border-darkborder bg-white dark:bg-darkpanel flex justify-center">
-            <button onclick="archiveMobileNotes()" class="text-xs font-bold text-slate-500 dark:text-slate-400 py-2 w-full rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition"><i class="fas fa-file-archive mr-2"></i> Archivia Foglio Corrente</button>
+            <button onclick="archiveMobileNotes()" class="text-xs font-bold text-slate-500 dark:text-slate-400 py-3 w-full rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition active:scale-[0.98]"><i class="fas fa-file-archive mr-2"></i> Archivia Foglio Corrente</button>
         </div>
     </div>
 
-    <!-- Modal Archivio Letto/Scritto -->
-    <div id="archiveViewModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 hidden flex justify-center items-center backdrop-blur-sm z-50 p-4">
-        <div class="bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder rounded-xl shadow-xl p-6 w-full max-w-4xl flex flex-col h-[85vh]">
+    <div id="archiveViewModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 hidden flex justify-center items-center backdrop-blur-sm z-50 p-4 transition-opacity">
+        <div class="bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder rounded-xl shadow-2xl p-6 w-full max-w-4xl flex flex-col h-[85vh] animate-fade-in-up">
             <div class="flex justify-between items-center mb-4">
                 <h2 id="archiveViewTitle" class="text-xl font-bold">Archivio Appunti</h2>
-                <span id="archiveViewDate" class="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded"></span>
+                <span id="archiveViewDate" class="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded"></span>
             </div>
             <div class="flex-1 bg-slate-50 dark:bg-darkbg rounded border border-slate-200 dark:border-darkborder p-4 overflow-hidden flex flex-col shadow-inner">
                 <div id="quill-archive-editor" class="flex-1 overflow-y-auto"></div>
             </div>
-            <div class="flex justify-between items-center mt-4 pt-3 border-t border-slate-200 dark:border-darkborder">
+            <div class="flex justify-between items-center mt-4 pt-4 border-t border-slate-200 dark:border-darkborder">
                 <p id="archiveEditIndicator" class="text-[10px] font-bold text-amber-500 hidden bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded border border-amber-200 dark:border-amber-900/50"><i class="fas fa-pencil-alt mr-1"></i> Modificato</p>
                 <div class="flex gap-2 ml-auto">
-                    <button onclick="closeArchiveModal()" class="px-4 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition">Chiudi</button>
-                    <button onclick="saveArchiveEdit()" class="px-5 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded font-bold shadow transition">Salva Modifiche</button>
+                    <button onclick="closeArchiveModal()" class="px-4 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition active:scale-95">Chiudi</button>
+                    <button onclick="saveArchiveEdit()" class="px-5 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded font-bold shadow transition active:scale-95">Salva Modifiche</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal Importazione Dati -->
     <div id="importModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 hidden flex justify-center items-center backdrop-blur-sm z-50 p-4">
-        <div class="bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder rounded-xl shadow-xl p-6 w-full max-w-2xl">
+        <div class="bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder rounded-xl shadow-2xl p-6 w-full max-w-2xl animate-fade-in-up">
             <h2 class="text-lg font-bold mb-2">Importazione Massiva (JSON)</h2>
             <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Incolla qui il codice JSON per generare o recuperare i tuoi dati.</p>
             <textarea id="importDataArea" class="input-base font-mono text-xs h-64 mb-4" placeholder='{ "spheres": [...], "projects": [...] }'></textarea>
-            <div class="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-darkborder">
-                <button onclick="closeImportModal()" class="px-4 py-1.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">Annulla</button>
-                <button onclick="executeImport()" class="px-4 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded font-bold shadow transition">Importa e Salva</button>
+            <div class="flex justify-end gap-2 pt-4 border-t border-slate-200 dark:border-darkborder">
+                <button onclick="closeImportModal()" class="px-4 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition active:scale-95">Annulla</button>
+                <button onclick="executeImport()" class="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded font-bold shadow transition active:scale-95">Importa e Salva</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Settings -->
     <div id="settingsModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 hidden flex justify-center items-center backdrop-blur-sm z-50 p-4">
-        <div class="bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder rounded-xl shadow-xl p-6 w-full max-w-lg">
+        <div class="bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder rounded-xl shadow-2xl p-6 w-full max-w-lg animate-fade-in-up">
             <h2 class="text-lg font-bold mb-4">Impostazioni Workspace</h2>
             <div class="space-y-4 mb-6">
                 <div><label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">GitHub PAT (Token)</label><input type="password" id="ghToken" class="input-base"></div>
                 <div><label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Gist ID</label><input type="text" id="gistId" class="input-base"></div>
             </div>
             <div class="flex justify-between items-center pt-4 border-t border-slate-200 dark:border-darkborder">
-                <button onclick="factoryReset()" class="text-red-500 hover:text-red-600 text-xs font-bold flex items-center"><i class="fas fa-exclamation-triangle mr-1"></i> Factory Reset</button>
+                <button onclick="factoryReset()" class="text-red-500 hover:text-red-600 text-xs font-bold flex items-center transition active:scale-95"><i class="fas fa-exclamation-triangle mr-1"></i> Factory Reset</button>
                 <div class="flex gap-2">
-                    <button onclick="toggleSettings()" class="px-3 py-1.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">Chiudi</button>
-                    <button onclick="saveSettings()" class="px-4 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded font-bold shadow transition">Salva</button>
+                    <button onclick="toggleSettings()" class="px-4 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition active:scale-95">Chiudi</button>
+                    <button onclick="saveSettings()" class="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded font-bold shadow transition active:scale-95">Salva</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modale Entità -->
     <div id="entityModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 hidden flex justify-center items-center backdrop-blur-sm z-50 p-4">
-        <div class="bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder rounded-xl shadow-xl p-6 w-full max-w-lg">
+        <div class="bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder rounded-xl shadow-2xl p-6 w-full max-w-lg animate-fade-in-up">
             <h2 id="emTitle" class="text-lg font-bold mb-4">Modifica</h2>
             <div class="space-y-4">
                 <div class="flex gap-3">
                     <div class="flex-1"><label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Nome</label><input type="text" id="emName" class="input-base"></div>
                     <div class="w-20"><label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Icona</label><input type="text" id="emIcon" class="input-base" placeholder="fa-folder"></div>
-                    <div class="w-20"><label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Colore</label><input type="color" id="emColor" class="w-full h-9 bg-transparent cursor-pointer rounded border border-slate-200 dark:border-darkborder p-0.5"></div>
+                    <div class="w-20"><label class="block text-xs font-bold mb-1 text-slate-600 dark:text-slate-400">Colore</label><input type="color" id="emColor" class="w-full h-[42px] bg-transparent cursor-pointer rounded border border-slate-200 dark:border-darkborder p-0.5"></div>
                 </div>
 
                 <div id="emProjectFields" class="hidden space-y-4">
@@ -236,18 +231,17 @@
                 </div>
             </div>
             <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-200 dark:border-darkborder">
-                <button id="emDeleteBtn" onclick="deleteCurrentEntity()" class="text-red-500 hover:text-red-600 text-xs font-bold hidden flex items-center"><i class="fas fa-trash-alt mr-1"></i> Elimina</button>
+                <button id="emDeleteBtn" onclick="deleteCurrentEntity()" class="text-red-500 hover:text-red-600 text-xs font-bold hidden flex items-center transition active:scale-95"><i class="fas fa-trash-alt mr-1"></i> Elimina</button>
                 <div class="flex gap-2 ml-auto">
-                    <button onclick="closeEntityModal()" class="px-3 py-1.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition">Annulla</button>
-                    <button onclick="saveEntityModal()" class="px-4 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded font-bold shadow transition">Salva</button>
+                    <button onclick="closeEntityModal()" class="px-4 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition active:scale-95">Annulla</button>
+                    <button onclick="saveEntityModal()" class="px-5 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded font-bold shadow transition active:scale-95">Salva</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modale Rubrica -->
     <div id="contactModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 hidden flex justify-center items-center backdrop-blur-sm z-50 p-4">
-        <div class="bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder rounded-xl shadow-xl p-6 w-full max-w-sm">
+        <div class="bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder rounded-xl shadow-2xl p-6 w-full max-w-sm animate-fade-in-up">
             <h2 id="cmTitle" class="text-lg font-bold mb-4">Contatto</h2>
             <div class="space-y-3">
                 <div><label class="block text-[10px] font-bold mb-0.5 text-slate-500 dark:text-slate-400">NOME</label><input type="text" id="cmName" class="input-base"></div>
@@ -257,10 +251,10 @@
                 <div><label class="block text-[10px] font-bold mb-0.5 text-slate-500 dark:text-slate-400">EMAIL</label><input type="email" id="cmEmail" class="input-base"></div>
             </div>
             <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-200 dark:border-darkborder">
-                <button id="cmDeleteBtn" onclick="deleteContact()" class="text-red-500 hover:text-red-600 text-xs font-bold hidden">Elimina</button>
+                <button id="cmDeleteBtn" onclick="deleteContact()" class="text-red-500 hover:text-red-600 text-xs font-bold hidden transition active:scale-95">Elimina</button>
                 <div class="flex gap-2 ml-auto">
-                    <button onclick="closeContactModal()" class="px-3 py-1.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition">Annulla</button>
-                    <button onclick="saveContact()" class="px-4 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded font-bold shadow transition">Salva</button>
+                    <button onclick="closeContactModal()" class="px-4 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition active:scale-95">Annulla</button>
+                    <button onclick="saveContact()" class="px-5 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded font-bold shadow transition active:scale-95">Salva</button>
                 </div>
             </div>
         </div>
@@ -467,7 +461,7 @@
             e.target.classList.toggle('fa-chevron-right');
         }
         
-        // GESTIONE APPUNTI IBRIDA (Inline Desktop / Modal Mobile)
+        // GESTIONE APPUNTI IBRIDA
         function handleNotesClick(type, id) {
             if (window.innerWidth < 768) {
                 openMobileNotes(type, id);
@@ -717,13 +711,17 @@
         function render() {
             renderBreadcrumbs();
             const c = document.getElementById('app-content');
-            if(state.view === 'home') c.innerHTML = renderDashboard();
-            else if(state.view === 'sphere') c.innerHTML = renderSphere();
-            else if(state.view === 'project') c.innerHTML = renderProject();
-            else if(state.view === 'subproject') c.innerHTML = renderSubproject();
-            else if(state.view === 'global_tasks') c.innerHTML = renderAdvancedTaskManager();
-            else if(state.view === 'global_contacts') c.innerHTML = renderGlobalContacts();
-            else if(state.view === 'timeline') c.innerHTML = renderTimeline();
+            let contentHtml = '';
+            
+            if(state.view === 'home') contentHtml = renderDashboard();
+            else if(state.view === 'sphere') contentHtml = renderSphere();
+            else if(state.view === 'project') contentHtml = renderProject();
+            else if(state.view === 'subproject') contentHtml = renderSubproject();
+            else if(state.view === 'global_tasks') contentHtml = renderAdvancedTaskManager();
+            else if(state.view === 'global_contacts') contentHtml = renderGlobalContacts();
+            
+            // Inietta il contenuto avvolto nell'animazione fluida
+            c.innerHTML = `<div class="animate-fade-in-up">${contentHtml}</div>`;
             
             initQuillEditors(); 
         }
@@ -742,8 +740,8 @@
         function renderBreadcrumbs() {
             const nav = document.getElementById('breadcrumbs');
             let html = `<span class="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1.5 transition" onclick="navigate('home')"><i class="fas fa-home text-xs mb-[1px]"></i> Home</span>`;
-            if (['global_contacts','global_tasks', 'timeline'].includes(state.view)) {
-                const labels = { global_tasks: 'Task Manager', global_contacts: 'Rubrica', timeline: 'Timeline' };
+            if (['global_contacts','global_tasks'].includes(state.view)) {
+                const labels = { global_tasks: 'Task Manager', global_contacts: 'Rubrica' };
                 html += ` <i class="fas fa-chevron-right text-[9px] opacity-40 mx-1.5"></i> <span class="text-slate-800 dark:text-slate-200 font-bold">${labels[state.view]}</span>`;
             } else if (state.path.sphereId) {
                 const s = getEntity('sphere', state.path.sphereId);
@@ -813,7 +811,7 @@
             const icon = itemObj.icon || (type === 'project' ? 'fa-folder' : 'fa-file-alt');
             return `
                 <div draggable="true" ondragstart="onDragStart(event, '${id}', '${type}', '${listType}')" ondragend="onDragEnd(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event, '${id}', '${type}', '${listType}')"
-                     onclick="navigate('${type}', '${sId}', '${pId}', '${spId}')" class="panel panel-hover p-3 flex justify-between items-center relative group draggable mb-3 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm border-l-4" style="border-left-color: ${colorHex}">
+                     onclick="navigate('${type}', '${sId}', '${pId}', '${spId}')" class="panel panel-hover p-4 flex justify-between items-center relative group draggable mb-3 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm border-l-4" style="border-left-color: ${colorHex}">
                     <div class="pl-2 word-wrap flex-1">
                         <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center">
                             ${itemObj.pinned ? '<i class="fas fa-star text-amber-500 text-[10px] mr-1.5"></i>' : ''} <i class="fas ${icon} text-slate-400 dark:text-slate-500 mr-1.5 text-xs"></i> ${title}
@@ -821,8 +819,8 @@
                         <p class="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">${sub}</p>
                     </div>
                     <div class="flex gap-1.5 opacity-0 group-hover:opacity-100 transition items-center">
-                        <button onclick="event.stopPropagation(); toggleArchiveEntity('${type}', '${id}')" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 p-1" title="Archivia"><i class="fas fa-archive text-[10px]"></i></button>
-                        <i class="fas fa-grip-lines text-slate-300 dark:text-slate-600 text-xs ml-1 cursor-grab"></i>
+                        <button onclick="event.stopPropagation(); toggleArchiveEntity('${type}', '${id}')" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 p-2" title="Archivia"><i class="fas fa-archive text-xs"></i></button>
+                        <i class="fas fa-grip-lines text-slate-300 dark:text-slate-600 text-sm ml-1 cursor-grab"></i>
                     </div>
                 </div>`;
         }
@@ -832,8 +830,8 @@
             let pinnedHtml = '', spheresHtml = '';
             
             state.data.spheres.sort((a,b)=>(a.order||0)-(b.order||0)).forEach(s => {
-                spheresHtml += `<div onclick="navigate('sphere', '${s.id}')" class="panel panel-hover p-4 flex flex-col items-center justify-center text-center h-28 border-t-4 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm" style="border-top-color: ${s.color}">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center mb-2" style="background-color: ${s.color}20"><i class="fas ${s.icon} text-lg" style="color: ${s.color}"></i></div>
+                spheresHtml += `<div onclick="navigate('sphere', '${s.id}')" class="panel panel-hover p-5 flex flex-col items-center justify-center text-center h-32 border-t-4 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm" style="border-top-color: ${s.color}">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center mb-3 transition group-hover:scale-110" style="background-color: ${s.color}20"><i class="fas ${s.icon} text-xl" style="color: ${s.color}"></i></div>
                     <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100">${s.name}</h3>
                 </div>`;
             });
@@ -864,7 +862,7 @@
                         <section>
                             <div class="flex justify-between items-center mb-3">
                                 <h2 class="text-[11px] font-bold flex items-center text-slate-500 dark:text-slate-400 uppercase tracking-widest">Le tue Sfere</h2>
-                                <button onclick="openEntityModal('create', 'sphere')" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline transition"><i class="fas fa-plus"></i> Nuova</button>
+                                <button onclick="openEntityModal('create', 'sphere')" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline transition p-1"><i class="fas fa-plus"></i> Nuova</button>
                             </div>
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">${spheresHtml}</div>
                         </section>
@@ -872,7 +870,7 @@
                     <div class="panel p-5 h-[650px] flex flex-col bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
                         <div class="flex justify-between border-b border-slate-200 dark:border-darkborder pb-3 mb-4">
                             <h2 class="text-[11px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center"><i class="fas fa-tasks text-blue-500 mr-2"></i> Task Attivi</h2>
-                            <button onclick="navigate('global_tasks')" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline transition">Vedi Tutti</button>
+                            <button onclick="navigate('global_tasks')" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline transition p-1">Vedi Tutti</button>
                         </div>
                         ${renderInlineTasks(null, true, false)} 
                     </div>
@@ -907,11 +905,11 @@
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">`;
             updates.slice().reverse().forEach(u => {
                 html += `
-                    <div onclick="openArchiveModal('${type}', '${id}', '${u.id}')" class="panel p-3 bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder hover:border-blue-500 dark:hover:border-blue-400 cursor-pointer shadow-sm transition group">
-                        <i class="far fa-file-alt text-2xl text-slate-300 dark:text-slate-600 mb-2 group-hover:text-blue-500 transition"></i>
-                        <p class="font-bold text-xs text-slate-700 dark:text-slate-200">Appunti</p>
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mt-1">${u.date.split(' - ')[0]}</p>
-                        ${u.edited ? `<p class="text-[8px] text-amber-500 mt-1.5 font-bold"><i class="fas fa-pencil-alt"></i> MODIFICATO</p>` : ''}
+                    <div onclick="openArchiveModal('${type}', '${id}', '${u.id}')" class="panel p-4 bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder hover:border-blue-500 dark:hover:border-blue-400 cursor-pointer shadow-sm transition group">
+                        <i class="far fa-file-alt text-3xl text-slate-300 dark:text-slate-600 mb-3 group-hover:text-blue-500 transition-colors"></i>
+                        <p class="font-bold text-sm text-slate-700 dark:text-slate-200">Appunti</p>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-1">${u.date.split(' - ')[0]}</p>
+                        ${u.edited ? `<p class="text-[9px] text-amber-500 mt-2 font-bold"><i class="fas fa-pencil-alt"></i> MODIFICATO</p>` : ''}
                     </div>`;
             });
             return html + `</div></div>`;
@@ -978,10 +976,10 @@
                         </div>
                     </div>
                     <div class="flex gap-1.5 items-center opacity-0 group-hover:opacity-100 transition">
-                        <button onclick="togglePin('project', '${p.id}')" class="text-slate-400 hover:text-amber-500 p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Fissa"><i class="fas fa-star text-xs"></i></button>
-                        <button onclick="toggleArchiveEntity('project', '${p.id}')" class="text-slate-400 hover:text-blue-500 p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Archivia"><i class="fas fa-archive text-xs"></i></button>
-                        <button onclick="openEntityModal('edit', 'project', '${s.id}', '${p.id}')" class="text-slate-400 hover:text-slate-800 dark:hover:text-white p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition"><i class="fas fa-edit text-xs"></i></button>
-                        <i class="fas fa-grip-lines text-slate-300 dark:text-slate-600 text-xs ml-1 cursor-grab"></i>
+                        <button onclick="togglePin('project', '${p.id}')" class="text-slate-400 hover:text-amber-500 p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Fissa"><i class="fas fa-star text-sm"></i></button>
+                        <button onclick="toggleArchiveEntity('project', '${p.id}')" class="text-slate-400 hover:text-blue-500 p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Archivia"><i class="fas fa-archive text-sm"></i></button>
+                        <button onclick="openEntityModal('edit', 'project', '${s.id}', '${p.id}')" class="text-slate-400 hover:text-slate-800 dark:hover:text-white p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition"><i class="fas fa-edit text-sm"></i></button>
+                        <i class="fas fa-grip-lines text-slate-300 dark:text-slate-600 text-sm ml-1 cursor-grab"></i>
                     </div>
                 </div>`}).join('');
 
@@ -989,34 +987,34 @@
                 <div class="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 pb-5 border-b border-slate-200 dark:border-darkborder gap-4">
                     <h2 class="text-3xl font-bold flex items-center tracking-tight" style="color: ${s.color}"><i class="fas ${s.icon} mr-3 opacity-80"></i> ${s.name}</h2>
                     <div class="flex gap-2 text-sm relative z-20">
-                        <button onclick="toggleArchivedView()" class="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition px-3 py-1.5 bg-white dark:bg-darkpanel rounded shadow-sm border border-slate-200 dark:border-darkborder"><i class="fas fa-archive mr-1.5"></i> ${state.ui.showArchived ? 'Mostra Attivi' : 'Mostra Archivio'}</button>
-                        <button onclick="openEntityModal('edit', 'sphere', '${s.id}')" class="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition px-3 py-1.5 bg-white dark:bg-darkpanel rounded shadow-sm border border-slate-200 dark:border-darkborder"><i class="fas fa-edit mr-1.5"></i> Impostazioni</button>
-                        <button onclick="openEntityModal('create', 'project', '${s.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 text-xs rounded font-bold shadow transition"><i class="fas fa-plus mr-1.5"></i> Progetto</button>
+                        <button onclick="toggleArchivedView()" class="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition px-4 py-2 bg-white dark:bg-darkpanel rounded shadow-sm border border-slate-200 dark:border-darkborder active:scale-95"><i class="fas fa-archive mr-1.5"></i> ${state.ui.showArchived ? 'Mostra Attivi' : 'Mostra Archivio'}</button>
+                        <button onclick="openEntityModal('edit', 'sphere', '${s.id}')" class="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition px-4 py-2 bg-white dark:bg-darkpanel rounded shadow-sm border border-slate-200 dark:border-darkborder active:scale-95"><i class="fas fa-edit mr-1.5"></i> Impostazioni</button>
+                        <button onclick="openEntityModal('create', 'project', '${s.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-xs rounded font-bold shadow transition active:scale-95"><i class="fas fa-plus mr-1.5"></i> Progetto</button>
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
                     <div class="xl:col-span-3 space-y-6">
-                        <div class="panel p-5 bg-white dark:bg-darkpanel shadow-sm border border-slate-200 dark:border-darkborder border-t-4" style="border-top-color: ${s.color}">
+                        <div class="panel p-6 bg-white dark:bg-darkpanel shadow-sm border border-slate-200 dark:border-darkborder border-t-4" style="border-top-color: ${s.color}">
                             <h3 class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center mb-3"><i class="fas fa-info-circle mr-1.5"></i> Informazioni Generali</h3>
-                            <div class="bg-slate-50 dark:bg-[#202938] rounded-lg border border-slate-200 dark:border-darkborder p-2 shadow-inner">
+                            <div class="bg-slate-50 dark:bg-[#202938] rounded-lg border border-slate-200 dark:border-darkborder p-3 shadow-inner">
                                 <div id="quill-perm-editor-sphere" class="min-h-[60px]"></div>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div class="panel p-5 bg-white dark:bg-darkpanel shadow-sm border border-slate-200 dark:border-darkborder">
+                            <div class="panel p-6 bg-white dark:bg-darkpanel shadow-sm border border-slate-200 dark:border-darkborder">
                                 <h3 class="text-[11px] font-bold text-amber-500 uppercase tracking-widest flex items-center mb-4 pb-2 border-b border-slate-100 dark:border-slate-700"><i class="fas fa-star mr-1.5"></i> Progetti In Evidenza</h3>
                                 <div class="space-y-3">${renderProjList(pinned, 'sphere_pinned') || `<p class="text-xs text-slate-400 italic">Niente in evidenza.</p>`}</div>
                             </div>
-                            <div class="panel p-5 bg-white dark:bg-darkpanel shadow-sm border border-slate-200 dark:border-darkborder">
+                            <div class="panel p-6 bg-white dark:bg-darkpanel shadow-sm border border-slate-200 dark:border-darkborder">
                                 <h3 class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center mb-4 pb-2 border-b border-slate-100 dark:border-slate-700"><i class="fas fa-folder mr-1.5"></i> ${state.ui.showArchived ? 'Archivio Progetti' : 'Tutti i Progetti'}</h3>
                                 <div class="space-y-3">${renderProjList(unpinned, 'sphere_unpinned') || `<p class="text-xs text-slate-400 italic">Nessun progetto in questa sezione.</p>`}</div>
                             </div>
                         </div>
                     </div>
                     <div class="space-y-6">
-                        <div class="panel p-5 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
+                        <div class="panel p-6 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
                             <h3 class="font-bold text-[11px] text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-4 pb-3 border-b border-slate-200 dark:border-darkborder flex items-center"><i class="fas fa-tasks text-blue-500 mr-2"></i> Tasks Sfera</h3>
                             ${renderInlineTasks(s.id)}
                         </div>
@@ -1037,16 +1035,16 @@
                 const spColor = sp.color || p.color || (s?s.color:'#94a3b8');
                 return `
                 <div draggable="true" ondragstart="onDragStart(event, '${sp.id}', 'subproject', '${listType}')" ondragend="onDragEnd(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event, '${sp.id}', 'subproject', '${listType}')"
-                     class="panel panel-hover p-3 flex justify-between items-center mb-2.5 border-l-4 group draggable bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder" style="border-left-color: ${spColor}" onclick="navigate('subproject', '${s?s.id:null}', '${p.id}', '${sp.id}')">
+                     class="panel panel-hover p-4 flex justify-between items-center mb-3 border-l-4 group draggable bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder" style="border-left-color: ${spColor}" onclick="navigate('subproject', '${s?s.id:null}', '${p.id}', '${sp.id}')">
                     <div class="word-wrap flex-1">
-                        <h4 class="font-bold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-2">
-                            ${sp.pinned ? '<i class="fas fa-star text-amber-500 text-[10px]"></i>' : ''} <i class="fas ${sp.icon||'fa-file-alt'} text-slate-400 dark:text-slate-500 text-[10px]"></i> ${sp.name}
+                        <h4 class="font-bold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-2">
+                            ${sp.pinned ? '<i class="fas fa-star text-amber-500 text-[10px]"></i>' : ''} <i class="fas ${sp.icon||'fa-file-alt'} text-slate-400 dark:text-slate-500 text-xs"></i> ${sp.name}
                         </h4>
                     </div>
                     <div class="flex items-center gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition">
-                        <button onclick="event.stopPropagation(); togglePin('subproject', '${sp.id}')" class="text-slate-400 hover:text-amber-500 p-1"><i class="fas fa-star text-[10px]"></i></button>
-                        <button onclick="event.stopPropagation(); toggleArchiveEntity('subproject', '${sp.id}')" class="text-slate-400 hover:text-blue-500 p-1"><i class="fas fa-archive text-[10px]"></i></button>
-                        <i class="fas fa-grip-lines text-slate-300 dark:text-slate-600 text-[10px] ml-1 cursor-grab"></i>
+                        <button onclick="event.stopPropagation(); togglePin('subproject', '${sp.id}')" class="text-slate-400 hover:text-amber-500 p-2"><i class="fas fa-star text-xs"></i></button>
+                        <button onclick="event.stopPropagation(); toggleArchiveEntity('subproject', '${sp.id}')" class="text-slate-400 hover:text-blue-500 p-2"><i class="fas fa-archive text-xs"></i></button>
+                        <i class="fas fa-grip-lines text-slate-300 dark:text-slate-600 text-xs ml-1 cursor-grab"></i>
                     </div>
                 </div>`}).join('');
 
@@ -1054,42 +1052,42 @@
                 <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
                     <div class="xl:col-span-3 space-y-6">
                         <div class="panel flex flex-col bg-white dark:bg-darkpanel shadow-sm border border-slate-200 dark:border-darkborder border-t-8" style="border-top-color: ${prjColor}">
-                            <div class="p-6 border-b border-slate-200 dark:border-darkborder relative">
+                            <div class="p-6 md:p-8 border-b border-slate-200 dark:border-darkborder relative">
                                 <div class="absolute top-6 right-6 flex gap-2 text-sm z-10">
-                                    <button onclick="togglePin('project', '${p.id}')" class="text-slate-400 hover:text-amber-500 transition p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Fissa in alto"><i class="fas fa-star ${p.pinned ? 'text-amber-500':''}"></i></button>
-                                    <button onclick="toggleArchiveEntity('project', '${p.id}')" class="text-slate-400 hover:text-blue-500 transition p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Archivia Progetto"><i class="fas fa-archive"></i></button>
-                                    <button onclick="openEntityModal('edit', 'project', '${s?s.id:null}', '${p.id}')" class="text-slate-400 hover:text-slate-800 dark:hover:text-white transition p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Modifica"><i class="fas fa-edit"></i></button>
+                                    <button onclick="togglePin('project', '${p.id}')" class="text-slate-400 hover:text-amber-500 transition p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Fissa in alto"><i class="fas fa-star ${p.pinned ? 'text-amber-500':''}"></i></button>
+                                    <button onclick="toggleArchiveEntity('project', '${p.id}')" class="text-slate-400 hover:text-blue-500 transition p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Archivia Progetto"><i class="fas fa-archive"></i></button>
+                                    <button onclick="openEntityModal('edit', 'project', '${s?s.id:null}', '${p.id}')" class="text-slate-400 hover:text-slate-800 dark:hover:text-white transition p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Modifica"><i class="fas fa-edit"></i></button>
                                 </div>
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase tracking-widest border border-slate-200 dark:border-slate-700" style="color:${s?s.color:'#94a3b8'}">${s?s.name:'Sconosciuta'}</span>
                                 </div>
-                                <h2 class="text-2xl font-bold mb-3 pr-24 text-slate-900 dark:text-white tracking-tight"><i class="fas ${p.icon||'fa-folder'} mr-2 opacity-70"></i> ${p.name}</h2>
+                                <h2 class="text-3xl font-bold mb-4 pr-28 text-slate-900 dark:text-white tracking-tight"><i class="fas ${p.icon||'fa-folder'} mr-3 opacity-70"></i> ${p.name}</h2>
                                 <div class="flex flex-wrap gap-3 text-xs font-bold text-slate-500">
-                                    <span class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700">${p.type}</span>
-                                    <span class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700">${p.status}</span>
-                                    ${p.archived ? `<span class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 px-2 py-1 rounded"><i class="fas fa-archive mr-1.5"></i>Archiviato</span>` : ''}
+                                    <span class="bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded border border-slate-200 dark:border-slate-700">${p.type}</span>
+                                    <span class="bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded border border-slate-200 dark:border-slate-700">${p.status}</span>
+                                    ${p.archived ? `<span class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 px-3 py-1.5 rounded"><i class="fas fa-archive mr-1.5"></i>Archiviato</span>` : ''}
                                 </div>
                             </div>
                             
-                            <div class="p-6">
-                                <div class="flex justify-between items-center mb-1">
+                            <div class="p-6 md:p-8">
+                                <div class="flex justify-between items-center mb-2">
                                     <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest"><i class="fas fa-book-open text-blue-500 mr-1.5"></i> Quaderno Appunti</h3>
-                                    <button onclick="handleNotesClick('project', '${p.id}')" id="toggle-notes-btn" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 transition"><i class="fas fa-chevron-down mr-1 hidden md:inline"></i> Mostra Appunti</button>
+                                    <button onclick="handleNotesClick('project', '${p.id}')" id="toggle-notes-btn" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline px-3 py-1.5 rounded bg-blue-50 dark:bg-blue-900/20 transition active:scale-95"><i class="fas fa-chevron-down mr-1 hidden md:inline"></i> Mostra Appunti</button>
                                 </div>
                                 
-                                <div id="notes-container" class="hidden flex-col gap-6 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50">
+                                <div id="notes-container" class="hidden flex-col gap-6 mt-4 pt-6 border-t border-slate-100 dark:border-slate-700/50">
                                     <div>
                                         <h3 class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center mb-2"><i class="fas fa-thumbtack mr-1.5"></i> Appunti Permanenti</h3>
-                                        <div class="bg-slate-50 dark:bg-[#202938] rounded-lg border border-slate-200 dark:border-darkborder p-2 shadow-inner">
+                                        <div class="bg-slate-50 dark:bg-[#202938] rounded-lg border border-slate-200 dark:border-darkborder p-3 shadow-inner">
                                             <div id="quill-perm-editor-project" class="min-h-[80px]"></div>
                                         </div>
                                     </div>
                                     <div>
                                         <div class="flex justify-between items-center mb-2">
                                             <h3 class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center"><i class="fas fa-pen-nib mr-1.5"></i> Foglio Appunti Libero</h3>
-                                            <button onclick="archiveNotes('project', '${p.id}')" class="text-[9px] font-bold bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded transition shadow-sm"><i class="fas fa-file-archive mr-1"></i> Archivia Foglio</button>
+                                            <button onclick="archiveNotes('project', '${p.id}')" class="text-[9px] font-bold bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded transition shadow-sm active:scale-95"><i class="fas fa-file-archive mr-1"></i> Archivia Foglio</button>
                                         </div>
-                                        <div class="bg-white dark:bg-darkbg rounded-lg border border-slate-200 dark:border-darkborder p-2 shadow-inner">
+                                        <div class="bg-white dark:bg-darkbg rounded-lg border border-slate-200 dark:border-darkborder p-3 shadow-inner">
                                             <div id="quill-editor-project" class="min-h-[150px]"></div>
                                         </div>
                                     </div>
@@ -1098,20 +1096,20 @@
                             </div>
                         </div>
 
-                        <div class="panel p-6 bg-white dark:bg-darkpanel shadow-sm border border-slate-200 dark:border-darkborder">
+                        <div class="panel p-6 md:p-8 bg-white dark:bg-darkpanel shadow-sm border border-slate-200 dark:border-darkborder">
                             <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-200 dark:border-darkborder">
                                 <h3 class="text-[11px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center"><i class="fas fa-sitemap text-blue-500 mr-2"></i> Sottoprogetti</h3>
                                 <div class="flex gap-2 text-sm z-10 relative">
-                                    <button onclick="toggleArchivedView()" class="text-[10px] font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white px-2 py-1 rounded border border-slate-200 dark:border-darkborder bg-slate-50 dark:bg-[#202938]"><i class="fas fa-archive mr-1"></i> ${state.ui.showArchived ? 'Attivi':'Archivio'}</button>
-                                    <button onclick="openEntityModal('create', 'subproject', '${s?s.id:null}', '${p.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] px-3 py-1 rounded shadow transition"><i class="fas fa-plus mr-1"></i> Nuovo</button>
+                                    <button onclick="toggleArchivedView()" class="text-[10px] font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white px-3 py-1.5 rounded border border-slate-200 dark:border-darkborder bg-slate-50 dark:bg-[#202938] transition active:scale-95"><i class="fas fa-archive mr-1"></i> ${state.ui.showArchived ? 'Attivi':'Archivio'}</button>
+                                    <button onclick="openEntityModal('create', 'subproject', '${s?s.id:null}', '${p.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] px-3 py-1.5 rounded shadow transition active:scale-95"><i class="fas fa-plus mr-1"></i> Nuovo</button>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="space-y-2">
-                                    ${pinned.length > 0 ? `<h4 class="text-[9px] font-bold text-amber-500 uppercase tracking-widest mb-2 flex items-center"><i class="fas fa-star mr-1"></i> In Evidenza</h4>${renderSubList(pinned, 'project_pinned')}` : ''}
+                                    ${pinned.length > 0 ? `<h4 class="text-[9px] font-bold text-amber-500 uppercase tracking-widest mb-3 flex items-center"><i class="fas fa-star mr-1"></i> In Evidenza</h4>${renderSubList(pinned, 'project_pinned')}` : ''}
                                 </div>
                                 <div class="space-y-2">
-                                    <h4 class="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">${state.ui.showArchived ? 'Archiviati' : 'Tutti i Sottoprogetti'}</h4>
+                                    <h4 class="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3">${state.ui.showArchived ? 'Archiviati' : 'Tutti i Sottoprogetti'}</h4>
                                     ${renderSubList(unpinned, 'project_unpinned') || `<p class="text-xs text-slate-400 italic">Nessun sottoprogetto.</p>`}
                                 </div>
                             </div>
@@ -1119,14 +1117,14 @@
                     </div>
 
                     <div class="space-y-6">
-                        <div class="panel p-5 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
+                        <div class="panel p-6 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
                             <h3 class="font-bold text-[11px] text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-4 pb-3 border-b border-slate-200 dark:border-darkborder flex items-center"><i class="fas fa-tasks text-blue-500 mr-2"></i> Tasks Progetto</h3>
                             ${renderInlineTasks(p.id)}
                         </div>
-                        <div class="panel p-5 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
+                        <div class="panel p-6 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
                             <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-200 dark:border-darkborder">
                                 <h3 class="font-bold text-[11px] text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center"><i class="fas fa-users text-purple-500 mr-2"></i> Contatti</h3>
-                                <button onclick="openContactModal(null, '${p.id}')" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline"><i class="fas fa-plus"></i></button>
+                                <button onclick="openContactModal(null, '${p.id}')" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline p-1"><i class="fas fa-plus"></i></button>
                             </div>
                             ${renderContextContacts(p.id)}
                         </div>
@@ -1145,41 +1143,41 @@
                 <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
                     <div class="xl:col-span-3 space-y-6">
                         <div class="panel flex flex-col bg-white dark:bg-darkpanel shadow-sm border border-slate-200 dark:border-darkborder border-t-8" style="border-top-color: ${spColor}">
-                            <div class="p-6 border-b border-slate-200 dark:border-darkborder relative">
+                            <div class="p-6 md:p-8 border-b border-slate-200 dark:border-darkborder relative">
                                 <div class="absolute top-6 right-6 flex gap-2 text-sm z-10">
-                                    <button onclick="togglePin('subproject', '${sp.id}')" class="text-slate-400 hover:text-amber-500 transition p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Fissa in alto"><i class="fas fa-star ${sp.pinned ? 'text-amber-500':''}"></i></button>
-                                    <button onclick="toggleArchiveEntity('subproject', '${sp.id}')" class="text-slate-400 hover:text-blue-500 transition p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Archivia"><i class="fas fa-archive"></i></button>
-                                    <button onclick="openEntityModal('edit', 'subproject', '${s?s.id:null}', '${p?p.id:null}', '${sp.id}')" class="text-slate-400 hover:text-slate-800 dark:hover:text-white transition p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fas fa-edit"></i></button>
+                                    <button onclick="togglePin('subproject', '${sp.id}')" class="text-slate-400 hover:text-amber-500 transition p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Fissa in alto"><i class="fas fa-star ${sp.pinned ? 'text-amber-500':''}"></i></button>
+                                    <button onclick="toggleArchiveEntity('subproject', '${sp.id}')" class="text-slate-400 hover:text-blue-500 transition p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Archivia"><i class="fas fa-archive"></i></button>
+                                    <button onclick="openEntityModal('edit', 'subproject', '${s?s.id:null}', '${p?p.id:null}', '${sp.id}')" class="text-slate-400 hover:text-slate-800 dark:hover:text-white transition p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fas fa-edit"></i></button>
                                 </div>
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase tracking-widest border border-slate-200 dark:border-slate-700" style="color:${spColor}">${p?p.name:'Sconosciuto'}</span>
                                 </div>
-                                <h2 class="text-2xl font-bold mb-3 pr-24 text-slate-900 dark:text-white tracking-tight"><i class="fas ${sp.icon||'fa-file-alt'} mr-2 opacity-70"></i> ${sp.name}</h2>
+                                <h2 class="text-3xl font-bold mb-4 pr-28 text-slate-900 dark:text-white tracking-tight"><i class="fas ${sp.icon||'fa-file-alt'} mr-3 opacity-70"></i> ${sp.name}</h2>
                                 <div class="flex gap-3 text-xs font-bold text-slate-500">
-                                    <span class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700">${sp.type || 'A termine'}</span>
-                                    <span class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700">${sp.status || 'Attivo'}</span>
+                                    <span class="bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded border border-slate-200 dark:border-slate-700">${sp.type || 'A termine'}</span>
+                                    <span class="bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded border border-slate-200 dark:border-slate-700">${sp.status || 'Attivo'}</span>
                                 </div>
                             </div>
                             
-                            <div class="p-6">
-                                <div class="flex justify-between items-center mb-1">
+                            <div class="p-6 md:p-8">
+                                <div class="flex justify-between items-center mb-2">
                                     <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest"><i class="fas fa-book-open text-blue-500 mr-1.5"></i> Quaderno Appunti</h3>
-                                    <button onclick="handleNotesClick('subproject', '${sp.id}')" id="toggle-notes-btn" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 transition"><i class="fas fa-chevron-down mr-1 hidden md:inline"></i> Mostra Appunti</button>
+                                    <button onclick="handleNotesClick('subproject', '${sp.id}')" id="toggle-notes-btn" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline px-3 py-1.5 rounded bg-blue-50 dark:bg-blue-900/20 transition active:scale-95"><i class="fas fa-chevron-down mr-1 hidden md:inline"></i> Mostra Appunti</button>
                                 </div>
                                 
-                                <div id="notes-container" class="hidden flex-col gap-6 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50">
+                                <div id="notes-container" class="hidden flex-col gap-6 mt-4 pt-6 border-t border-slate-100 dark:border-slate-700/50">
                                     <div>
                                         <h3 class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center mb-2"><i class="fas fa-thumbtack mr-1.5"></i> Appunti Permanenti</h3>
-                                        <div class="bg-slate-50 dark:bg-[#202938] rounded-lg border border-slate-200 dark:border-darkborder p-2 shadow-inner">
+                                        <div class="bg-slate-50 dark:bg-[#202938] rounded-lg border border-slate-200 dark:border-darkborder p-3 shadow-inner">
                                             <div id="quill-perm-editor-subproject" class="min-h-[80px]"></div>
                                         </div>
                                     </div>
                                     <div>
                                         <div class="flex justify-between items-center mb-2">
                                             <h3 class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center"><i class="fas fa-pen-nib mr-1.5"></i> Foglio Appunti Libero</h3>
-                                            <button onclick="archiveNotes('subproject', '${sp.id}')" class="text-[9px] font-bold bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded transition shadow-sm"><i class="fas fa-file-archive mr-1"></i> Archivia Foglio</button>
+                                            <button onclick="archiveNotes('subproject', '${sp.id}')" class="text-[9px] font-bold bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded transition shadow-sm active:scale-95"><i class="fas fa-file-archive mr-1"></i> Archivia Foglio</button>
                                         </div>
-                                        <div class="bg-white dark:bg-darkbg rounded-lg border border-slate-200 dark:border-darkborder p-2 shadow-inner">
+                                        <div class="bg-white dark:bg-darkbg rounded-lg border border-slate-200 dark:border-darkborder p-3 shadow-inner">
                                             <div id="quill-editor-subproject" class="min-h-[150px]"></div>
                                         </div>
                                     </div>
@@ -1189,14 +1187,14 @@
                         </div>
                     </div>
                     <div class="space-y-6">
-                        <div class="panel p-5 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
+                        <div class="panel p-6 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
                             <h3 class="font-bold text-[11px] text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-4 pb-3 border-b border-slate-200 dark:border-darkborder flex items-center"><i class="fas fa-tasks text-blue-500 mr-2"></i> Tasks Specifici</h3>
                             ${renderInlineTasks(sp.id)}
                         </div>
-                        <div class="panel p-5 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
+                        <div class="panel p-6 bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
                             <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-200 dark:border-darkborder">
                                 <h3 class="font-bold text-[11px] text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center"><i class="fas fa-users text-purple-500 mr-2"></i> Contatti</h3>
-                                <button onclick="openContactModal(null, '${sp.id}')" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline"><i class="fas fa-plus"></i></button>
+                                <button onclick="openContactModal(null, '${sp.id}')" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline p-1"><i class="fas fa-plus"></i></button>
                             </div>
                             ${renderContextContacts(sp.id)}
                         </div>
@@ -1287,51 +1285,51 @@
             tasks.sort((a,b) => a.completed - b.completed || b.priority - a.priority);
 
             let html = `
-                <div class="flex gap-2 mb-4">
-                    <input type="text" id="tIn_${contextId||'g'}" class="input-base flex-1 font-semibold text-sm py-1.5" placeholder="Nuovo task..." onkeypress="if(event.key === 'Enter') addTask('${contextId||''}')">
-                    <button onclick="addTask('${contextId||''}')" class="bg-blue-600 hover:bg-blue-700 px-3 rounded text-white transition shadow-sm"><i class="fas fa-plus text-xs"></i></button>
+                <div class="flex gap-2 mb-5">
+                    <input type="text" id="tIn_${contextId||'g'}" class="input-base flex-1 font-semibold text-sm py-2.5" placeholder="Nuovo task..." onkeypress="if(event.key === 'Enter') addTask('${contextId||''}')">
+                    <button onclick="addTask('${contextId||''}')" class="bg-blue-600 hover:bg-blue-700 px-4 rounded-lg text-white transition shadow-sm active:scale-95"><i class="fas fa-plus"></i></button>
                 </div>
-                <div class="space-y-1.5 max-h-[300px] overflow-y-auto pr-1">`;
+                <div class="space-y-2 max-h-[350px] overflow-y-auto pr-1">`;
             
-            if(tasks.length === 0) html += `<p class="text-xs text-slate-400 text-center py-3 italic">Nessun task attivo.</p>`;
+            if(tasks.length === 0) html += `<p class="text-sm text-slate-400 text-center py-4 italic">Nessun task attivo.</p>`;
             
             tasks.forEach(t => {
                 const ctx = getContextInfo(t.contextId);
                 if (editingTaskId === t.id) {
                     html += `
-                        <div class="flex flex-col gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-600 shadow-inner">
-                            <input type="text" id="etTitle_${t.id}" value="${t.title}" class="input-base font-bold text-sm py-1">
+                        <div class="flex flex-col gap-3 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-300 dark:border-slate-600 shadow-inner">
+                            <input type="text" id="etTitle_${t.id}" value="${t.title}" class="input-base font-bold text-sm py-2">
                             <div class="flex flex-wrap gap-2">
-                                <select id="etPri_${t.id}" class="input-base w-16 text-xs font-bold py-1"><option value="0" ${t.priority===0?'selected':''}>P0</option><option value="1" ${t.priority===1?'selected':''}>P1</option><option value="2" ${t.priority===2?'selected':''}>P2</option><option value="3" ${t.priority===3?'selected':''}>P3</option></select>
-                                <input type="date" id="etDate_${t.id}" value="${t.dueDate||''}" class="input-base w-32 text-xs font-bold py-1">
-                                ${showGlobal ? `<select id="etCtx_${t.id}" class="input-base flex-1 min-w-[120px] text-xs font-bold py-1">${generateCtxOpts(t.contextId)}</select>` : ''}
+                                <select id="etPri_${t.id}" class="input-base w-24 text-xs font-bold py-2"><option value="0" ${t.priority===0?'selected':''}>P0</option><option value="1" ${t.priority===1?'selected':''}>P1</option><option value="2" ${t.priority===2?'selected':''}>P2</option><option value="3" ${t.priority===3?'selected':''}>P3</option></select>
+                                <input type="date" id="etDate_${t.id}" value="${t.dueDate||''}" class="input-base w-32 text-xs font-bold py-2">
+                                ${showGlobal ? `<select id="etCtx_${t.id}" class="input-base flex-1 min-w-[140px] text-xs font-bold py-2">${generateCtxOpts(t.contextId)}</select>` : ''}
                             </div>
-                            <div class="flex justify-end gap-2 mt-1">
-                                <button onclick="editingTaskId=null; render()" class="text-[10px] font-bold px-2 py-1 rounded text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition">Annulla</button>
-                                <button onclick="saveTaskEdit('${t.id}', ${showGlobal ? `'etCtx_${t.id}'` : 'null'})" class="text-[10px] font-bold px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition">Salva</button>
+                            <div class="flex justify-end gap-2 mt-2">
+                                <button onclick="editingTaskId=null; render()" class="text-xs font-bold px-4 py-2 rounded text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition active:scale-95">Annulla</button>
+                                <button onclick="saveTaskEdit('${t.id}', ${showGlobal ? `'etCtx_${t.id}'` : 'null'})" class="text-xs font-bold px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition active:scale-95">Salva</button>
                             </div>
                         </div>`;
                 } else {
                     html += `
-                        <div class="panel p-2 flex items-center gap-2.5 prio-${t.priority} bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder rounded-md hover:shadow-sm transition group border-l-4" style="border-left-color: ${t.priority>0 ? '' : 'transparent'}">
+                        <div class="panel p-3 flex items-center gap-3 prio-${t.priority} bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder rounded-lg hover:shadow-sm transition group border-l-4" style="border-left-color: ${t.priority>0 ? '' : 'transparent'}">
                             <input type="checkbox" class="task-checkbox shrink-0 mt-0" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
                             <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                                <p class="${t.completed ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-200'} text-[13px] font-semibold word-wrap leading-tight">${t.title}</p>
+                                <p class="${t.completed ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-200'} text-[14px] font-semibold word-wrap leading-tight">${t.title}</p>
                                 <div class="flex items-center gap-2 shrink-0">
                                     ${showGlobal && t.contextId ? `<span class="text-[9px] uppercase font-bold tracking-wider truncate px-1.5 py-0.5 rounded border" style="color:${ctx.color}; border-color:${ctx.color}40; background-color:${ctx.color}10">${ctx.name}</span>` : ''}
-                                    ${t.dueDate ? `<span class="text-[9px] text-slate-500 dark:text-slate-400 font-bold"><i class="far fa-calendar mr-1"></i>${t.dueDate}</span>` : ''}
+                                    ${t.dueDate ? `<span class="text-[10px] text-slate-500 dark:text-slate-400 font-bold"><i class="far fa-calendar mr-1.5"></i>${t.dueDate}</span>` : ''}
                                 </div>
                             </div>
-                            <div class="flex items-center opacity-0 group-hover:opacity-100 transition">
-                                <button class="text-slate-400 hover:text-blue-500 text-[10px] p-1.5" onclick="editTask('${t.id}')"><i class="fas fa-edit"></i></button>
-                                <button class="text-slate-400 hover:text-red-500 text-[10px] p-1.5" onclick="deleteTask('${t.id}')"><i class="fas fa-trash"></i></button>
+                            <div class="flex items-center opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity gap-1">
+                                <button class="text-slate-400 hover:text-blue-500 p-2 md:p-1.5 rounded transition" onclick="editTask('${t.id}')"><i class="fas fa-edit text-sm md:text-xs"></i></button>
+                                <button class="text-slate-400 hover:text-red-500 p-2 md:p-1.5 rounded transition" onclick="deleteTask('${t.id}')"><i class="fas fa-trash text-sm md:text-xs"></i></button>
                             </div>
                         </div>`;
                 }
             });
 
             if(showCompletedOption && hasCompleted) {
-                html += `<div class="mt-4 text-center border-t border-slate-200 dark:border-darkborder pt-3"><button onclick="state.ui.showCompletedTasks = !state.ui.showCompletedTasks; render();" class="text-[10px] font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition">${state.ui.showCompletedTasks ? 'Nascondi completati' : 'Mostra completati'}</button></div>`;
+                html += `<div class="mt-5 text-center border-t border-slate-200 dark:border-darkborder pt-4"><button onclick="state.ui.showCompletedTasks = !state.ui.showCompletedTasks; render();" class="text-[10px] font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-full active:scale-95">${state.ui.showCompletedTasks ? 'Nascondi completati' : 'Mostra completati'}</button></div>`;
             }
             return html + `</div>`;
         }
@@ -1339,7 +1337,6 @@
         // --- TASK MANAGER (ADVANCED) ---
         function toggleTmSidebar() {
             const sidebar = document.getElementById('tmSidebar');
-            // Cerca prima il nuovo overlay interno sicuro, altrimenti usa quello vecchio
             const overlay = document.getElementById('tmOverlayInner') || document.getElementById('tmOverlay');
             
             if (sidebar.classList.contains('open')) {
@@ -1360,16 +1357,17 @@
         }
 
         function renderAdvancedTaskManager() {
-            // Sidebar Navigation - Aggiunto Header in stile TickTick per tornare alla Dashboard
+            // Sidebar Navigation
             let navHtml = `
                 <div class="flex items-center gap-3 p-4 mb-2 md:hidden border-b border-slate-200 dark:border-slate-700">
-                    <button onclick="navigate('home')" class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold text-lg transition hover:text-blue-500 shadow-sm"><i class="fas fa-home"></i></button>
+                    <button onclick="navigate('home')" class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold text-lg transition hover:text-blue-500 shadow-sm active:scale-95"><i class="fas fa-home"></i></button>
                     <div class="font-bold text-slate-800 dark:text-white flex-1 leading-tight text-sm">Dashboard<br><span class="text-[10px] text-slate-400 font-normal">Torna alla home</span></div>
-                    <button onclick="toggleTmSidebar()" class="p-2 text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-full w-8 h-8 flex items-center justify-center"><i class="fas fa-times text-sm"></i></button>
+                    <button onclick="toggleTmSidebar()" class="p-2 text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-full w-8 h-8 flex items-center justify-center active:scale-95"><i class="fas fa-times text-sm"></i></button>
                 </div>
                 
                 <div class="mb-6 space-y-1 mt-4 md:mt-0 px-2 md:px-0">
-                    <div class="tm-nav-item ${state.ui.tmView==='all'?'active':''}" onclick="state.ui.tmView='all'; toggleTmSidebar(); render();"><i class="fas fa-inbox w-4 text-blue-500"></i> Posta in arrivo</div>
+                    <div class="tm-nav-item ${state.ui.tmView==='all'?'active':''}" onclick="state.ui.tmView='all'; toggleTmSidebar(); render();"><i class="fas fa-layer-group w-4 text-blue-500"></i> Tutte le Task</div>
+                    <div class="tm-nav-item ${state.ui.tmView==='inbox'?'active':''}" onclick="state.ui.tmView='inbox'; toggleTmSidebar(); render();"><i class="fas fa-inbox w-4 text-slate-500"></i> Senza Contesto</div>
                     <div class="tm-nav-item ${state.ui.tmView==='today'?'active':''}" onclick="state.ui.tmView='today'; toggleTmSidebar(); render();"><i class="fas fa-calendar-day w-4 text-amber-500"></i> Oggi</div>
                     <div class="tm-nav-item ${state.ui.tmView==='next7'?'active':''}" onclick="state.ui.tmView='next7'; toggleTmSidebar(); render();"><i class="fas fa-calendar-alt w-4 text-purple-500"></i> Prossimi 7 Giorni</div>
                 </div>
@@ -1378,14 +1376,14 @@
             
             state.data.spheres.sort((a,b)=>(a.order||0)-(b.order||0)).forEach(s => {
                 navHtml += `<div class="mb-2">
-                            <div class="flex items-center group"><i class="fas fa-chevron-down text-[10px] text-slate-400 cursor-pointer w-6 text-center hover:text-slate-800 dark:hover:text-white transition" onclick="toggleNavFolder(event, 'nav_s_${s.id}')"></i><div class="tm-nav-item flex-1 ${state.ui.tmView==='s_'+s.id?'active':''}" onclick="state.ui.tmView='s_${s.id}'; toggleTmSidebar(); render();" style="color: ${state.ui.tmView==='s_'+s.id ? s.color : ''}"><i class="fas ${s.icon} w-4" style="color:${s.color}"></i> ${s.name}</div></div>
+                            <div class="flex items-center group"><i class="fas fa-chevron-down text-[10px] text-slate-400 cursor-pointer w-6 text-center hover:text-slate-800 dark:hover:text-white transition p-2" onclick="toggleNavFolder(event, 'nav_s_${s.id}')"></i><div class="tm-nav-item flex-1 ${state.ui.tmView==='s_'+s.id?'active':''}" onclick="state.ui.tmView='s_${s.id}'; toggleTmSidebar(); render();" style="color: ${state.ui.tmView==='s_'+s.id ? s.color : ''}"><i class="fas ${s.icon} w-4" style="color:${s.color}"></i> ${s.name}</div></div>
                             <div id="nav_s_${s.id}" class="pl-2 ml-3 mt-1 mb-2 space-y-1">`;
                 
                 getChildren('sphere', s.id).filter(p=>!p.archived).forEach(p => {
                     const subs = getChildren('project', p.id).filter(sp=>!sp.archived);
                     navHtml += `<div>`;
                     if(subs.length > 0) {
-                        navHtml += `<div class="flex items-center group"><i class="fas fa-chevron-down text-[9px] text-slate-400 cursor-pointer w-6 text-center hover:text-slate-800 dark:hover:text-white transition" onclick="toggleNavFolder(event, 'nav_p_${p.id}')"></i><div class="tm-nav-item flex-1 text-sm ${state.ui.tmView==='p_'+p.id?'active':''}" onclick="state.ui.tmView='p_${p.id}'; toggleTmSidebar(); render();"><i class="fas ${p.icon||'fa-folder'} w-4 text-slate-400"></i> ${p.name}</div></div>`;
+                        navHtml += `<div class="flex items-center group"><i class="fas fa-chevron-down text-[9px] text-slate-400 cursor-pointer w-6 text-center hover:text-slate-800 dark:hover:text-white transition p-2" onclick="toggleNavFolder(event, 'nav_p_${p.id}')"></i><div class="tm-nav-item flex-1 text-sm ${state.ui.tmView==='p_'+p.id?'active':''}" onclick="state.ui.tmView='p_${p.id}'; toggleTmSidebar(); render();"><i class="fas ${p.icon||'fa-folder'} w-4 text-slate-400"></i> ${p.name}</div></div>`;
                         navHtml += `<div id="nav_p_${p.id}" class="pl-2 ml-3 mt-1 space-y-1">`;
                         subs.forEach(sp => {
                             navHtml += `<div class="flex items-center ml-1"><div class="tm-nav-item flex-1 text-xs ${state.ui.tmView==='sp_'+sp.id?'active':''}" onclick="state.ui.tmView='sp_'+sp.id'; toggleTmSidebar(); render();"><i class="fas ${sp.icon||'fa-file-alt'} w-4 text-slate-400"></i> ${sp.name}</div></div>`;
@@ -1408,7 +1406,7 @@
             let ctxOpts = generateCtxOpts(currentCtxId);
             let tasks = [...state.data.tasks];
             const todayStr = new Date().toISOString().split('T')[0];
-            let listTitle = "Posta in arrivo";
+            let listTitle = "Tutte le Task";
 
             if(state.ui.tmView === 'today') { tasks = tasks.filter(t => t.dueDate === todayStr); listTitle = "Oggi"; }
             else if(state.ui.tmView === 'next7') { 
@@ -1421,7 +1419,7 @@
                 listTitle = "Prossimi 7 Giorni"; 
             }
             else if(state.ui.tmView === 'inbox') { tasks = tasks.filter(t => !t.contextId); listTitle = "Senza Contesto"; }
-            else if(state.ui.tmView === 'all') { listTitle = "Posta in arrivo"; }
+            else if(state.ui.tmView === 'all') { listTitle = "Tutte le Task"; }
             else if(state.ui.tmView.startsWith('s_')) { 
                 const id = state.ui.tmView.replace('s_',''); 
                 tasks = tasks.filter(t => {
@@ -1478,7 +1476,7 @@
             }
 
             let tasksHtml = '';
-            if(tasks.length === 0) tasksHtml = `<div class="text-center py-16 text-slate-400"><i class="fas fa-clipboard-check text-5xl mb-4 opacity-20"></i><p class="font-bold text-sm">Tutto completato per ora!</p></div>`;
+            if(tasks.length === 0) tasksHtml = `<div class="text-center py-20 text-slate-400"><i class="fas fa-clipboard-check text-6xl mb-5 opacity-20"></i><p class="font-bold text-base">Tutto completato per ora!</p></div>`;
             else {
                 for (const [groupName, groupTasks] of Object.entries(groups)) {
                     if(groupTasks.length === 0) continue;
@@ -1489,10 +1487,10 @@
                     if(groupName === "Bassa") groupColor = "text-blue-500";
 
                     if(groupName !== "") {
-                        tasksHtml += `<div class="flex justify-between items-center px-1 mb-2 mt-4"><h3 class="text-xs font-bold ${groupColor}">${groupName}</h3><span class="text-[10px] text-slate-400 font-bold">${groupTasks.length}</span></div>`;
+                        tasksHtml += `<div class="flex justify-between items-center px-2 mb-3 mt-6"><h3 class="text-[13px] font-bold ${groupColor}">${groupName}</h3><span class="text-[11px] text-slate-400 font-bold bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-full">${groupTasks.length}</span></div>`;
                     }
                     
-                    tasksHtml += `<div class="bg-white dark:bg-darkpanel rounded-2xl shadow-sm border border-slate-100 dark:border-darkborder overflow-hidden mb-4">`;
+                    tasksHtml += `<div class="bg-white dark:bg-darkpanel rounded-2xl shadow-sm border border-slate-100 dark:border-darkborder overflow-hidden mb-5">`;
                     
                     groupTasks.forEach((t, idx) => {
                         const ctx = getContextInfo(t.contextId);
@@ -1501,16 +1499,16 @@
                         
                         if (editingTaskId === t.id) {
                             tasksHtml += `
-                                <div class="p-3 bg-slate-50 dark:bg-[#1a1c23] ${borderBottom} flex flex-col gap-3">
-                                    <input type="text" id="etTitle_${t.id}" value="${t.title}" class="input-base font-bold text-sm py-1.5">
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <select id="etPri_${t.id}" class="input-base w-24 text-[10px] font-bold py-1.5"><option value="0" ${t.priority===0?'selected':''}>No Prio</option><option value="1" ${t.priority===1?'selected':''}>Bassa</option><option value="2" ${t.priority===2?'selected':''}>Media</option><option value="3" ${t.priority===3?'selected':''}>Alta</option></select>
-                                        <input type="date" id="etDate_${t.id}" value="${t.dueDate||''}" class="input-base w-28 text-[10px] font-bold py-1.5">
-                                        <select id="etCtx_${t.id}" class="input-base flex-1 min-w-[120px] text-[10px] font-bold py-1.5">${generateCtxOpts(t.contextId)}</select>
+                                <div class="p-4 bg-slate-50 dark:bg-[#1a1c23] ${borderBottom} flex flex-col gap-4">
+                                    <input type="text" id="etTitle_${t.id}" value="${t.title}" class="input-base font-bold text-sm py-2">
+                                    <div class="flex flex-wrap items-center gap-3">
+                                        <select id="etPri_${t.id}" class="input-base w-28 text-xs font-bold py-2"><option value="0" ${t.priority===0?'selected':''}>No Prio</option><option value="1" ${t.priority===1?'selected':''}>Bassa</option><option value="2" ${t.priority===2?'selected':''}>Media</option><option value="3" ${t.priority===3?'selected':''}>Alta</option></select>
+                                        <input type="date" id="etDate_${t.id}" value="${t.dueDate||''}" class="input-base w-32 text-xs font-bold py-2">
+                                        <select id="etCtx_${t.id}" class="input-base flex-1 min-w-[140px] text-xs font-bold py-2">${generateCtxOpts(t.contextId)}</select>
                                     </div>
-                                    <div class="flex justify-end gap-2 mt-1">
-                                        <button onclick="editingTaskId=null; render()" class="text-[10px] font-bold px-3 py-1.5 rounded text-slate-500 hover:text-slate-800 transition">Annulla</button>
-                                        <button onclick="saveTaskEdit('${t.id}', 'etCtx_${t.id}')" class="text-[10px] font-bold px-4 py-1.5 rounded bg-blue-600 text-white shadow-sm transition">Salva</button>
+                                    <div class="flex justify-end gap-3 mt-2">
+                                        <button onclick="editingTaskId=null; render()" class="text-xs font-bold px-4 py-2 rounded text-slate-500 hover:text-slate-800 transition active:scale-95">Annulla</button>
+                                        <button onclick="saveTaskEdit('${t.id}', 'etCtx_${t.id}')" class="text-xs font-bold px-5 py-2 rounded-lg bg-blue-600 text-white shadow-sm transition active:scale-95">Salva</button>
                                     </div>
                                 </div>`;
                         } else {
@@ -1520,19 +1518,19 @@
                             else if(t.priority === 1) cbClass = "border-blue-400 checked:bg-blue-500 checked:border-blue-500";
 
                             tasksHtml += `
-                                <div class="p-2 md:p-3 flex items-center gap-3 ${borderBottom} group hover:bg-slate-50 dark:hover:bg-[#202938] transition">
+                                <div class="p-3 md:p-4 flex items-center gap-4 ${borderBottom} group hover:bg-slate-50 dark:hover:bg-[#202938] transition">
                                     <input type="checkbox" class="task-checkbox shrink-0 ${cbClass}" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
                                     <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                                         <p class="${t.completed ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'} text-[14px] font-medium word-wrap leading-tight">${t.title}</p>
                                         ${(t.dueDate || (t.contextId && state.ui.tmView === 'all')) ? `
-                                        <div class="flex items-center gap-2 shrink-0">
-                                            ${t.dueDate ? `<span class="text-[10px] text-slate-400 font-bold"><i class="far fa-calendar mr-1"></i>${t.dueDate}</span>` : ''}
-                                            ${t.contextId && state.ui.tmView === 'all' ? `<span class="text-[9px] text-slate-400 font-bold truncate"><i class="fas fa-folder mr-1 opacity-50"></i>${ctx.name}</span>` : ''}
+                                        <div class="flex items-center gap-2.5 shrink-0 mt-1 sm:mt-0">
+                                            ${t.dueDate ? `<span class="text-[10px] text-slate-400 font-bold"><i class="far fa-calendar mr-1.5"></i>${t.dueDate}</span>` : ''}
+                                            ${t.contextId && state.ui.tmView === 'all' ? `<span class="text-[9px] text-slate-400 font-bold truncate"><i class="fas fa-folder mr-1.5 opacity-50"></i>${ctx.name}</span>` : ''}
                                         </div>` : ''}
                                     </div>
-                                    <div class="flex items-center opacity-0 group-hover:opacity-100 transition">
-                                        <button onclick="editTask('${t.id}')" class="text-slate-300 hover:text-blue-500 p-1.5"><i class="fas fa-edit text-xs"></i></button>
-                                        <button onclick="deleteTask('${t.id}')" class="text-slate-300 hover:text-red-500 p-1.5"><i class="fas fa-trash-alt text-xs"></i></button>
+                                    <div class="flex items-center opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity gap-1">
+                                        <button onclick="editTask('${t.id}')" class="text-slate-400 hover:text-blue-500 p-2 md:p-1.5 rounded transition active:scale-90"><i class="fas fa-edit text-sm md:text-xs"></i></button>
+                                        <button onclick="deleteTask('${t.id}')" class="text-slate-400 hover:text-red-500 p-2 md:p-1.5 rounded transition active:scale-90"><i class="fas fa-trash-alt text-sm md:text-xs"></i></button>
                                     </div>
                                 </div>`;
                         }
@@ -1542,45 +1540,38 @@
             }
 
             if(hasCompleted) {
-                tasksHtml += `<div class="mt-8 text-center pb-4"><button onclick="state.ui.showCompletedTasks = !state.ui.showCompletedTasks; render();" class="text-[10px] font-bold text-slate-400 hover:text-slate-600 transition bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full shadow-sm">${state.ui.showCompletedTasks ? 'Nascondi completati' : 'Mostra completati'}</button></div>`;
+                tasksHtml += `<div class="mt-8 text-center pb-6"><button onclick="state.ui.showCompletedTasks = !state.ui.showCompletedTasks; render();" class="text-xs font-bold text-slate-500 hover:text-slate-700 transition bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:text-white px-5 py-2.5 rounded-full shadow-sm active:scale-95">${state.ui.showCompletedTasks ? 'Nascondi completati' : 'Mostra completati'}</button></div>`;
             }
 
             return `
-                <!-- Rimosso top-[60px] su mobile per sfruttare tutto lo schermo e Fixato il Wrapper Z-index -->
                 <div class="fixed inset-0 md:relative flex overflow-hidden bg-slate-50 dark:bg-darkbg md:rounded-xl md:border border-slate-200 dark:border-darkborder md:shadow-xl md:min-h-[85vh] z-[60] md:z-auto">
                     
-                    <!-- Nuovo Overlay interno per Mobile con z-index corretto (risolve il bug del clic) -->
                     <div id="tmOverlayInner" class="tm-overlay md:hidden" style="z-index: 50;" onclick="toggleTmSidebar()"></div>
 
-                    <!-- SIDEBAR -->
                     <div id="tmSidebar" class="tm-sidebar-mobile bg-[#eff4f9] dark:bg-[#13151a] md:border-r border-slate-200 dark:border-darkborder md:p-4 shrink-0 overflow-y-auto" style="z-index: 60;">
                         ${navHtml}
                     </div>
 
-                    <!-- MAIN AREA -->
                     <div class="flex-1 flex flex-col bg-[#fdfaf5] dark:bg-darkpanel overflow-hidden w-full relative">
                         
-                       <!-- HEADER MOBILE -->
-<div class="flex items-center justify-between p-4 md:px-8 md:pt-8 bg-white dark:bg-slate-800 md:bg-transparent z-10 shrink-0 border-b border-slate-200 dark:border-slate-700 md:border-none shadow-sm md:shadow-none">
-    <div class="flex items-center gap-3">
-        <!-- AGGIUNTO: Pulsante Indietro verso la Home -->
-        <button onclick="navigate('home')" class="md:hidden text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 text-xl p-1 mr-1 transition"><i class="fas fa-arrow-left"></i></button>
-        
-        <button onclick="toggleTmSidebar()" class="md:hidden text-slate-600 dark:text-slate-300 text-xl p-1 -ml-1"><i class="fas fa-bars"></i></button>
-        <h2 class="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center"><i class="far fa-clipboard text-slate-400 mr-2 hidden md:inline-block"></i> ${listTitle}</h2>
-    </div>
+                        <div class="flex items-center justify-between p-4 md:px-8 md:pt-8 bg-white dark:bg-slate-800 md:bg-transparent z-10 shrink-0 border-b border-slate-200 dark:border-slate-700 md:border-none shadow-sm md:shadow-none">
+                            <div class="flex items-center gap-3">
+                                <button onclick="navigate('home')" class="md:hidden text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 text-xl p-2 mr-1 transition active:scale-90"><i class="fas fa-arrow-left"></i></button>
+                                <button onclick="toggleTmSidebar()" class="md:hidden text-slate-600 dark:text-slate-300 text-xl p-2 -ml-2 transition active:scale-90"><i class="fas fa-bars"></i></button>
+                                <h2 class="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center"><i class="far fa-clipboard text-slate-400 mr-2 hidden md:inline-block"></i> ${listTitle}</h2>
+                            </div>
                             
                             <div class="relative group">
-                                <button class="text-slate-500 hover:text-slate-800 p-2 text-lg"><i class="fas fa-ellipsis-v"></i></button>
-                                <div class="absolute right-0 mt-1 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-100 dark:border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-2">
-                                    <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-2 mb-1">Raggruppa per</div>
-                                    <select class="input-base text-xs font-bold mb-3" onchange="setListSetting('groupBy', this.value)">
+                                <button class="text-slate-500 hover:text-slate-800 dark:hover:text-white p-2 text-xl transition"><i class="fas fa-ellipsis-v"></i></button>
+                                <div class="absolute right-0 mt-1 w-52 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-3">
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 mb-2">Raggruppa per</div>
+                                    <select class="input-base text-sm font-bold mb-4" onchange="setListSetting('groupBy', this.value)">
                                         <option value="none" ${listConf.groupBy==='none'?'selected':''}>Nessuno</option>
                                         <option value="priority" ${listConf.groupBy==='priority'?'selected':''}>Priorità</option>
                                         <option value="date" ${listConf.groupBy==='date'?'selected':''}>Data</option>
                                     </select>
-                                    <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-2 mb-1">Ordina per</div>
-                                    <select class="input-base text-xs font-bold" onchange="setListSetting('sortBy', this.value)">
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 mb-2">Ordina per</div>
+                                    <select class="input-base text-sm font-bold" onchange="setListSetting('sortBy', this.value)">
                                         <option value="priority" ${listConf.sortBy==='priority'?'selected':''}>Priorità</option>
                                         <option value="date" ${listConf.sortBy==='date'?'selected':''}>Data</option>
                                         <option value="name" ${listConf.sortBy==='name'?'selected':''}>Nome</option>
@@ -1589,23 +1580,20 @@
                             </div>
                         </div>
                         
-                        <!-- BARRA INSERIMENTO TASK (Desktop) -->
-                        <div class="hidden md:flex mx-8 mb-4 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 flex-row gap-2 shadow-sm">
+                        <div class="hidden md:flex mx-8 mb-5 bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 flex-row gap-3 shadow-sm">
                             <input type="text" id="gtIn" class="input-base flex-1 min-w-[200px] font-semibold text-sm py-2" placeholder="Scrivi nuovo task..." onkeypress="if(event.key==='Enter') addTaskFromGlobal()">
-                            <select id="gtCtx" class="input-base w-32 text-xs font-bold py-2">${ctxOpts}</select>
+                            <select id="gtCtx" class="input-base w-36 text-xs font-bold py-2">${ctxOpts}</select>
                             <select id="gtPri" class="input-base w-24 text-xs font-bold py-2"><option value="0">No Prio</option><option value="1">Bassa</option><option value="2">Media</option><option value="3">Alta</option></select>
-                            <input type="date" id="gtDate" class="input-base w-[120px] text-xs font-bold py-2">
-                            <button onclick="addTaskFromGlobal()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white font-bold shadow transition"><i class="fas fa-plus"></i></button>
+                            <input type="date" id="gtDate" class="input-base w-[130px] text-xs font-bold py-2">
+                            <button onclick="addTaskFromGlobal()" class="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-lg text-white font-bold shadow transition active:scale-95"><i class="fas fa-plus"></i></button>
                         </div>
 
-                        <!-- LISTA TASKS SCROLLABILE -->
-                        <div class="flex-1 overflow-y-auto px-4 md:px-8 pb-24 pt-4 md:pt-0">
+                        <div class="flex-1 overflow-y-auto px-4 md:px-8 pb-24 pt-2 md:pt-0">
                             ${tasksHtml}
                         </div>
 
-                        <!-- FLOATING ACTION BUTTON (Mobile) -->
-                        <div class="fixed bottom-6 right-6 md:hidden z-[35]">
-                            <button onclick="openMobileQuickAdd()" class="w-14 h-14 bg-blue-600 hover:bg-blue-700 rounded-full text-white text-2xl shadow-[0_4px_15px_rgba(37,99,235,0.4)] flex items-center justify-center transition-transform active:scale-95">
+                        <div class="fixed bottom-8 right-6 md:hidden z-[35]">
+                            <button onclick="openMobileQuickAdd()" class="w-14 h-14 bg-blue-600 hover:bg-blue-700 rounded-full text-white text-2xl shadow-[0_4px_20px_rgba(37,99,235,0.5)] flex items-center justify-center transition-transform active:scale-90">
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
@@ -1649,25 +1637,25 @@
             let html = `
                 <div class="flex justify-between items-center mb-8 pb-5 border-b border-slate-200 dark:border-darkborder">
                     <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center tracking-tight"><i class="fas fa-address-book text-slate-400 dark:text-slate-500 mr-3"></i> Rubrica Globale</h2>
-                    <button onclick="openContactModal()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white text-sm font-bold shadow transition"><i class="fas fa-plus mr-1.5"></i> Nuovo Contatto</button>
+                    <button onclick="openContactModal()" class="bg-blue-600 hover:bg-blue-700 px-5 py-2.5 rounded-lg text-white text-sm font-bold shadow transition active:scale-95"><i class="fas fa-plus mr-1.5"></i> Nuovo Contatto</button>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">`;
             if(state.data.contacts.length===0) html += `<p class="text-sm text-slate-500 col-span-full italic">Rubrica vuota.</p>`;
             state.data.contacts.forEach(c => {
                 html += `
-                    <div class="panel p-5 flex flex-col gap-4 relative group bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow hover:shadow-md transition">
-                        <button onclick="openContactModal('${c.id}')" class="absolute top-3 right-3 text-slate-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fas fa-edit"></i></button>
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 text-xl shadow-inner border border-slate-200 dark:border-slate-700"><i class="fas fa-user"></i></div>
+                    <div class="panel p-6 flex flex-col gap-4 relative group bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow hover:shadow-md transition">
+                        <button onclick="openContactModal('${c.id}')" class="absolute top-4 right-4 text-slate-400 hover:text-blue-500 opacity-100 md:opacity-0 group-hover:opacity-100 transition p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-90"><i class="fas fa-edit"></i></button>
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 text-2xl shadow-inner border border-slate-200 dark:border-slate-700"><i class="fas fa-user"></i></div>
                             <div class="min-w-0 flex-1">
                                 <p class="text-base font-bold text-slate-900 dark:text-slate-100 truncate">${c.name}</p>
-                                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider truncate mt-0.5">${c.role} ${c.org ? ` • ${c.org}` : ''}</p>
+                                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider truncate mt-1">${c.role} ${c.org ? ` • ${c.org}` : ''}</p>
                             </div>
                         </div>
-                        <div class="text-xs font-medium text-slate-600 dark:text-slate-400 space-y-1.5 p-3 rounded-lg border border-slate-200 dark:border-darkborder bg-slate-50 dark:bg-[#202938]">
-                            ${c.phone ? `<p class="flex items-center"><i class="fas fa-phone mr-2 text-slate-400"></i> ${c.phone}</p>` : ''}
-                            ${c.email ? `<p class="flex items-center"><i class="fas fa-envelope mr-2 text-slate-400"></i> <a href="mailto:${c.email}" class="hover:text-blue-500 transition">${c.email}</a></p>` : ''}
-                            ${!c.phone && !c.email ? '<p class="italic text-[10px] opacity-50">Nessun recapito</p>' : ''}
+                        <div class="text-[13px] font-medium text-slate-600 dark:text-slate-400 space-y-2 p-3.5 rounded-xl border border-slate-200 dark:border-darkborder bg-slate-50 dark:bg-[#202938]">
+                            ${c.phone ? `<p class="flex items-center"><i class="fas fa-phone mr-2.5 text-slate-400"></i> ${c.phone}</p>` : ''}
+                            ${c.email ? `<p class="flex items-center"><i class="fas fa-envelope mr-2.5 text-slate-400"></i> <a href="mailto:${c.email}" class="hover:text-blue-500 transition">${c.email}</a></p>` : ''}
+                            ${!c.phone && !c.email ? '<p class="italic text-[11px] opacity-50">Nessun recapito</p>' : ''}
                         </div>
                     </div>`;
             });
@@ -1679,31 +1667,31 @@
             const availableToLink = state.data.contacts.filter(c => !(c.contextIds && c.contextIds.includes(cId)));
             
             let html = `
-                <div class="flex gap-2 mb-4">
-                    <select id="linkContact_${cId}" class="input-base text-[10px] font-bold py-1.5 flex-1">
+                <div class="flex gap-2 mb-5">
+                    <select id="linkContact_${cId}" class="input-base text-xs font-bold py-2 flex-1">
                         <option value="">Collega dalla rubrica...</option>
                         ${availableToLink.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
                     </select>
-                    <button onclick="linkExistingContact('${cId}')" class="bg-blue-600 hover:bg-blue-700 px-3 rounded text-white text-[10px] font-bold shadow-sm transition"><i class="fas fa-link"></i></button>
+                    <button onclick="linkExistingContact('${cId}')" class="bg-blue-600 hover:bg-blue-700 px-4 rounded-lg text-white text-xs font-bold shadow-sm transition active:scale-95"><i class="fas fa-link"></i></button>
                 </div>
-                <div class="space-y-2">`;
-            if(contacts.length===0) html += `<p class="text-[10px] text-slate-500 italic">Nessun contatto collegato.</p>`;
+                <div class="space-y-3">`;
+            if(contacts.length===0) html += `<p class="text-xs text-slate-500 italic">Nessun contatto collegato.</p>`;
             
             contacts.forEach(c => {
                 html += `
-                    <div class="p-3 bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder rounded relative group shadow-sm">
-                        <div class="flex items-center gap-2 mb-2 cursor-pointer" onclick="openContactModal('${c.id}')">
-                            <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-500 shrink-0"><i class="fas fa-user text-xs"></i></div>
+                    <div class="p-3.5 bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder rounded-lg relative group shadow-sm">
+                        <div class="flex items-center gap-3 mb-2 cursor-pointer" onclick="openContactModal('${c.id}')">
+                            <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-500 shrink-0"><i class="fas fa-user text-sm"></i></div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">${c.name}</p>
-                                <p class="text-[9px] text-slate-500 font-bold truncate uppercase tracking-widest mt-0.5">${c.role}</p>
+                                <p class="text-[13px] font-bold text-slate-800 dark:text-slate-200 truncate">${c.name}</p>
+                                <p class="text-[10px] text-slate-500 font-bold truncate uppercase tracking-widest mt-0.5">${c.role}</p>
                             </div>
                         </div>
-                        <div class="text-[10px] font-bold text-slate-500 mt-1 pl-10 space-y-1">
+                        <div class="text-[11px] font-bold text-slate-500 mt-1 pl-12 space-y-1">
                             ${c.phone ? `<div class="flex items-center"><i class="fas fa-phone mr-1.5"></i> ${c.phone}</div>` : ''}
                             ${c.email ? `<div class="flex items-center"><i class="fas fa-envelope mr-1.5"></i> <a href="mailto:${c.email}" class="hover:text-blue-500 transition" onclick="event.stopPropagation()">${c.email}</a></div>` : ''}
                         </div>
-                        <button onclick="unlinkContact('${c.id}', '${cId}')" class="absolute top-2 right-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700" title="Scollega dal progetto"><i class="fas fa-unlink text-[10px]"></i></button>
+                        <button onclick="unlinkContact('${c.id}', '${cId}')" class="absolute top-2 right-2 text-slate-400 hover:text-red-500 opacity-100 md:opacity-0 group-hover:opacity-100 transition p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-90" title="Scollega dal progetto"><i class="fas fa-unlink text-[11px]"></i></button>
                     </div>`;
             });
             return html + `</div>`;
@@ -1757,34 +1745,32 @@
         }
         function deleteContact() { if(confirm("Eliminare definitivamente?")) { state.data.contacts = state.data.contacts.filter(x => x.id !== contactEditId); closeContactModal(); AppData.triggerSave(); render(); } }
 
-        // --- TIMELINE ---
-        function renderTimeline() {
-            let html = `<div class="panel p-6 max-w-5xl mx-auto min-h-[80vh] overflow-x-auto bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-xl"><h2 class="text-2xl font-bold mb-6 text-slate-800 dark:text-slate-100 flex items-center tracking-tight"><i class="fas fa-stream text-slate-400 mr-3"></i> Timeline</h2><p class="text-xs font-medium text-slate-500 mb-8 border-b border-slate-200 dark:border-darkborder pb-4">Imposta Data Inizio e Fine nei progetti e sottoprogetti per visualizzarli qui.</p><div class="min-w-[800px]">`;
-            const entities = [...state.data.projects, ...state.data.subprojects].filter(e => e.startDate && e.endDate && !e.archived).sort((a,b) => new Date(a.startDate) - new Date(b.startDate));
-            if(entities.length === 0) html += `<p class="text-slate-500 text-center mt-10 font-bold text-sm opacity-50">Nessun elemento con date impostate.</p>`;
-            entities.forEach(p => {
-                const isProj = !!p.sphereId;
-                const parent = isProj ? getEntity('sphere', p.sphereId) : getEntity('project', p.projectId);
-                const parentName = parent ? parent.name : 'Sconosciuto';
-                let color = p.color;
-                if (!color && parent) {
-                    if (isProj) color = parent.color;
-                    else {
-                        const grandParent = getEntity('sphere', parent.sphereId);
-                        color = parent.color || (grandParent ? grandParent.color : '#94a3b8');
-                    }
-                }
-                color = color || '#94a3b8';
+        // --- GESTIONE GESTURE DI SWIPE MOBILE ---
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            if (state.view === 'global_tasks') {
+                const swipeDist = touchEndX - touchStartX;
+                const sidebar = document.getElementById('tmSidebar');
+                if (!sidebar) return;
                 
-                html += `<div class="flex items-center gap-4 mb-4 group">
-                    <div class="w-48 truncate text-xs font-bold text-slate-800 dark:text-slate-200" title="${p.name}"><span class="text-[9px] text-slate-500 uppercase tracking-widest block truncate mb-0.5">${parentName}</span>${p.name}</div>
-                    <div class="flex-1 bg-slate-100 dark:bg-slate-800 h-8 rounded relative border border-slate-200 dark:border-slate-700 overflow-hidden shadow-inner">
-                        <div class="absolute top-0 bottom-0 left-0 rounded flex items-center px-3 text-[10px] text-white truncate font-bold shadow-sm transition-all group-hover:brightness-110" style="left: 10%; right: 40%; background-color: ${color}">${p.startDate} - ${p.endDate}</div>
-                    </div>
-                </div>`;
-            });
-            return html + `</div></div>`;
-        }
+                // Evita di bloccare l'uso di input o selettori con scorrimenti involontari
+                if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'select') return;
+
+                // Threshold dello swipe (80px)
+                if (swipeDist > 80 && !sidebar.classList.contains('open')) {
+                    toggleTmSidebar(); // Apri
+                } else if (swipeDist < -80 && sidebar.classList.contains('open')) {
+                    toggleTmSidebar(); // Chiudi
+                }
+            }
+        }, { passive: true });
 
         // AVVIO
         window.onload = () => AppData.initialize();
