@@ -40,15 +40,27 @@
         .modal-animate { animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards; }
         @keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 
+        /* Animazione Check Task Completata */
+        .task-completing-anim { animation: taskComplete 0.3s ease-out forwards; }
+        @keyframes taskComplete { 
+            0% { transform: scale(1); filter: brightness(1); } 
+            50% { transform: scale(0.97); filter: brightness(1.1); } 
+            100% { transform: scale(1); filter: brightness(0.9) grayscale(0.5); opacity: 0.5; } 
+        }
+
         /* Checkbox circolare per tasks */
-        .task-checkbox { appearance: none; min-width: 1.25rem; width: 1.25rem; min-height: 1.25rem; height: 1.25rem; border: 2px solid; border-radius: 50%; cursor: pointer; position: relative; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); background: transparent; }
+        .task-checkbox { appearance: none; min-width: 1.25rem; width: 1.25rem; min-height: 1.25rem; height: 1.25rem; border: 2px solid; border-radius: 50%; cursor: pointer; position: relative; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); background: transparent; flex-shrink: 0; }
         .dark .task-checkbox { border-color: #64748b; }
         .task-checkbox:checked { background-color: #f59e0b !important; border-color: #f59e0b !important; transform: scale(1.05); }
         .task-checkbox:checked::after { content: '✔'; position: absolute; color: white; font-size: 10px; top: -1px; left: 3px; font-weight: bold; }
         
+        /* Stili Drag and Drop Avanzati (Fix Livelli) */
         .draggable { cursor: grab; }
         .draggable:active { cursor: grabbing; }
-        .drag-over { border: 2px dashed #60a5fa !important; opacity: 0.5; border-radius: 8px;}
+        .drop-zone { border: 2px dashed transparent; transition: all 0.2s ease; }
+        body.is-dragging .drop-zone { border-color: #cbd5e1; background-color: rgba(0,0,0,0.015); }
+        .dark body.is-dragging .drop-zone { border-color: #475569; background-color: rgba(255,255,255,0.015); }
+        .drag-over { border-color: #3b82f6 !important; background-color: rgba(59, 130, 246, 0.08) !important; border-radius: 12px; opacity: 1 !important;}
 
         .word-wrap { overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -92,7 +104,7 @@
         @media (min-width: 768px) {
             .tm-sidebar-mobile { position: static; transform: none; width: 17rem; box-shadow: none; z-index: auto; transition: none; }
             .tm-overlay { display: none; }
-            .tm-nav-item { padding: 0.6rem 0.8rem; } /* Piu compatto su PC */
+            .tm-nav-item { padding: 0.6rem 0.8rem; } 
         }
 
         /* --- MODALE APPUNTI MOBILE --- */
@@ -139,6 +151,7 @@
                  <select id="gtPriMobile" class="input-base text-xs font-bold py-3.5 flex-1 bg-slate-50 dark:bg-slate-800/50 border-transparent transition focus:bg-white dark:focus:bg-darkbg"><option value="0">Nessuna Prio</option><option value="1">Bassa Prio</option><option value="2">Media Prio</option><option value="3">Alta Prio</option></select>
                  <input type="date" id="gtDateMobile" class="input-base text-xs font-bold py-3.5 flex-1 bg-slate-50 dark:bg-slate-800/50 border-transparent transition focus:bg-white dark:focus:bg-darkbg">
             </div>
+            <div id="mobileCtxContainer"></div>
             <button onclick="addTaskFromGlobalMobile()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-600/30 transition mt-1 active:scale-[0.98]"><i class="fas fa-arrow-up mr-2"></i> Aggiungi</button>
         </div>
     </div>
@@ -305,21 +318,18 @@
             let touchEndX = e.changedTouches[0].screenX;
             let touchEndY = e.changedTouches[0].screenY;
             
-            // Non interferire con editor, modali aperti o altre interazioni interne
+            // Non interferire con editor, modali aperti o interazioni interne
             if(e.target.closest('.ql-editor') || e.target.closest('.modal-animate') || document.querySelector('.fixed.flex:not(#mobileQuickAddModal):not(.tm-sidebar-mobile)')) return;
 
             let MathAbsX = Math.abs(touchEndX - touchStartX);
             let MathAbsY = Math.abs(touchEndY - touchStartY);
 
-            // Verifica se lo swipe è stato prevalentemente orizzontale e supera i 60px
             if (state.view === 'global_tasks' && MathAbsX > MathAbsY && MathAbsX > 60) {
                 const sidebar = document.getElementById('tmSidebar');
                 if (touchEndX > touchStartX && !sidebar.classList.contains('open')) {
-                    // Swipe Destra -> Apri
-                    toggleTmSidebar();
+                    toggleTmSidebar(); // Swipe Destra -> Apri
                 } else if (touchEndX < touchStartX && sidebar.classList.contains('open')) {
-                    // Swipe Sinistra -> Chiudi
-                    toggleTmSidebar();
+                    toggleTmSidebar(); // Swipe Sinistra -> Chiudi
                 }
             }
         }, {passive: true});
@@ -334,7 +344,8 @@
                 
                 this.defaultData = {
                     version: "5.0",
-                    spheres: [], projects: [], subprojects: [], tasks: [], contacts: []
+                    spheres: [], projects: [], subprojects: [], tasks: [], contacts: [],
+                    pinnedLevels: [{id: 'pl_default', name: 'In Evidenza'}]
                 };
                 
                 this.data = JSON.parse(JSON.stringify(this.defaultData));
@@ -418,16 +429,17 @@
             migrateData(d) {
                 if (!d || Object.keys(d).length === 0) return JSON.parse(JSON.stringify(this.defaultData));
                 let n = { version: "5.0", spheres: [], projects: [], subprojects: [], tasks: d.tasks || [], contacts: d.contacts || [] };
+                n.pinnedLevels = d.pinnedLevels || [{id: 'pl_default', name: 'In Evidenza'}];
                 
                 if (d.version !== "4.5" && d.version !== "5.0" && d.spheres && d.spheres.length > 0 && d.spheres[0].projects !== undefined) {
                     d.spheres.forEach((s, sIdx) => {
                         n.spheres.push({ id: s.id, name: s.name, icon: s.icon || 'fa-folder', color: mapColor(s.color), order: s.order||sIdx, notes: s.notes||'', permanentNotes: s.permanentNotes||'', updates: s.updates||[] });
                         if (s.projects) {
                             s.projects.forEach((p, pIdx) => {
-                                n.projects.push({ id: p.id, sphereId: s.id, name: p.name, icon: p.icon || 'fa-folder', color: p.color, type: p.type, status: p.status, pinned: p.pinned, archived: p.archived||false, notes: p.notes, permanentNotes: p.permanentNotes||'', updates: p.updates||[], startDate: p.startDate||'', endDate: p.endDate||'', order: p.order||pIdx, pinnedOrder: p.pinnedOrder||pIdx });
+                                n.projects.push({ id: p.id, sphereId: s.id, name: p.name, icon: p.icon || 'fa-folder', color: p.color, type: p.type, status: p.status, pinned: p.pinned, pinnedLevelId: p.pinnedLevelId||null, archived: p.archived||false, notes: p.notes, permanentNotes: p.permanentNotes||'', updates: p.updates||[], startDate: p.startDate||'', endDate: p.endDate||'', order: p.order||pIdx, pinnedOrder: p.pinnedOrder||pIdx });
                                 if (p.subprojects) {
                                     p.subprojects.forEach((sp, spIdx) => {
-                                        n.subprojects.push({ id: sp.id, projectId: p.id, name: sp.name, icon: sp.icon || 'fa-file-alt', color: sp.color, type: sp.type||'A termine', status: sp.status||'Attivo', pinned: sp.pinned||false, archived: sp.archived||false, notes: sp.notes, permanentNotes: sp.permanentNotes||'', updates: sp.updates||[], startDate: sp.startDate||'', endDate: sp.endDate||'', order: sp.order||spIdx, pinnedOrder: sp.pinnedOrder||spIdx });
+                                        n.subprojects.push({ id: sp.id, projectId: p.id, name: sp.name, icon: sp.icon || 'fa-file-alt', color: sp.color, type: sp.type||'A termine', status: sp.status||'Attivo', pinned: sp.pinned||false, pinnedLevelId: sp.pinnedLevelId||null, archived: sp.archived||false, notes: sp.notes, permanentNotes: sp.permanentNotes||'', updates: sp.updates||[], startDate: sp.startDate||'', endDate: sp.endDate||'', order: sp.order||spIdx, pinnedOrder: sp.pinnedOrder||spIdx });
                                     });
                                 }
                             });
@@ -461,15 +473,13 @@
         const state = { 
             view: 'home', 
             path: { sphereId: null, projId: null, subprojId: null }, 
-            ui: { showArchived: false, tmView: 'all', showCompletedTasks: false },
+            ui: { showArchived: false, tmView: 'all', showCompletedTasks: false, homeTaskFilter: 'all' },
             get data() { return AppData.data; },
             set data(val) { AppData.data = val; }
         };
         
-        // Impostazioni Task Manager persistenti
         let tmListSettings = JSON.parse(localStorage.getItem('hub_tm_settings')) || {};
 
-        // --- GESTIONE APP & UTILITY ---
         let editState = { mode: 'create', type: 'sphere', id: null };
         let contactEditId = null;
         let editingTaskId = null;
@@ -503,13 +513,9 @@
             e.target.classList.toggle('fa-chevron-right');
         }
         
-        // GESTIONE APPUNTI IBRIDA (Inline Desktop / Modal Mobile)
         function handleNotesClick(type, id) {
-            if (window.innerWidth < 768) {
-                openMobileNotes(type, id);
-            } else {
-                toggleNotes();
-            }
+            if (window.innerWidth < 768) openMobileNotes(type, id);
+            else toggleNotes();
         }
 
         function toggleNotes() {
@@ -559,8 +565,11 @@
             closeMobileNotes();
         }
 
-        // FUNZIONI QUICK ADD MOBILE
         function openMobileQuickAdd() {
+            const ctxValue = state.ui.tmView.startsWith('p_') || state.ui.tmView.startsWith('sp_') || state.ui.tmView.startsWith('s_') ? state.ui.tmView.replace(/^[ps_]+/, '') : '';
+            const ctxOpts = generateCtxOpts(ctxValue);
+            document.getElementById('mobileCtxContainer').innerHTML = `<select id="gtCtxMobile" class="input-base text-xs font-bold py-3.5 flex-1 bg-slate-50 dark:bg-slate-800/50 border-transparent transition focus:bg-white dark:focus:bg-darkbg mt-3">${ctxOpts}</select>`;
+            
             document.getElementById('mobileQuickAddModal').classList.remove('hidden');
             document.getElementById('mobileQuickAddModal').classList.add('flex');
             setTimeout(() => document.getElementById('gtInMobile').focus(), 100);
@@ -570,12 +579,8 @@
             document.getElementById('mobileQuickAddModal').classList.remove('flex');
         }
         function addTaskFromGlobalMobile() {
-            const tIn = document.getElementById('gtInMobile'), pIn = document.getElementById('gtPriMobile'), dIn = document.getElementById('gtDateMobile');
-            // Mantiene il contesto se siamo in una lista specifica
-            let ctxValue = '';
-            if(state.ui.tmView.startsWith('p_') || state.ui.tmView.startsWith('sp_') || state.ui.tmView.startsWith('s_')) {
-                ctxValue = state.ui.tmView.replace(/^[ps_]+/, '');
-            }
+            const tIn = document.getElementById('gtInMobile'), pIn = document.getElementById('gtPriMobile'), dIn = document.getElementById('gtDateMobile'), cIn = document.getElementById('gtCtxMobile');
+            let ctxValue = cIn ? cIn.value : '';
             
             if(!tIn.value.trim()) return;
             state.data.tasks.push({ id: 't_'+Date.now(), title: tIn.value.trim(), completed: false, priority: parseInt(pIn.value), dueDate: dIn.value, contextId: ctxValue });
@@ -587,7 +592,6 @@
 
         function toggleArchivedView() { state.ui.showArchived = !state.ui.showArchived; render(); }
 
-        // --- IMPOSTAZIONI ---
         function toggleSettings() {
             const m = document.getElementById('settingsModal');
             if(m.classList.contains('hidden')) {
@@ -613,7 +617,6 @@
             } 
         }
 
-        // --- IMPORTAZIONE ---
         function openImportModal() { document.getElementById('importDataArea').value = ''; document.getElementById('importModal').classList.remove('hidden'); }
         function closeImportModal() { document.getElementById('importModal').classList.add('hidden'); }
         function executeImport() {
@@ -630,11 +633,10 @@
             }
         }
 
-        // --- MODALE ENTITÀ ---
         function openEntityModal(mode, type, sId=null, pId=null, spId=null) {
             editState = { mode, type, id: (mode==='edit' ? (type==='sphere'?sId : (type==='project'?pId : spId)) : null), sId, pId };
             
-            document.getElementById('emTitle').innerText = mode === 'create' ? `Nuovo ${type}` : `Modifica ${type}`;
+            document.getElementById('emTitle').innerHTML = mode === 'create' ? `<i class="fas fa-plus-circle text-blue-500 mr-2"></i> Nuovo ${type}` : `<i class="fas fa-edit text-blue-500 mr-2"></i> Modifica ${type}`;
             document.getElementById('entityModal').classList.remove('hidden');
             document.getElementById('emDeleteBtn').classList.toggle('hidden', mode === 'create');
             
@@ -689,8 +691,8 @@
             if(editState.mode === 'create') {
                 const newId = editState.type.charAt(0) + '_' + Date.now();
                 if(editState.type === 'sphere') state.data.spheres.push({ id: newId, ...baseObj, order: state.data.spheres.length, notes: '', permanentNotes: '', updates: [] });
-                else if(editState.type === 'project') state.data.projects.push({ id: newId, sphereId: editState.sId, ...baseObj, ...extraObj, pinned: false, archived: false, order: getChildren('sphere', editState.sId).length, notes: '', permanentNotes: '', updates: [] });
-                else state.data.subprojects.push({ id: newId, projectId: editState.pId, ...baseObj, ...extraObj, pinned: false, archived: false, order: getChildren('project', editState.pId).length, notes: '', permanentNotes: '', updates: [] });
+                else if(editState.type === 'project') state.data.projects.push({ id: newId, sphereId: editState.sId, ...baseObj, ...extraObj, pinned: false, pinnedLevelId: null, archived: false, order: getChildren('sphere', editState.sId).length, notes: '', permanentNotes: '', updates: [] });
+                else state.data.subprojects.push({ id: newId, projectId: editState.pId, ...baseObj, ...extraObj, pinned: false, pinnedLevelId: null, archived: false, order: getChildren('project', editState.pId).length, notes: '', permanentNotes: '', updates: [] });
                 
                 if(editState.type === 'sphere') navigate('sphere', newId);
                 else if(editState.type === 'project') navigate('project', editState.sId, newId);
@@ -739,7 +741,6 @@
             closeEntityModal(); AppData.triggerSave(); render();
         }
 
-        // --- RENDER ROUTER & HELPERS ---
         function navigate(view, sId=null, pId=null, spId=null) { 
             state.view = view; 
             state.path = { sphereId: sId, projId: pId, subprojId: spId }; 
@@ -810,33 +811,67 @@
         }
 
         // --- DRAG & DROP LOGIC ---
-        function onDragStart(e, id, type, listType) { dragSource = { id, type, listType }; e.dataTransfer.effectAllowed = 'move'; setTimeout(() => e.target.classList.add('opacity-40'), 0); }
-        function onDragEnd(e) { e.target.classList.remove('opacity-40'); document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over')); dragSource = null; }
+        function onDragStart(e, id, type, listType) { 
+            dragSource = { id, type, listType }; 
+            e.dataTransfer.effectAllowed = 'move'; 
+            document.body.classList.add('is-dragging');
+            setTimeout(() => e.target.classList.add('opacity-40'), 0); 
+        }
+        function onDragEnd(e) { 
+            e.target.classList.remove('opacity-40'); 
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over')); 
+            document.body.classList.remove('is-dragging');
+            dragSource = null; 
+        }
         function onDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; if(!e.currentTarget.classList.contains('drag-over')) e.currentTarget.classList.add('drag-over'); }
         function onDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+        
         function onDrop(e, targetId, targetType, listType) {
             e.preventDefault(); e.currentTarget.classList.remove('drag-over');
-            if(!dragSource || dragSource.listType !== listType) return;
+            document.body.classList.remove('is-dragging');
+            if(!dragSource) return;
+            
+            const isPinnedDrag = dragSource.listType.startsWith('dashboard_pinned_') && listType.startsWith('dashboard_pinned_');
+            if(!isPinnedDrag && dragSource.listType !== listType) return;
+            
             const srcId = dragSource.id;
             if(srcId === targetId && dragSource.type === targetType) return;
 
             let list = [];
-            const prop = (listType === 'dashboard_pinned') ? 'pinnedOrder' : 'order';
+            const prop = (listType.startsWith('dashboard_pinned_')) ? 'pinnedOrder' : 'order';
 
-            if(listType === 'dashboard_pinned') list = [...state.data.projects.filter(p=>p.pinned && !p.archived), ...state.data.subprojects.filter(sp=>sp.pinned && !sp.archived)].sort((a,b) => (a.pinnedOrder||0) - (b.pinnedOrder||0));
+            if(isPinnedDrag) {
+                const targetLevelId = listType.replace('dashboard_pinned_', '');
+                const draggedItem = getEntity(dragSource.type, srcId);
+                if(draggedItem) draggedItem.pinnedLevelId = targetLevelId;
+
+                list = [...state.data.projects.filter(p=>p.pinned && !p.archived && (p.pinnedLevelId === targetLevelId || (!p.pinnedLevelId && targetLevelId === 'pl_default'))),
+                        ...state.data.subprojects.filter(sp=>sp.pinned && !sp.archived && (sp.pinnedLevelId === targetLevelId || (!sp.pinnedLevelId && targetLevelId === 'pl_default')))]
+                        .sort((a,b) => (a.pinnedOrder||0) - (b.pinnedOrder||0));
+
+                if(targetId) {
+                    const targetIdx = list.findIndex(x => x.id === targetId);
+                    const draggedIdx = list.findIndex(x => x.id === srcId);
+                    if(draggedIdx !== -1) list.splice(draggedIdx, 1);
+                    const newTargetIdx = list.findIndex(x => x.id === targetId);
+                    list.splice(newTargetIdx !== -1 ? newTargetIdx : list.length, 0, draggedItem);
+                } else {
+                    const draggedIdx = list.findIndex(x => x.id === srcId);
+                    if(draggedIdx !== -1) list.splice(draggedIdx, 1);
+                    list.push(draggedItem);
+                }
+            }
             else if(listType === 'sphere_pinned') list = state.data.projects.filter(p => p.sphereId === state.path.sphereId && p.pinned && p.archived === state.ui.showArchived).sort((a,b) => (a.order||0) - (b.order||0));
             else if(listType === 'sphere_unpinned') list = state.data.projects.filter(p => p.sphereId === state.path.sphereId && !p.pinned && p.archived === state.ui.showArchived).sort((a,b) => (a.order||0) - (b.order||0));
             else if(listType === 'project_pinned') list = state.data.subprojects.filter(sp => sp.projectId === state.path.projId && sp.pinned && sp.archived === state.ui.showArchived).sort((a,b) => (a.order||0) - (b.order||0));
             else if(listType === 'project_unpinned') list = state.data.subprojects.filter(sp => sp.projectId === state.path.projId && !sp.pinned && sp.archived === state.ui.showArchived).sort((a,b) => (a.order||0) - (b.order||0));
-            else if(listType === 'tm_spheres') list = [...state.data.spheres].sort((a,b) => (a.order||0) - (b.order||0));
-            else if(listType.startsWith('tm_proj_')) list = state.data.projects.filter(p => p.sphereId === listType.replace('tm_proj_','') && !p.archived).sort((a,b) => (a.order||0) - (b.order||0));
-            else if(listType.startsWith('tm_sub_')) list = state.data.subprojects.filter(sp => sp.projectId === listType.replace('tm_sub_','') && !sp.archived).sort((a,b) => (a.order||0) - (b.order||0));
-
-            const draggedIdx = list.findIndex(x => x.id === srcId), targetIdx = list.findIndex(x => x.id === targetId);
-            if(draggedIdx === -1 || targetIdx === -1) return;
-
-            const draggedObj = list.splice(draggedIdx, 1)[0];
-            list.splice(targetIdx, 0, draggedObj);
+            
+            if(!isPinnedDrag) {
+                const draggedIdx = list.findIndex(x => x.id === srcId), targetIdx = list.findIndex(x => x.id === targetId);
+                if(draggedIdx === -1 || targetIdx === -1) return;
+                const draggedObj = list.splice(draggedIdx, 1)[0];
+                list.splice(targetIdx, 0, draggedObj);
+            }
 
             list.forEach((item, index) => {
                 if(item.projectId !== undefined) {
@@ -872,9 +907,36 @@
                 </div>`;
         }
 
+        // Funzioni per la gestione dei livelli in evidenza
+        function addPinnedLevel() {
+            const name = prompt("Nome del nuovo livello in evidenza:");
+            if(name && name.trim()) {
+                state.data.pinnedLevels.push({id: 'pl_'+Date.now(), name: name.trim()});
+                AppData.triggerSave(); render();
+            }
+        }
+        function renamePinnedLevel(id) {
+            const lvl = state.data.pinnedLevels.find(l => l.id === id);
+            if(!lvl) return;
+            const name = prompt("Rinomina livello:", lvl.name);
+            if(name && name.trim()) {
+                lvl.name = name.trim();
+                AppData.triggerSave(); render();
+            }
+        }
+        function deletePinnedLevel(id) {
+            if(id === 'pl_default') return; 
+            if(confirm("Eliminare questo livello? Gli elementi torneranno nel livello predefinito.")) {
+                state.data.pinnedLevels = state.data.pinnedLevels.filter(l => l.id !== id);
+                state.data.projects.forEach(p => { if(p.pinnedLevelId === id) p.pinnedLevelId = 'pl_default'; });
+                state.data.subprojects.forEach(sp => { if(sp.pinnedLevelId === id) sp.pinnedLevelId = 'pl_default'; });
+                AppData.triggerSave(); render();
+            }
+        }
+
         // --- DASHBOARD ---
         function renderDashboard() {
-            let pinnedHtml = '', spheresHtml = '';
+            let pinnedSectionsHtml = '', spheresHtml = '';
             
             state.data.spheres.sort((a,b)=>(a.order||0)-(b.order||0)).forEach(s => {
                 spheresHtml += `<div onclick="navigate('sphere', '${s.id}')" class="panel panel-hover p-4 flex flex-col items-center justify-center text-center h-28 border-t-[5px] bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm" style="border-top-color: ${s.color}">
@@ -883,40 +945,70 @@
                 </div>`;
             });
             
-            let pinnedList = [...state.data.projects.filter(p=>p.pinned && !p.archived), ...state.data.subprojects.filter(sp=>sp.pinned && !sp.archived)].sort((a,b)=>(a.pinnedOrder||0)-(b.pinnedOrder||0));
-            pinnedList.forEach(item => {
-                if(item.projectId) { 
-                    const p = getEntity('project', item.projectId); 
-                    const s = p ? getEntity('sphere', p.sphereId) : null;
-                    const color = item.color || (p?p.color:null) || (s?s.color:null) || '#94a3b8';
-                    const pName = p ? p.name : 'Sconosciuto';
-                    pinnedHtml += createDraggableCardHtml(item.name, `${pName} (Sub)`, 'subproject', s?s.id:null, p?p.id:null, item.id, color, 'dashboard_pinned', item);
-                } else { 
-                    const s = getEntity('sphere', item.sphereId);
-                    const color = item.color || (s?s.color:null) || '#94a3b8';
-                    const sName = s ? s.name : 'Sconosciuto';
-                    pinnedHtml += createDraggableCardHtml(item.name, sName, 'project', s?s.id:null, item.id, null, color, 'dashboard_pinned', item);
-                }
+            state.data.pinnedLevels.forEach(level => {
+                let itemsInLevel = [...state.data.projects.filter(p=>p.pinned && !p.archived && (p.pinnedLevelId === level.id || (!p.pinnedLevelId && level.id === 'pl_default'))),
+                                    ...state.data.subprojects.filter(sp=>sp.pinned && !sp.archived && (sp.pinnedLevelId === level.id || (!sp.pinnedLevelId && level.id === 'pl_default')))]
+                                    .sort((a,b)=>(a.pinnedOrder||0)-(b.pinnedOrder||0));
+                
+                let cardsHtml = '';
+                itemsInLevel.forEach(item => {
+                    if(item.projectId) { 
+                        const p = getEntity('project', item.projectId); 
+                        const s = p ? getEntity('sphere', p.sphereId) : null;
+                        const color = item.color || (p?p.color:null) || (s?s.color:null) || '#94a3b8';
+                        const pName = p ? p.name : 'Sconosciuto';
+                        cardsHtml += createDraggableCardHtml(item.name, `${pName} (Sub)`, 'subproject', s?s.id:null, p?p.id:null, item.id, color, `dashboard_pinned_${level.id}`, item);
+                    } else { 
+                        const s = getEntity('sphere', item.sphereId);
+                        const color = item.color || (s?s.color:null) || '#94a3b8';
+                        const sName = s ? s.name : 'Sconosciuto';
+                        cardsHtml += createDraggableCardHtml(item.name, sName, 'project', s?s.id:null, item.id, null, color, `dashboard_pinned_${level.id}`, item);
+                    }
+                });
+
+                pinnedSectionsHtml += `
+                    <div class="mb-8">
+                        <div class="flex justify-between items-center mb-4 group">
+                            <h2 class="text-[11px] font-bold flex items-center text-slate-500 dark:text-slate-400 uppercase tracking-widest"><i class="fas fa-layer-group text-amber-500 mr-2 text-xs"></i> ${level.name}</h2>
+                            <div class="opacity-0 group-hover:opacity-100 transition flex gap-1">
+                                <button onclick="renamePinnedLevel('${level.id}')" class="text-xs p-1.5 text-slate-400 hover:text-blue-500 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fas fa-edit"></i></button>
+                                ${level.id !== 'pl_default' ? `<button onclick="deletePinnedLevel('${level.id}')" class="text-xs p-1.5 text-slate-400 hover:text-red-500 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fas fa-trash"></i></button>` : ''}
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 min-h-[60px] p-2 -m-2 rounded-xl drop-zone" 
+                             ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event, null, null, 'dashboard_pinned_${level.id}')">
+                            ${cardsHtml || `<p class="text-xs text-slate-400 italic col-span-2 pt-2">Trascina qui i progetti in evidenza.</p>`}
+                        </div>
+                    </div>`;
             });
+
+            pinnedSectionsHtml += `<button onclick="addPinnedLevel()" class="text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white transition w-full text-center py-3 border border-dashed border-slate-300 dark:border-slate-600 hover:border-slate-400 rounded-xl mb-4"><i class="fas fa-plus mr-1"></i> Aggiungi Livello</button>`;
 
             return `
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                    <div class="xl:col-span-2 space-y-8">
+                    <div class="xl:col-span-2 space-y-10">
                         <section>
-                            <h2 class="text-[11px] font-bold mb-3 flex items-center text-slate-500 dark:text-slate-400 uppercase tracking-widest"><i class="fas fa-star text-amber-500 mr-1.5 text-[10px]"></i> In Evidenza</h2>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5">${pinnedHtml || '<p class="text-xs text-slate-400 italic">Nessun elemento in evidenza.</p>'}</div>
+                            ${pinnedSectionsHtml}
                         </section>
                         <section>
-                            <div class="flex justify-between items-center mb-3">
-                                <h2 class="text-[11px] font-bold flex items-center text-slate-500 dark:text-slate-400 uppercase tracking-widest"><i class="fas fa-layer-group text-blue-500 mr-1.5 text-[10px]"></i> Le tue Sfere</h2>
-                                <button onclick="openEntityModal('create', 'sphere')" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition flex items-center bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg"><i class="fas fa-plus mr-1.5"></i> Nuova Sfera</button>
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-[11px] font-bold flex items-center text-slate-500 dark:text-slate-400 uppercase tracking-widest"><i class="fas fa-globe text-blue-500 mr-2 text-xs"></i> Le tue Sfere</h2>
+                                <button onclick="openEntityModal('create', 'sphere')" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition flex items-center bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg active:scale-95"><i class="fas fa-plus mr-1.5"></i> Nuova Sfera</button>
                             </div>
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">${spheresHtml}</div>
                         </section>
                     </div>
-                    <div class="panel p-6 h-[650px] flex flex-col bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
-                        <div class="flex justify-between border-b border-slate-200 dark:border-darkborder pb-4 mb-5">
-                            <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center"><i class="fas fa-tasks text-blue-500 mr-2"></i> Task Attivi</h2>
+                    <div class="panel p-6 h-[700px] flex flex-col bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
+                        <div class="flex justify-between items-center border-b border-slate-200 dark:border-darkborder pb-4 mb-5">
+                            <div class="flex items-center gap-3">
+                                <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center"><i class="fas fa-tasks text-blue-500 mr-2 text-sm"></i> Task Attivi</h2>
+                                <select class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold py-1 px-2 rounded outline-none border-none cursor-pointer transition hover:bg-slate-200 dark:hover:bg-slate-700" onchange="state.ui.homeTaskFilter = this.value; render();">
+                                    <option value="all" ${state.ui.homeTaskFilter==='all'?'selected':''}>Tutte</option>
+                                    <option value="today" ${state.ui.homeTaskFilter==='today'?'selected':''}>Oggi</option>
+                                    <option value="next7" ${state.ui.homeTaskFilter==='next7'?'selected':''}>7 Giorni</option>
+                                    <option value="inbox" ${state.ui.homeTaskFilter==='inbox'?'selected':''}>Inbox</option>
+                                </select>
+                            </div>
                             <button onclick="navigate('global_tasks')" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline transition">Vedi Tutti</button>
                         </div>
                         ${renderInlineTasks(null, true, false)} 
@@ -1028,9 +1120,9 @@
                         </div>
                     </div>
                     <div class="flex gap-1 items-center opacity-0 group-hover:opacity-100 transition">
-                        <button onclick="togglePin('project', '${p.id}')" class="text-slate-400 hover:text-amber-500 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Fissa"><i class="fas fa-star text-xs"></i></button>
-                        <button onclick="toggleArchiveEntity('project', '${p.id}')" class="text-slate-400 hover:text-blue-500 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Archivia"><i class="fas fa-archive text-xs"></i></button>
-                        <button onclick="openEntityModal('edit', 'project', '${s.id}', '${p.id}')" class="text-slate-400 hover:text-slate-800 dark:hover:text-white p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition"><i class="fas fa-edit text-xs"></i></button>
+                        <button onclick="togglePin('project', '${p.id}')" class="text-slate-400 hover:text-amber-500 p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Fissa"><i class="fas fa-star text-xs"></i></button>
+                        <button onclick="toggleArchiveEntity('project', '${p.id}')" class="text-slate-400 hover:text-blue-500 p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Archivia"><i class="fas fa-archive text-xs"></i></button>
+                        <button onclick="openEntityModal('edit', 'project', '${s.id}', '${p.id}')" class="text-slate-400 hover:text-slate-800 dark:hover:text-white p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition"><i class="fas fa-edit text-xs"></i></button>
                         <i class="fas fa-grip-lines text-slate-300 dark:text-slate-600 text-sm ml-2 cursor-grab p-1"></i>
                     </div>
                 </div>`}).join('');
@@ -1094,8 +1186,8 @@
                         </h4>
                     </div>
                     <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition">
-                        <button onclick="event.stopPropagation(); togglePin('subproject', '${sp.id}')" class="text-slate-400 hover:text-amber-500 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition"><i class="fas fa-star text-[11px]"></i></button>
-                        <button onclick="event.stopPropagation(); toggleArchiveEntity('subproject', '${sp.id}')" class="text-slate-400 hover:text-blue-500 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition"><i class="fas fa-archive text-[11px]"></i></button>
+                        <button onclick="event.stopPropagation(); togglePin('subproject', '${sp.id}')" class="text-slate-400 hover:text-amber-500 p-2.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition"><i class="fas fa-star text-[11px]"></i></button>
+                        <button onclick="event.stopPropagation(); toggleArchiveEntity('subproject', '${sp.id}')" class="text-slate-400 hover:text-blue-500 p-2.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition"><i class="fas fa-archive text-[11px]"></i></button>
                         <i class="fas fa-grip-lines text-slate-300 dark:text-slate-600 text-sm ml-2 cursor-grab p-1"></i>
                     </div>
                 </div>`}).join('');
@@ -1332,45 +1424,73 @@
 
         function renderInlineTasks(contextId, showGlobal=false, showCompletedOption=true) {
             let tasks = contextId ? state.data.tasks.filter(t => t.contextId === contextId) : [...state.data.tasks];
+
+            if (showGlobal && !contextId) {
+                const filter = state.ui.homeTaskFilter || 'all';
+                const todayStr = new Date().toISOString().split('T')[0];
+                if(filter === 'today') { tasks = tasks.filter(t => t.dueDate === todayStr); }
+                else if(filter === 'next7') { 
+                    const today = new Date();
+                    const nextWeek = new Date();
+                    nextWeek.setDate(today.getDate() + 7);
+                    const tStr = today.toISOString().split('T')[0];
+                    const nStr = nextWeek.toISOString().split('T')[0];
+                    tasks = tasks.filter(t => t.dueDate >= tStr && t.dueDate <= nStr); 
+                }
+                else if(filter === 'inbox') { tasks = tasks.filter(t => !t.contextId); }
+            }
+
             const hasCompleted = tasks.some(t => t.completed);
             if(!state.ui.showCompletedTasks) tasks = tasks.filter(t => !t.completed);
             tasks.sort((a,b) => a.completed - b.completed || b.priority - a.priority);
 
+            const listCtxOpts = generateCtxOpts(contextId || '');
+
             let html = `
-                <div class="flex gap-2 mb-5">
-                    <input type="text" id="tIn_${contextId||'g'}" class="input-base flex-1 font-semibold text-sm py-2" placeholder="Nuovo task..." onkeypress="if(event.key === 'Enter') addTask('${contextId||''}')">
+                <div class="flex gap-2 mb-6">
+                    <input type="text" id="tIn_${contextId||'g'}" class="input-base flex-1 font-semibold text-sm py-2" placeholder="Aggiungi una nuova task..." onkeypress="if(event.key === 'Enter') addTask('${contextId||''}')">
+                    <select id="tCtx_${contextId||'g'}" class="input-base w-32 text-xs font-bold hidden sm:block">${listCtxOpts}</select>
                     <button onclick="addTask('${contextId||''}')" class="bg-blue-600 hover:bg-blue-700 px-4 rounded-lg text-white transition shadow-sm active:scale-95"><i class="fas fa-plus"></i></button>
                 </div>
-                <div class="space-y-2 max-h-[350px] overflow-y-auto pr-1">`;
+                <div class="space-y-2.5 max-h-[350px] overflow-y-auto pr-2">`;
             
-            if(tasks.length === 0) html += `<p class="text-xs text-slate-400 text-center py-4 italic">Nessun task attivo.</p>`;
+            if(tasks.length === 0) html += `<p class="text-xs text-slate-400 text-center py-6 italic">Nessun task in questa lista.</p>`;
             
             tasks.forEach(t => {
                 const ctx = getContextInfo(t.contextId);
+                
+                let cbClass = "";
+                if(t.priority === 3) cbClass = "border-red-400 checked:bg-red-500 checked:border-red-500";
+                else if(t.priority === 2) cbClass = "border-amber-400 checked:bg-amber-500 checked:border-amber-500";
+                else if(t.priority === 1) cbClass = "border-blue-400 checked:bg-blue-500 checked:border-blue-500";
+                
+                const ctxBorder = ctx.color !== '#94a3b8' ? `border-left-color: ${ctx.color};` : `border-left-color: transparent;`;
+
                 if (editingTaskId === t.id) {
                     html += `
-                        <div class="flex flex-col gap-3 p-4 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-600 shadow-inner">
+                        <div class="flex flex-col gap-3 p-3 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-600 shadow-inner">
                             <input type="text" id="etTitle_${t.id}" value="${t.title}" class="input-base font-bold text-sm py-1.5">
                             <div class="flex flex-wrap gap-2">
-                                <select id="etPri_${t.id}" class="input-base w-20 text-xs font-bold py-1.5"><option value="0" ${t.priority===0?'selected':''}>P0</option><option value="1" ${t.priority===1?'selected':''}>P1</option><option value="2" ${t.priority===2?'selected':''}>P2</option><option value="3" ${t.priority===3?'selected':''}>P3</option></select>
+                                <select id="etPri_${t.id}" class="input-base w-24 text-xs font-bold py-1.5"><option value="0" ${t.priority===0?'selected':''}>No Prio</option><option value="1" ${t.priority===1?'selected':''}>Bassa</option><option value="2" ${t.priority===2?'selected':''}>Media</option><option value="3" ${t.priority===3?'selected':''}>Alta</option></select>
                                 <input type="date" id="etDate_${t.id}" value="${t.dueDate||''}" class="input-base w-32 text-xs font-bold py-1.5">
-                                ${showGlobal ? `<select id="etCtx_${t.id}" class="input-base flex-1 min-w-[140px] text-xs font-bold py-1.5">${generateCtxOpts(t.contextId)}</select>` : ''}
+                                <select id="etCtx_${t.id}" class="input-base flex-1 min-w-[140px] text-xs font-bold py-1.5">${generateCtxOpts(t.contextId)}</select>
                             </div>
-                            <div class="flex justify-end gap-2 mt-1">
-                                <button onclick="editingTaskId=null; render()" class="text-xs font-bold px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition">Annulla</button>
-                                <button onclick="saveTaskEdit('${t.id}', ${showGlobal ? `'etCtx_${t.id}'` : 'null'})" class="text-xs font-bold px-4 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition active:scale-95">Salva</button>
+                            <div class="flex justify-end gap-2 mt-2">
+                                <button onclick="editingTaskId=null; render()" class="text-xs font-bold px-4 py-2 rounded-lg text-slate-500 hover:text-slate-800 bg-slate-200 dark:bg-slate-700 transition">Annulla</button>
+                                <button onclick="saveTaskEdit('${t.id}', 'etCtx_${t.id}')" class="text-xs font-bold px-5 py-2 rounded-lg bg-blue-600 text-white shadow-sm transition active:scale-95">Salva</button>
                             </div>
                         </div>`;
                 } else {
                     html += `
-                        <div class="panel p-2.5 flex items-center gap-3 prio-${t.priority} bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder rounded-xl hover:shadow-md transition group border-l-[5px]" style="border-left-color: ${t.priority>0 ? '' : 'transparent'}">
-                            <input type="checkbox" class="task-checkbox shrink-0 mt-0 ml-1" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
+                        <div id="taskRow_${t.id}" class="panel p-2 md:p-2.5 flex items-center gap-3 bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder rounded-xl hover:shadow-md transition group border-l-[3px] ${t.completed ? 'opacity-50 grayscale' : ''}" style="${ctxBorder}">
+                            <input type="checkbox" class="task-checkbox shrink-0 mt-0 ml-1 ${cbClass}" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
                             <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                                <p class="${t.completed ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-200'} text-[14px] font-semibold word-wrap leading-tight">${t.title}</p>
-                                <div class="flex items-center gap-2 shrink-0">
+                                <p class="${t.completed ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-200'} text-[13px] sm:text-[14px] font-medium word-wrap leading-tight">${t.title}</p>
+                                ${(t.dueDate || (t.contextId && showGlobal)) ? `
+                                <div class="flex items-center gap-2.5 shrink-0 mt-1 sm:mt-0">
                                     ${showGlobal && t.contextId ? `<span class="text-[9px] uppercase font-bold tracking-wider truncate px-2 py-0.5 rounded border" style="color:${ctx.color}; border-color:${ctx.color}40; background-color:${ctx.color}10">${ctx.name}</span>` : ''}
                                     ${t.dueDate ? `<span class="text-[10px] text-slate-500 dark:text-slate-400 font-bold"><i class="far fa-calendar mr-1.5"></i>${t.dueDate}</span>` : ''}
-                                </div>
+                                </div>` : ''}
                             </div>
                             <div class="flex items-center opacity-0 group-hover:opacity-100 transition mr-1">
                                 <button class="text-slate-400 hover:text-blue-500 text-sm p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition" onclick="editTask('${t.id}')"><i class="fas fa-edit"></i></button>
@@ -1389,7 +1509,7 @@
         // --- TASK MANAGER (ADVANCED) ---
         function toggleTmSidebar() {
             const sidebar = document.getElementById('tmSidebar');
-            const overlay = document.getElementById('tmOverlayInner') || document.getElementById('tmOverlay');
+            const overlay = document.getElementById('tmOverlayInner');
             
             if (sidebar.classList.contains('open')) {
                 sidebar.classList.remove('open');
@@ -1547,10 +1667,11 @@
                         const ctx = getContextInfo(t.contextId);
                         const isLast = idx === groupTasks.length - 1;
                         const borderBottom = isLast ? '' : 'border-b border-slate-100 dark:border-slate-700/50';
+                        const ctxBorder = ctx.color !== '#94a3b8' ? `border-left-color: ${ctx.color};` : `border-left-color: transparent;`;
                         
                         if (editingTaskId === t.id) {
                             tasksHtml += `
-                                <div class="p-4 bg-slate-50 dark:bg-[#1a1c23] ${borderBottom} flex flex-col gap-4">
+                                <div class="p-3 bg-slate-50 dark:bg-[#1a1c23] ${borderBottom} flex flex-col gap-3">
                                     <input type="text" id="etTitle_${t.id}" value="${t.title}" class="input-base font-bold text-base py-2">
                                     <div class="flex flex-wrap items-center gap-3">
                                         <select id="etPri_${t.id}" class="input-base w-28 text-xs font-bold py-2"><option value="0" ${t.priority===0?'selected':''}>No Prio</option><option value="1" ${t.priority===1?'selected':''}>Bassa</option><option value="2" ${t.priority===2?'selected':''}>Media</option><option value="3" ${t.priority===3?'selected':''}>Alta</option></select>
@@ -1569,10 +1690,10 @@
                             else if(t.priority === 1) cbClass = "border-blue-400 checked:bg-blue-500 checked:border-blue-500";
 
                             tasksHtml += `
-                                <div class="p-3 md:p-4 flex items-center gap-4 ${borderBottom} group hover:bg-slate-50 dark:hover:bg-[#202938] transition-colors">
-                                    <input type="checkbox" class="task-checkbox shrink-0 ${cbClass}" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
+                                <div id="taskRow_${t.id}" class="p-2.5 md:p-3 flex items-center gap-3 ${borderBottom} group hover:bg-slate-50 dark:hover:bg-[#202938] transition-colors border-l-[3px] ${t.completed ? 'opacity-50 grayscale' : ''}" style="${ctxBorder}">
+                                    <input type="checkbox" class="task-checkbox shrink-0 mt-0 ml-1 ${cbClass}" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
                                     <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-                                        <p class="${t.completed ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'} text-[15px] font-medium word-wrap leading-tight">${t.title}</p>
+                                        <p class="${t.completed ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'} text-[13px] sm:text-[14px] font-medium word-wrap leading-tight">${t.title}</p>
                                         ${(t.dueDate || t.contextId) ? `
                                         <div class="flex items-center gap-2.5 shrink-0 mt-1 sm:mt-0">
                                             ${t.dueDate ? `<span class="text-[10px] text-slate-400 font-bold"><i class="far fa-calendar mr-1.5"></i>${t.dueDate}</span>` : ''}
@@ -1580,8 +1701,8 @@
                                         </div>` : ''}
                                     </div>
                                     <div class="flex items-center opacity-0 group-hover:opacity-100 transition ml-2">
-                                        <button onclick="editTask('${t.id}')" class="text-slate-400 hover:text-blue-500 p-2.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition"><i class="fas fa-edit text-[13px]"></i></button>
-                                        <button onclick="deleteTask('${t.id}')" class="text-slate-400 hover:text-red-500 p-2.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition"><i class="fas fa-trash-alt text-[13px]"></i></button>
+                                        <button onclick="editTask('${t.id}')" class="text-slate-400 hover:text-blue-500 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition"><i class="fas fa-edit text-[12px]"></i></button>
+                                        <button onclick="deleteTask('${t.id}')" class="text-slate-400 hover:text-red-500 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition"><i class="fas fa-trash-alt text-[12px]"></i></button>
                                     </div>
                                 </div>`;
                         }
@@ -1597,7 +1718,6 @@
             return `
                 <div class="fixed inset-0 md:relative flex overflow-hidden bg-slate-50 dark:bg-darkbg md:rounded-2xl md:border border-slate-200 dark:border-darkborder md:shadow-2xl md:min-h-[85vh] z-[60] md:z-auto">
                     
-                    <!-- Nuovo Overlay interno per Mobile con z-index corretto -->
                     <div id="tmOverlayInner" class="tm-overlay md:hidden" style="z-index: 50;" onclick="toggleTmSidebar()"></div>
 
                     <!-- SIDEBAR -->
@@ -1661,8 +1781,10 @@
 
         function addTask(cId) {
             const tIn = document.getElementById(`tIn_${cId||'g'}`);
+            const ctxSelect = document.getElementById(`tCtx_${cId||'g'}`);
             if(!tIn.value.trim()) return;
-            state.data.tasks.push({ id: 't_'+Date.now(), title: tIn.value.trim(), completed: false, priority: 0, dueDate: '', contextId: cId || '' });
+            const finalCtx = ctxSelect ? ctxSelect.value : (cId || '');
+            state.data.tasks.push({ id: 't_'+Date.now(), title: tIn.value.trim(), completed: false, priority: 0, dueDate: '', contextId: finalCtx });
             AppData.triggerSave(); render();
         }
         function addTaskFromGlobal() {
@@ -1674,7 +1796,24 @@
             
             AppData.triggerSave(); render();
         }
-        function toggleTask(id) { const t = state.data.tasks.find(x => x.id === id); if(t) t.completed = !t.completed; AppData.triggerSave(); render(); }
+        function toggleTask(id) { 
+            const t = state.data.tasks.find(x => x.id === id); 
+            if(!t) return; 
+            
+            const taskEl = document.getElementById('taskRow_' + id);
+            if(taskEl) {
+                if(!t.completed) taskEl.classList.add('task-completing-anim');
+                setTimeout(() => {
+                    t.completed = !t.completed; 
+                    AppData.triggerSave(); 
+                    render();
+                }, 250);
+            } else {
+                t.completed = !t.completed; 
+                AppData.triggerSave(); 
+                render(); 
+            }
+        }
         function deleteTask(id) { state.data.tasks = state.data.tasks.filter(x => x.id !== id); AppData.triggerSave(); render(); }
         
         function editTask(id) { editingTaskId = id; render(); }
