@@ -40,6 +40,20 @@
         .modal-animate { animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards; }
         @keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 
+        /* --- NOTIFICHE TOAST --- */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: #3b82f6; color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards; pointer-events: auto; }
+        .toast.error { background: #ef4444; }
+        .toast.success { background: #10b981; }
+        @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes toastOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+
+        /* --- FOCUS MODE APPUNTI (ZEN MODE) --- */
+        .focus-mode-active { position: fixed !important; top: 0; left: 0; width: 100vw !important; height: 100vh !important; z-index: 9999; background: var(--bg-color, #f8fafc) !important; padding: 40px !important; margin: 0 !important; border-radius: 0 !important; overflow-y: auto; }
+        .dark .focus-mode-active { --bg-color: #0f172a; }
+        .focus-mode-active .ql-container { height: calc(100vh - 150px) !important; max-width: 900px; margin: 0 auto; font-size: 18px !important; border: none !important; }
+        .focus-mode-active .ql-toolbar { max-width: 900px; margin: 0 auto 20px auto; border-bottom: 2px solid #e2e8f0 !important; background: transparent; }
+
         /* Animazione Check Task Completata */
         .task-completing-anim { animation: taskComplete 0.3s ease-out forwards; }
         @keyframes taskComplete { 
@@ -54,7 +68,7 @@
         .task-checkbox:checked { background-color: #f59e0b !important; border-color: #f59e0b !important; transform: scale(1.05); }
         .task-checkbox:checked::after { content: '✔'; position: absolute; color: white; font-size: 10px; top: -1px; left: 3px; font-weight: bold; }
         
-        /* Stili Drag and Drop Avanzati (Fix Livelli) */
+        /* Stili Drag and Drop Avanzati */
         .draggable { cursor: grab; }
         .draggable:active { cursor: grabbing; }
         .drop-zone { border: 2px dashed transparent; transition: all 0.2s ease; }
@@ -122,6 +136,7 @@
     </style>
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-darkbg text-slate-800 dark:text-slate-200 flex flex-col relative pb-10">
+    <div id="toast-container"></div> <!-- Container Notifiche -->
 
     <header class="sticky top-0 z-40 w-full glass-header mb-8 px-4 md:px-8 py-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hidden-in-tm transition-all">
         <div id="breadcrumbs" class="flex flex-wrap gap-2 items-center text-sm font-semibold text-slate-500 dark:text-slate-300"></div>
@@ -284,6 +299,36 @@
     </div>
 
     <script>
+        // --- FUNZIONE TOAST (Sostituisce alert e aggiunge notifiche) ---
+        function showToast(message, type = 'default') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'toastOut 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        window.alert = function(msg) { showToast(msg, 'error'); };
+
+        // --- FUNZIONE ZEN MODE ---
+        function toggleFocusMode(editorId) {
+            const container = document.getElementById(editorId).parentElement;
+            container.classList.toggle('focus-mode-active');
+            if(container.classList.contains('focus-mode-active')) {
+                showToast("Zen Mode attivato. Premi Esc per uscire.", "success");
+                const escHandler = function(e) {
+                    if(e.key === 'Escape') {
+                        container.classList.remove('focus-mode-active');
+                        document.removeEventListener('keydown', escHandler);
+                    }
+                };
+                document.addEventListener('keydown', escHandler);
+            }
+        }
+
         // --- TEMA ---
         function applyTheme() {
             if (localStorage.getItem('theme') === 'light') {
@@ -318,7 +363,6 @@
             let touchEndX = e.changedTouches[0].screenX;
             let touchEndY = e.changedTouches[0].screenY;
             
-            // Non interferire con editor, modali aperti o interazioni interne
             if(e.target.closest('.ql-editor') || e.target.closest('.modal-animate') || document.querySelector('.fixed.flex:not(#mobileQuickAddModal):not(.tm-sidebar-mobile)')) return;
 
             let MathAbsX = Math.abs(touchEndX - touchStartX);
@@ -327,9 +371,9 @@
             if (state.view === 'global_tasks' && MathAbsX > MathAbsY && MathAbsX > 60) {
                 const sidebar = document.getElementById('tmSidebar');
                 if (touchEndX > touchStartX && !sidebar.classList.contains('open')) {
-                    toggleTmSidebar(); // Swipe Destra -> Apri
+                    toggleTmSidebar(); 
                 } else if (touchEndX < touchStartX && sidebar.classList.contains('open')) {
-                    toggleTmSidebar(); // Swipe Sinistra -> Chiudi
+                    toggleTmSidebar(); 
                 }
             }
         }, {passive: true});
@@ -473,7 +517,7 @@
         const state = { 
             view: 'home', 
             path: { sphereId: null, projId: null, subprojId: null }, 
-            ui: { showArchived: false, tmView: 'all', showCompletedTasks: false, homeTaskFilter: 'all' },
+            ui: { showArchived: false, tmView: 'all', showCompletedTasks: false, homeTaskFilter: 'all', homeContextFilter: 'all' },
             get data() { return AppData.data; },
             set data(val) { AppData.data = val; }
         };
@@ -556,6 +600,7 @@
             if(entity) {
                 entity.notes = mobileNotesContext.quill.root.innerHTML;
                 AppData.triggerSave();
+                showToast("Appunti salvati", "success");
             }
         }
         function archiveMobileNotes() {
@@ -587,6 +632,7 @@
             
             tIn.value = ''; dIn.value = ''; pIn.value = '0';
             closeMobileQuickAdd();
+            showToast("Task creata", "success");
             AppData.triggerSave(); render();
         }
 
@@ -609,11 +655,13 @@
             AppData.token = token; AppData.gistId = gistId;
             toggleSettings();
             AppData.initialize();
+            showToast("Impostazioni salvate", "success");
         }
 
         function factoryReset() { 
             if(confirm("ATTENZIONE: Questo svuoterà completamente il database e il Gist. Sei sicuro?")) { 
                 AppData.reset(); navigate('home'); toggleSettings(); 
+                showToast("Database resettato", "success");
             } 
         }
 
@@ -626,9 +674,9 @@
                 AppData.importJSON(jsonText);
                 render();
                 closeImportModal();
-                alert("Dati importati e salvati sul cloud con successo!");
+                showToast("Dati importati e salvati con successo!", "success");
             } catch(e) {
-                alert("Errore nel formato JSON. Assicurati che il codice sia valido.");
+                showToast("Errore nel formato JSON. Assicurati che il codice sia valido.", "error");
                 console.error(e);
             }
         }
@@ -680,7 +728,7 @@
         
         function saveEntityModal() {
             const name = document.getElementById('emName').value.trim();
-            if(!name) return alert("Inserisci un nome valido.");
+            if(!name) { showToast("Inserisci un nome valido.", "error"); return; }
             
             const baseObj = { name, icon: document.getElementById('emIcon').value, color: document.getElementById('emColor').value };
             let extraObj = {};
@@ -697,6 +745,7 @@
                 if(editState.type === 'sphere') navigate('sphere', newId);
                 else if(editState.type === 'project') navigate('project', editState.sId, newId);
                 else navigate('subproject', editState.sId, editState.pId, newId);
+                showToast("Creato con successo", "success");
             } else {
                 const e = getEntity(editState.type, editState.id);
                 if(e) {
@@ -717,6 +766,7 @@
                         }
                     }
                 }
+                showToast("Modifiche salvate", "success");
             }
             closeEntityModal(); AppData.triggerSave(); render();
         }
@@ -738,6 +788,7 @@
                 state.data.subprojects = state.data.subprojects.filter(x => x.id !== id);
                 navigate('project', editState.sId, editState.pId);
             }
+            showToast("Eliminato", "success");
             closeEntityModal(); AppData.triggerSave(); render();
         }
 
@@ -907,7 +958,6 @@
                 </div>`;
         }
 
-        // Funzioni per la gestione dei livelli in evidenza
         function addPinnedLevel() {
             const name = prompt("Nome del nuovo livello in evidenza:");
             if(name && name.trim()) {
@@ -984,6 +1034,15 @@
 
             pinnedSectionsHtml += `<button onclick="addPinnedLevel()" class="text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white transition w-full text-center py-3 border border-dashed border-slate-300 dark:border-slate-600 hover:border-slate-400 rounded-xl mb-4"><i class="fas fa-plus mr-1"></i> Aggiungi Livello</button>`;
 
+            // Nuova logica per dropdown contesti nella home
+            let ctxFilterOpts = `<option value="all">Tutti i Contesti</option>`;
+            state.data.spheres.forEach(s => {
+                ctxFilterOpts += `<option value="${s.id}" ${state.ui.homeContextFilter===s.id?'selected':''}>● ${s.name}</option>`;
+                state.data.projects.filter(p=>p.sphereId===s.id).forEach(p => {
+                    ctxFilterOpts += `<option value="${p.id}" ${state.ui.homeContextFilter===p.id?'selected':''}>  📁 ${p.name}</option>`;
+                });
+            });
+
             return `
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
                     <div class="xl:col-span-2 space-y-10">
@@ -999,17 +1058,22 @@
                         </section>
                     </div>
                     <div class="panel p-6 h-[700px] flex flex-col bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder shadow-sm">
-                        <div class="flex justify-between items-center border-b border-slate-200 dark:border-darkborder pb-4 mb-5">
-                            <div class="flex items-center gap-3">
+                        <div class="flex flex-col border-b border-slate-200 dark:border-darkborder pb-4 mb-5 gap-3">
+                            <div class="flex justify-between items-center">
                                 <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center"><i class="fas fa-tasks text-blue-500 mr-2 text-sm"></i> Task Attivi</h2>
-                                <select class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold py-1 px-2 rounded outline-none border-none cursor-pointer transition hover:bg-slate-200 dark:hover:bg-slate-700" onchange="state.ui.homeTaskFilter = this.value; render();">
-                                    <option value="all" ${state.ui.homeTaskFilter==='all'?'selected':''}>Tutte</option>
+                                <button onclick="navigate('global_tasks')" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline transition">Vedi Tutti</button>
+                            </div>
+                            <div class="flex gap-2">
+                                <select class="input-base text-[10px] font-bold py-1 px-2 flex-1" onchange="state.ui.homeTaskFilter = this.value; render();">
+                                    <option value="all" ${state.ui.homeTaskFilter==='all'?'selected':''}>Tutte le date</option>
                                     <option value="today" ${state.ui.homeTaskFilter==='today'?'selected':''}>Oggi</option>
                                     <option value="next7" ${state.ui.homeTaskFilter==='next7'?'selected':''}>7 Giorni</option>
                                     <option value="inbox" ${state.ui.homeTaskFilter==='inbox'?'selected':''}>Inbox</option>
                                 </select>
+                                <select class="input-base text-[10px] font-bold py-1 px-2 flex-1" onchange="state.ui.homeContextFilter = this.value; render();">
+                                    ${ctxFilterOpts}
+                                </select>
                             </div>
-                            <button onclick="navigate('global_tasks')" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline transition">Vedi Tutti</button>
                         </div>
                         ${renderInlineTasks(null, true, false)} 
                     </div>
@@ -1021,7 +1085,7 @@
             const entity = getEntity(type, id);
             if(!entity) return;
             if (!entity.notes || entity.notes.trim() === '' || entity.notes === '<p><br></p>') {
-                alert("Il foglio degli appunti è vuoto. Non c'è nulla da archiviare.");
+                showToast("Il foglio degli appunti è vuoto. Non c'è nulla da archiviare.", "error");
                 return;
             }
             if (!entity.updates) entity.updates = [];
@@ -1033,6 +1097,7 @@
             const el = document.getElementById(`quill-editor-${type}`);
             if (el && el.__quill) el.__quill.root.innerHTML = '';
             
+            showToast("Appunti archiviati con successo", "success");
             AppData.triggerSave(); render();
         }
 
@@ -1095,6 +1160,7 @@
                     update.edited = true;
                     update.editDate = new Date().toLocaleDateString('it-IT') + ' ' + new Date().toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'});
                     AppData.triggerSave(); render();
+                    showToast("Archivio aggiornato", "success");
                 }
             }
             closeArchiveModal();
@@ -1229,7 +1295,10 @@
                                     <div>
                                         <div class="flex justify-between items-center mb-3">
                                             <h3 class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center"><i class="fas fa-pen-nib mr-2 text-sm"></i> Foglio Appunti Libero</h3>
-                                            <button onclick="archiveNotes('project', '${p.id}')" class="text-[10px] font-bold bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-lg transition shadow-sm active:scale-95"><i class="fas fa-file-archive mr-1.5"></i> Archivia Foglio</button>
+                                            <div class="flex gap-2">
+                                                <button onclick="toggleFocusMode('quill-editor-project')" class="text-[10px] font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-2 rounded-lg transition shadow-sm"><i class="fas fa-expand"></i> Zen Mode</button>
+                                                <button onclick="archiveNotes('project', '${p.id}')" class="text-[10px] font-bold bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-lg transition shadow-sm active:scale-95"><i class="fas fa-file-archive mr-1.5"></i> Archivia</button>
+                                            </div>
                                         </div>
                                         <div class="bg-white dark:bg-darkbg rounded-xl border border-slate-200 dark:border-darkborder p-3 shadow-inner">
                                             <div id="quill-editor-project" class="min-h-[200px]"></div>
@@ -1319,7 +1388,10 @@
                                     <div>
                                         <div class="flex justify-between items-center mb-3">
                                             <h3 class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center"><i class="fas fa-pen-nib mr-2 text-sm"></i> Foglio Appunti Libero</h3>
-                                            <button onclick="archiveNotes('subproject', '${sp.id}')" class="text-[10px] font-bold bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-lg transition shadow-sm active:scale-95"><i class="fas fa-file-archive mr-1.5"></i> Archivia Foglio</button>
+                                            <div class="flex gap-2">
+                                                <button onclick="toggleFocusMode('quill-editor-subproject')" class="text-[10px] font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-2 rounded-lg transition shadow-sm"><i class="fas fa-expand"></i> Zen Mode</button>
+                                                <button onclick="archiveNotes('subproject', '${sp.id}')" class="text-[10px] font-bold bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-lg transition shadow-sm active:scale-95"><i class="fas fa-file-archive mr-1.5"></i> Archivia</button>
+                                            </div>
                                         </div>
                                         <div class="bg-white dark:bg-darkbg rounded-xl border border-slate-200 dark:border-darkborder p-3 shadow-inner">
                                             <div id="quill-editor-subproject" class="min-h-[200px]"></div>
@@ -1423,11 +1495,43 @@
         }
 
         function renderInlineTasks(contextId, showGlobal=false, showCompletedOption=true) {
-            let tasks = contextId ? state.data.tasks.filter(t => t.contextId === contextId) : [...state.data.tasks];
+            let validCtxIds = [];
+            if (contextId) {
+                validCtxIds = [contextId];
+                const s = getEntity('sphere', contextId);
+                const p = getEntity('project', contextId);
+                if (s) {
+                    getChildren('sphere', s.id).forEach(proj => {
+                        validCtxIds.push(proj.id);
+                        getChildren('project', proj.id).forEach(sub => validCtxIds.push(sub.id));
+                    });
+                } else if (p) {
+                    getChildren('project', p.id).forEach(sub => validCtxIds.push(sub.id));
+                }
+            }
+
+            let tasks = contextId ? state.data.tasks.filter(t => validCtxIds.includes(t.contextId)) : [...state.data.tasks];
 
             if (showGlobal && !contextId) {
                 const filter = state.ui.homeTaskFilter || 'all';
+                const ctxFilter = state.ui.homeContextFilter || 'all';
                 const todayStr = new Date().toISOString().split('T')[0];
+
+                if (ctxFilter !== 'all') {
+                    let globalValidCtxIds = [ctxFilter];
+                    const gs = getEntity('sphere', ctxFilter);
+                    const gp = getEntity('project', ctxFilter);
+                    if (gs) {
+                        getChildren('sphere', gs.id).forEach(proj => {
+                            globalValidCtxIds.push(proj.id);
+                            getChildren('project', proj.id).forEach(sub => globalValidCtxIds.push(sub.id));
+                        });
+                    } else if (gp) {
+                        getChildren('project', gp.id).forEach(sub => globalValidCtxIds.push(sub.id));
+                    }
+                    tasks = tasks.filter(t => globalValidCtxIds.includes(t.contextId));
+                }
+
                 if(filter === 'today') { tasks = tasks.filter(t => t.dueDate === todayStr); }
                 else if(filter === 'next7') { 
                     const today = new Date();
@@ -1785,6 +1889,7 @@
             if(!tIn.value.trim()) return;
             const finalCtx = ctxSelect ? ctxSelect.value : (cId || '');
             state.data.tasks.push({ id: 't_'+Date.now(), title: tIn.value.trim(), completed: false, priority: 0, dueDate: '', contextId: finalCtx });
+            showToast("Task creata", "success");
             AppData.triggerSave(); render();
         }
         function addTaskFromGlobal() {
@@ -1794,6 +1899,7 @@
             if(!tIn.value.trim()) return;
             state.data.tasks.push({ id: 't_'+Date.now(), title: tIn.value.trim(), completed: false, priority: parseInt(pIn.value), dueDate: dIn.value, contextId: ctxValue });
             
+            showToast("Task creata", "success");
             AppData.triggerSave(); render();
         }
         function toggleTask(id) { 
@@ -1814,7 +1920,7 @@
                 render(); 
             }
         }
-        function deleteTask(id) { state.data.tasks = state.data.tasks.filter(x => x.id !== id); AppData.triggerSave(); render(); }
+        function deleteTask(id) { state.data.tasks = state.data.tasks.filter(x => x.id !== id); showToast("Task eliminata", "success"); AppData.triggerSave(); render(); }
         
         function editTask(id) { editingTaskId = id; render(); }
         function saveTaskEdit(id, contextElementId) {
@@ -1826,6 +1932,7 @@
             t.dueDate = document.getElementById('etDate_' + id).value;
             if(contextElementId) { t.contextId = document.getElementById(contextElementId).value; }
             editingTaskId = null;
+            showToast("Modifiche salvate", "success");
             AppData.triggerSave(); render();
         }
 
@@ -1901,12 +2008,13 @@
             if(c && (!c.contextIds || !c.contextIds.includes(cId))) {
                 if(!c.contextIds) c.contextIds = [];
                 c.contextIds.push(cId);
+                showToast("Contatto collegato", "success");
                 AppData.triggerSave(); render();
             }
         }
         function unlinkContact(contactId, cId) {
             const c = state.data.contacts.find(x => x.id === contactId);
-            if(c) { c.contextIds = c.contextIds.filter(id => id !== cId); AppData.triggerSave(); render(); }
+            if(c) { c.contextIds = c.contextIds.filter(id => id !== cId); showToast("Contatto scollegato", "success"); AppData.triggerSave(); render(); }
         }
 
         function openContactModal(cId=null, linkCtx=null) {
@@ -1933,18 +2041,21 @@
             document.getElementById('contactModal').classList.remove('flex'); 
         }
         function saveContact() {
-            const name = document.getElementById('cmName').value.trim(); if(!name) return alert("Inserisci il nome");
+            const name = document.getElementById('cmName').value.trim(); 
+            if(!name) { showToast("Inserisci il nome", "error"); return; }
             const payload = { name, role: document.getElementById('cmRole').value, org: document.getElementById('cmOrg').value, phone: document.getElementById('cmPhone').value, email: document.getElementById('cmEmail').value };
             if(contactEditId) { 
                 let obj = state.data.contacts.find(x => x.id === contactEditId);
                 if(obj) Object.assign(obj, payload); 
+                showToast("Contatto modificato", "success");
             } else {
                 const ctxLink = localStorage.getItem('temp_ctx_link');
                 state.data.contacts.push({ id: 'c_'+Date.now(), ...payload, contextIds: ctxLink ? [ctxLink] : [] });
+                showToast("Contatto salvato", "success");
             }
             closeContactModal(); AppData.triggerSave(); render();
         }
-        function deleteContact() { if(confirm("Eliminare definitivamente?")) { state.data.contacts = state.data.contacts.filter(x => x.id !== contactEditId); closeContactModal(); AppData.triggerSave(); render(); } }
+        function deleteContact() { if(confirm("Eliminare definitivamente?")) { state.data.contacts = state.data.contacts.filter(x => x.id !== contactEditId); closeContactModal(); showToast("Contatto eliminato", "success"); AppData.triggerSave(); render(); } }
 
         // AVVIO
         window.onload = () => AppData.initialize();
