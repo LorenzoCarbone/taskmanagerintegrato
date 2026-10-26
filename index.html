@@ -139,10 +139,6 @@
         /* Pausa Arancione */
         .block-break { border-left: 4px solid #f97316; background: #fff7ed; color: #7c2d12; }
         .dark .block-break { background: rgba(249, 115, 22, 0.15); color: #fdba74; border-left-color: #fb923c; }
-
-        /* Stile Eventi Google Calendar */
-        .block-gcal { border-left: 4px solid #3b82f6; background: #eff6ff; color: #1e3a8a; }
-        .dark .block-gcal { background: rgba(59, 130, 246, 0.1); color: #bfdbfe; border-left-color: #60a5fa; }
         
         .calendar-col { min-width: 280px; width: calc(100vw - 2rem); scroll-snap-align: start; flex-shrink: 0; }
         @media (min-width: 768px) { .calendar-col { width: 320px; } }
@@ -258,14 +254,14 @@
                     <div class="space-y-3">
                         <div>
                             <label class="block text-xs font-bold mb-1.5 text-slate-600 dark:text-slate-400">ID Calendari (separati da virgola)</label>
-                            <input type="text" id="gcalIdSettings" class="input-base" placeholder="es. tua.email@gmail.com, it.italian#holiday@group.v.calendar.google.com">
+                            <input type="text" id="gcalIdSettings" class="input-base" placeholder="es. tua.email@gmail.com, it.holiday@group.v.calendar.google.com">
                         </div>
                         <div>
                             <label class="block text-xs font-bold mb-1.5 text-slate-600 dark:text-slate-400">API Key Google Calendar</label>
                             <input type="password" id="gcalApiSettings" class="input-base" placeholder="AIzaSy...">
                         </div>
                     </div>
-                    <p class="text-[10px] text-slate-500 mt-3 leading-tight bg-slate-50 dark:bg-slate-800 p-2 rounded border border-slate-200 dark:border-slate-700"><i class="fas fa-info-circle mr-1"></i> Per ID usa l'indirizzo email del tuo calendario. Per la API Key: Google Cloud Console > API e Servizi > Credenziali > Crea API Key (Abilita 'Google Calendar API' nella libreria). Assicurati che i tuoi calendari siano spuntati come 'pubblici' nelle loro impostazioni base.</p>
+                    <p class="text-[10px] text-slate-500 mt-3 leading-tight bg-slate-50 dark:bg-slate-800 p-2 rounded border border-slate-200 dark:border-slate-700"><i class="fas fa-info-circle mr-1"></i> Puoi assegnare un colore custom aggiungendo |#colore dopo l'ID (es: tua.email@gmail.com|#8e24aa). Per la API Key: Google Cloud Console > API e Servizi > Credenziali > Crea API Key.</p>
                 </div>
             </div>
             
@@ -552,8 +548,14 @@
                 let maxD = new Date(); maxD.setDate(maxD.getDate() + 7); maxD.setHours(23,59,59,999);
                 
                 let allEvents = [];
-                for(let cal of cals) {
-                    const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal)}/events?key=${this.gcalApiKey}&timeMin=${minD.toISOString()}&timeMax=${maxD.toISOString()}&singleEvents=true&orderBy=startTime`;
+                const gcalColors = { '1': '#7986cb', '2': '#33b679', '3': '#8e24aa', '4': '#e67c73', '5': '#f6c026', '6': '#f09300', '7': '#039be5', '8': '#616161', '9': '#3f51b5', '10': '#0b8043', '11': '#d60000' };
+                
+                for(let calEntry of cals) {
+                    let [calId, calColor] = calEntry.split('|');
+                    calId = calId.trim();
+                    calColor = calColor ? calColor.trim() : '#3b82f6';
+                    
+                    const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calId)}/events?key=${this.gcalApiKey}&timeMin=${minD.toISOString()}&timeMax=${maxD.toISOString()}&singleEvents=true&orderBy=startTime`;
                     try {
                         const res = await fetch(url);
                         if(!res.ok) continue;
@@ -568,22 +570,31 @@
                                 let startTime = isAllDay ? "Tutto il giorno" : start.split('T')[1].substring(0,5);
                                 let endTime = isAllDay ? "" : end.split('T')[1].substring(0,5);
                                 
+                                let eventTitle = item.summary;
+                                let noteStr = item.description ? item.description.replace(/<[^>]*>?/gm, '').substring(0,250) + (item.description.length > 250 ? '...' : '') : '';
+                                
+                                if (!eventTitle) {
+                                    eventTitle = '🔒 Evento Privato';
+                                    noteStr = 'I dettagli sono nascosti da Google. Vai su Google Calendar > Impostazioni > Clicca il calendario > "Autorizzazioni all\'accesso" e imposta il menu a tendina pubblico su "Vedere tutti i dettagli dell\'evento".';
+                                }
+
                                 return {
                                     id: 'gcal_' + item.id,
                                     isGcal: true,
-                                    title: item.summary || 'Evento Google Calendar',
+                                    title: eventTitle,
                                     date: startDateStr,
                                     startTime: startTime,
                                     endTime: endTime,
                                     category: 'gcal',
                                     isAllDay: isAllDay,
                                     link: item.htmlLink,
-                                    notes: item.description ? item.description.replace(/<[^>]*>?/gm, '').substring(0,250) + (item.description.length > 250 ? '...' : '') : ''
+                                    notes: noteStr,
+                                    color: item.colorId ? gcalColors[item.colorId] : calColor
                                 };
                             });
                             allEvents.push(...events);
                         }
-                    } catch(e) { console.error("Gcal sync error for cal:", cal, e); }
+                    } catch(e) { console.error("Gcal sync error for cal:", calId, e); }
                 }
                 this.gcalCache = allEvents;
             }
@@ -1086,8 +1097,9 @@
                             isDone = b.completedDates && b.completedDates.includes(dateStr);
                         }
                         
-                        const catClass = b.isGcal ? 'block-gcal' : "block-" + (b.category || 'routine');
-                        let icon = b.isGcal ? 'fab fa-google' : (b.type === 'task' ? 'fa-link' : (b.category === 'focus' ? 'fa-laptop-code' : (b.category === 'break' ? 'fa-mug-hot' : 'fa-list-ul')));
+                        const catClass = b.isGcal ? '' : "block-" + (b.category || 'routine');
+                        const gcalStyle = b.isGcal ? `border-left: 4px solid ${b.color}; background-color: ${b.color}15; color: ${b.color};` : '';
+                        let icon = b.isGcal ? 'fab fa-google' : (b.type === 'task' ? 'fas fa-link' : (b.category === 'focus' ? 'fas fa-laptop-code' : (b.category === 'break' ? 'fas fa-mug-hot' : 'fas fa-list-ul')));
                         
                         let extraHtml = '';
                         if(b.type === 'task' && b.taskIds && b.taskIds.length > 0) {
@@ -1106,14 +1118,14 @@
                         const cursorStyle = b.isGcal ? (b.link ? 'cursor:pointer' : 'cursor:default') : 'cursor:pointer';
 
                         blocksHtml += `
-                            <div class="panel p-3 mb-3 flex items-start gap-3 transition-all relative group ${catClass} ${isDone ? 'opacity-50 grayscale' : ''}">
+                            <div class="panel p-3 mb-3 flex items-start gap-3 transition-all relative group ${catClass} ${isDone ? 'opacity-50 grayscale' : ''}" style="${gcalStyle}">
                                 <input type="checkbox" class="task-checkbox shrink-0 mt-0.5 border-current checked:!bg-current checked:!border-current" style="color:inherit" ${isDone ? 'checked' : ''} onclick="toggleBlockCompleted('${b.id}', '${dateStr}')">
                                 <div class="flex-1 min-w-0" onclick="${onClickAction}" style="${cursorStyle}">
                                     <div class="flex justify-between items-center mb-1">
                                         <span class="text-[10px] font-black uppercase tracking-wider opacity-80">${b.startTime}${b.endTime ? ' - '+b.endTime : ''}</span>
                                         ${b.isRecurring ? `<i class="fas fa-sync-alt text-[9px] opacity-60"></i>` : ''}
                                     </div>
-                                    <p class="font-bold text-sm leading-tight word-wrap mb-1 ${isDone ? 'line-through opacity-70' : ''}"><i class="fas ${icon} text-[10px] mr-1.5 opacity-60"></i>${b.title}</p>
+                                    <p class="font-bold text-sm leading-tight word-wrap mb-1 ${isDone ? 'line-through opacity-70' : ''}"><i class="${icon} text-[10px] mr-1.5 opacity-80"></i>${b.title}</p>
                                     ${extraHtml}
                                 </div>
                             </div>`;
