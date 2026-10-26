@@ -62,13 +62,12 @@
             100% { transform: scale(1); filter: brightness(0.9) grayscale(0.5); opacity: 0.5; } 
         }
 
-        /* Checkbox circolare per tasks */
+        /* Checkbox circolare per tasks & blocchi */
         .task-checkbox { appearance: none; min-width: 1.25rem; width: 1.25rem; min-height: 1.25rem; height: 1.25rem; border: 2px solid; border-radius: 50%; cursor: pointer; position: relative; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); background: transparent; flex-shrink: 0; }
         .dark .task-checkbox { border-color: #64748b; }
         .task-checkbox:checked { background-color: #f59e0b !important; border-color: #f59e0b !important; transform: scale(1.05); }
         .task-checkbox:checked::after { content: '✔'; position: absolute; color: white; font-size: 10px; top: -1px; left: 3px; font-weight: bold; }
         
-        /* Stili Drag and Drop Avanzati */
         .draggable { cursor: grab; }
         .draggable:active { cursor: grabbing; }
         .drop-zone { border: 2px dashed transparent; transition: all 0.2s ease; }
@@ -90,7 +89,6 @@
         .dark .input-base:focus { border-color: #60a5fa; box-shadow: 0 0 0 1px #60a5fa; }
         .input-base:focus { border-color: #3b82f6; box-shadow: 0 0 0 1px #3b82f6; }
         
-        /* Stile menu a tendina laterale migliorato per Mobile */
         .tm-nav-item { padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; font-weight: 600; color: #475569; margin-bottom: 0.2rem; }
         .dark .tm-nav-item { color: #cbd5e1; }
         .dark .tm-nav-item:hover { background-color: rgba(255,255,255,0.05); transform: translateX(3px); }
@@ -109,7 +107,6 @@
         .dark .glass-header { background: rgba(30, 41, 59, 0.8); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .glass-header { background: rgba(255, 255, 255, 0.8); border-bottom: 1px solid rgba(0,0,0,0.05); }
         
-        /* --- SIDEBAR MOBILE TASK MANAGER --- */
         .tm-sidebar-mobile { position: fixed; top: 0; left: 0; bottom: 0; width: 85%; max-width: 320px; z-index: 60; transform: translateX(-100%); transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 4px 0 25px rgba(0,0,0,0.15); }
         .tm-sidebar-mobile.open { transform: translateX(0); }
         .tm-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 50; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(2px); }
@@ -121,26 +118,45 @@
             .tm-nav-item { padding: 0.6rem 0.8rem; } 
         }
 
-        /* --- MODALE APPUNTI MOBILE --- */
         #mobileNotesModal { z-index: 60; }
         .mobile-ql-container { height: calc(100vh - 140px); overflow-y: auto; }
         .ql-toolbar { display: flex; flex-wrap: wrap; }
         .ql-editor { min-height: 120px; max-height: 35vh; overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
         @media (min-width: 768px) { .ql-editor { max-height: 60vh; } }
         
-        /* --- ANIMAZIONI QUICK ADD MOBILE --- */
         @keyframes slideUpAdd { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .animate-slide-up-add { animation: slideUpAdd 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards; }
         @keyframes fadeInAdd { from { opacity: 0; } to { opacity: 1; } }
         .animate-fade-in-add { animation: fadeInAdd 0.25s ease-out forwards; }
+
+        /* Stili specifici Calendario / Blocchi */
+        .block-focus { border-left: 4px solid #6366f1; background: #eef2ff; color: #312e81; }
+        .dark .block-focus { background: rgba(99, 102, 241, 0.15); color: #c7d2fe; border-left-color: #818cf8; }
+        
+        .block-routine { border-left: 4px solid #94a3b8; background: #f8fafc; color: #334155; }
+        .dark .block-routine { background: rgba(148, 163, 184, 0.1); color: #cbd5e1; border-left-color: #64748b; }
+        
+        /* Pausa Arancione */
+        .block-break { border-left: 4px solid #f97316; background: #fff7ed; color: #7c2d12; }
+        .dark .block-break { background: rgba(249, 115, 22, 0.15); color: #fdba74; border-left-color: #fb923c; }
+
+        /* Stile Eventi Google Calendar */
+        .block-gcal { border-left: 4px solid #3b82f6; background: #eff6ff; color: #1e3a8a; }
+        .dark .block-gcal { background: rgba(59, 130, 246, 0.1); color: #bfdbfe; border-left-color: #60a5fa; }
+        
+        .calendar-col { min-width: 280px; width: calc(100vw - 2rem); scroll-snap-align: start; flex-shrink: 0; }
+        @media (min-width: 768px) { .calendar-col { width: 320px; } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-darkbg text-slate-800 dark:text-slate-200 flex flex-col relative pb-10">
-    <div id="toast-container"></div> <!-- Container Notifiche -->
+    <div id="toast-container"></div>
 
     <header class="sticky top-0 z-40 w-full glass-header mb-8 px-4 md:px-8 py-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hidden-in-tm transition-all">
         <div id="breadcrumbs" class="flex flex-wrap gap-2 items-center text-sm font-semibold text-slate-500 dark:text-slate-300"></div>
         <div class="flex flex-wrap gap-2 md:gap-3 items-center text-sm font-medium">
+            <button onclick="navigate('global_calendar')" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition px-3 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"><i class="fas fa-calendar-alt mr-1 text-emerald-500"></i> Calendario</button>
             <button onclick="navigate('global_tasks')" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition px-3 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"><i class="fas fa-check-double mr-1 text-blue-500"></i> Tasks</button>
             <button onclick="navigate('global_contacts')" class="text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition px-3 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"><i class="fas fa-address-book mr-1 text-purple-500"></i> Rubrica</button>
             <div class="h-5 w-px bg-slate-300 dark:bg-slate-600 mx-1 hidden md:block"></div>
@@ -223,14 +239,36 @@
         </div>
     </div>
 
-    <!-- Modal Settings Supabase -->
+    <!-- Modal Settings Supabase & Google Calendar -->
     <div id="settingsModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 hidden flex justify-center items-center backdrop-blur-sm z-50 p-4">
         <div class="bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder rounded-xl shadow-2xl p-6 w-full max-w-lg modal-animate">
-            <h2 class="text-lg font-bold mb-5"><i class="fas fa-database text-blue-500 mr-2"></i> Impostazioni Supabase</h2>
+            <h2 class="text-lg font-bold mb-5"><i class="fas fa-cog text-slate-500 mr-2"></i> Impostazioni Generali</h2>
+            
             <div class="space-y-4 mb-6">
-                <div><label class="block text-xs font-bold mb-1.5 text-slate-600 dark:text-slate-400">Project URL</label><input type="text" id="supabaseUrl" class="input-base" placeholder="https://xyz.supabase.co"></div>
-                <div><label class="block text-xs font-bold mb-1.5 text-slate-600 dark:text-slate-400">Anon Key (API)</label><input type="password" id="anonKey" class="input-base"></div>
+                <div class="pb-3 border-b border-slate-200 dark:border-slate-700">
+                    <h3 class="text-sm font-bold flex items-center mb-3 text-slate-700 dark:text-slate-200"><i class="fas fa-database text-blue-500 mr-2"></i> Database Supabase</h3>
+                    <div class="space-y-3">
+                        <div><label class="block text-xs font-bold mb-1.5 text-slate-600 dark:text-slate-400">Project URL</label><input type="text" id="supabaseUrl" class="input-base" placeholder="https://xyz.supabase.co"></div>
+                        <div><label class="block text-xs font-bold mb-1.5 text-slate-600 dark:text-slate-400">Anon Key (API)</label><input type="password" id="anonKey" class="input-base"></div>
+                    </div>
+                </div>
+                
+                <div class="pt-2">
+                    <h3 class="text-sm font-bold flex items-center mb-3 text-slate-700 dark:text-slate-200"><i class="fab fa-google text-emerald-500 mr-2"></i> Integrazione Google Calendar</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold mb-1.5 text-slate-600 dark:text-slate-400">ID Calendari (separati da virgola)</label>
+                            <input type="text" id="gcalIdSettings" class="input-base" placeholder="es. tua.email@gmail.com, it.italian#holiday@group.v.calendar.google.com">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-1.5 text-slate-600 dark:text-slate-400">API Key Google Calendar</label>
+                            <input type="password" id="gcalApiSettings" class="input-base" placeholder="AIzaSy...">
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-3 leading-tight bg-slate-50 dark:bg-slate-800 p-2 rounded border border-slate-200 dark:border-slate-700"><i class="fas fa-info-circle mr-1"></i> Per ID usa l'indirizzo email del tuo calendario. Per la API Key: Google Cloud Console > API e Servizi > Credenziali > Crea API Key (Abilita 'Google Calendar API' nella libreria). Assicurati che i tuoi calendari siano spuntati come 'pubblici' nelle loro impostazioni base.</p>
+                </div>
             </div>
+            
             <div class="flex justify-between items-center pt-5 border-t border-slate-200 dark:border-darkborder">
                 <button onclick="factoryReset()" class="text-red-500 hover:text-red-600 text-xs font-bold flex items-center px-3 py-2 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition"><i class="fas fa-exclamation-triangle mr-2"></i> Factory Reset</button>
                 <div class="flex gap-2">
@@ -298,8 +336,105 @@
         </div>
     </div>
 
+    <!-- Modale Time Block (Calendario) -->
+    <div id="blockModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 hidden flex justify-center items-start pt-10 md:items-center md:pt-0 backdrop-blur-sm z-50 p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-darkpanel border border-slate-200 dark:border-darkborder rounded-xl shadow-2xl p-5 w-full max-w-md modal-animate my-auto">
+            <h2 id="bmTitle" class="text-lg font-bold mb-4 flex items-center"><i class="fas fa-clock text-blue-500 mr-2"></i> Programma Blocco</h2>
+            
+            <div class="space-y-4">
+                <div class="flex gap-3">
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-bold mb-1 text-slate-500 dark:text-slate-400 uppercase">Tipologia</label>
+                        <select id="bmType" class="input-base text-sm font-bold py-2" onchange="toggleBlockTypeFields()">
+                            <option value="simple">Testo Semplice</option>
+                            <option value="task">Collega a Task</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-bold mb-1 text-slate-500 dark:text-slate-400 uppercase">Categoria</label>
+                        <select id="bmCat" class="input-base text-sm font-bold py-2">
+                            <option value="focus">💻 Focus / Studio</option>
+                            <option value="routine">🔄 Routine / Faccende</option>
+                            <option value="break">☕ Pausa / Svago / Pasti</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="bmSimpleArea">
+                    <label class="block text-[10px] font-bold mb-1 text-slate-500 dark:text-slate-400 uppercase">Cosa devi fare?</label>
+                    <input type="text" id="bmTextTitle" class="input-base py-2" placeholder="Es. Studiare Diritto Privato">
+                </div>
+
+                <div id="bmTaskArea" class="hidden">
+                    <label class="block text-[10px] font-bold mb-1 text-slate-500 dark:text-slate-400 uppercase">Seleziona Task Esistenti</label>
+                    <div id="bmTaskAreaList" class="input-base p-2 max-h-36 overflow-y-auto space-y-1 bg-slate-50 dark:bg-slate-800/50">
+                        <!-- Lista checkbox popolata in JS -->
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold mb-1 text-slate-500 dark:text-slate-400 uppercase">Dalle</label>
+                        <input type="time" id="bmStart" class="input-base py-2 font-bold w-28">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold mb-1 text-slate-500 dark:text-slate-400 uppercase">Alle</label>
+                        <input type="time" id="bmEnd" class="input-base py-2 font-bold w-28">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-bold mb-1 text-slate-500 dark:text-slate-400 uppercase">Data Inizio</label>
+                        <input type="date" id="bmDate" class="input-base py-2 text-sm font-bold">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold mb-1 text-slate-500 dark:text-slate-400 uppercase">Note (Opzionale)</label>
+                    <textarea id="bmNotes" class="input-base text-sm py-2" rows="2" placeholder="Aggiungi dettagli o appunti per questo blocco..."></textarea>
+                </div>
+
+                <div class="pt-3 border-t border-slate-200 dark:border-slate-700">
+                    <label class="flex items-center gap-2 cursor-pointer mb-3">
+                        <input type="checkbox" id="bmIsRecurring" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" onchange="toggleRecurrenceFields()">
+                        <span class="text-sm font-bold text-slate-700 dark:text-slate-200">Evento Ciclico / Ripetitivo</span>
+                    </label>
+                    
+                    <div id="bmRecurrenceArea" class="hidden bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3">
+                        <select id="bmRecType" class="input-base text-sm py-1.5" onchange="toggleRecurrenceDetails()">
+                            <option value="daily">Ogni giorno</option>
+                            <option value="weekly">Giorni specifici della settimana</option>
+                            <option value="interval">A intervallo fisso</option>
+                        </select>
+                        
+                        <div id="bmRecWeekly" class="hidden flex flex-wrap gap-2">
+                            <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" class="bm-day-chk" value="1"> Lun</label>
+                            <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" class="bm-day-chk" value="2"> Mar</label>
+                            <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" class="bm-day-chk" value="3"> Mer</label>
+                            <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" class="bm-day-chk" value="4"> Gio</label>
+                            <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" class="bm-day-chk" value="5"> Ven</label>
+                            <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" class="bm-day-chk" value="6"> Sab</label>
+                            <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" class="bm-day-chk" value="0"> Dom</label>
+                        </div>
+                        
+                        <div id="bmRecInterval" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-600 dark:text-slate-400">Ripeti ogni</span>
+                            <input type="number" id="bmIntervalNum" class="input-base w-20 py-1 text-center" min="2" value="2">
+                            <span class="text-xs text-slate-600 dark:text-slate-400">giorni</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-200 dark:border-darkborder">
+                <button id="bmDeleteBtn" onclick="deleteBlock()" class="text-red-500 hover:text-red-600 text-xs font-bold hidden px-3 py-2 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition">Elimina</button>
+                <div class="flex gap-2 ml-auto">
+                    <button onclick="closeBlockModal()" class="px-4 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition rounded-lg">Annulla</button>
+                    <button onclick="saveBlock()" class="px-5 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow transition active:scale-[0.98]">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // --- FUNZIONE TOAST ---
         function showToast(message, type = 'default') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -313,7 +448,6 @@
         }
         window.alert = function(msg) { showToast(msg, 'error'); };
 
-        // --- FUNZIONE ZEN MODE ---
         function toggleFocusMode(editorId) {
             const container = document.getElementById(editorId).parentElement;
             container.classList.toggle('focus-mode-active');
@@ -329,7 +463,6 @@
             }
         }
 
-        // --- TEMA ---
         function applyTheme() {
             if (localStorage.getItem('theme') === 'light') {
                 document.documentElement.classList.remove('dark');
@@ -350,46 +483,25 @@
         }
         applyTheme();
 
-        // --- GESTIONE SWIPE MOBILE ---
-        let touchStartX = 0;
-        let touchStartY = 0;
-
-        document.addEventListener('touchstart', e => {
-            touchStartX = e.changedTouches[0].screenX;
-            touchStartY = e.changedTouches[0].screenY;
-        }, {passive: true});
-
-        document.addEventListener('touchend', e => {
-            let touchEndX = e.changedTouches[0].screenX;
-            let touchEndY = e.changedTouches[0].screenY;
-            
-            if(e.target.closest('.ql-editor') || e.target.closest('.modal-animate') || document.querySelector('.fixed.flex:not(#mobileQuickAddModal):not(.tm-sidebar-mobile)')) return;
-
-            let MathAbsX = Math.abs(touchEndX - touchStartX);
-            let MathAbsY = Math.abs(touchEndY - touchStartY);
-
-            if (state.view === 'global_tasks' && MathAbsX > MathAbsY && MathAbsX > 60) {
-                const sidebar = document.getElementById('tmSidebar');
-                if (touchEndX > touchStartX && !sidebar.classList.contains('open')) {
-                    toggleTmSidebar(); 
-                } else if (touchEndX < touchStartX && sidebar.classList.contains('open')) {
-                    toggleTmSidebar(); 
-                }
-            }
-        }, {passive: true});
-
-        // --- MOTORE DATI (DATA MANAGER SUPABASE) ---
+        // --- MOTORE DATI ---
         class LifeHubDataManager {
             constructor() {
-                // I tuoi dati di default sono già inseriti per farlo funzionare subito
                 this.supabaseUrl = localStorage.getItem('hub_supabase_url') || 'https://bbskvjxrutsrznwcrlmi.supabase.co';
                 this.anonKey = localStorage.getItem('hub_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJic2t2anhydXRzcnpud2NybG1pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMzIwMDIsImV4cCI6MjEwODYwODAwMn0.l_nFrRcMWn6LDzyI8AJEoc1_J33hAePmNbXTDolVvxU';
+                
+                // Variabili Google Calendar
+                this.gcalId = localStorage.getItem('hub_gcal_id') || '';
+                this.gcalApiKey = localStorage.getItem('hub_gcal_apikey') || '';
+                this.gcalCache = [];
+                
                 this.saveTimeout = null;
                 this.isSyncing = false;
                 
                 this.defaultData = {
-                    version: "5.0",
+                    version: "5.1",
                     spheres: [], projects: [], subprojects: [], tasks: [], contacts: [],
+                    calendarBlocks: [],
+                    gcalCompleted: [],
                     pinnedLevels: [{id: 'pl_default', name: 'In Evidenza'}]
                 };
                 
@@ -418,7 +530,6 @@
                         this.data = this.migrateData(rows[0].data);
                         this.saveLocal();
                     } else {
-                        // Se non c'è ancora, forza un salvataggio per creare la prima riga
                         this.pushToCloud();
                     }
                     if(btn) btn.innerHTML = '<i class="fas fa-check text-green-500 text-base"></i>';
@@ -429,6 +540,52 @@
                 }
                 if(btn) setTimeout(() => btn.innerHTML = '<i class="fas fa-cloud-sync text-base"></i>', 2000);
                 render();
+            }
+
+            // Funzione asincrona nativa per recuperare gli eventi di Google Calendar
+            async fetchGCalEvents() {
+                if(!this.gcalApiKey || !this.gcalId) return;
+                const cals = this.gcalId.split(',').map(s=>s.trim()).filter(Boolean);
+                if(cals.length === 0) return;
+                
+                let minD = new Date(); minD.setDate(minD.getDate() - 2); minD.setHours(0,0,0,0);
+                let maxD = new Date(); maxD.setDate(maxD.getDate() + 7); maxD.setHours(23,59,59,999);
+                
+                let allEvents = [];
+                for(let cal of cals) {
+                    const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal)}/events?key=${this.gcalApiKey}&timeMin=${minD.toISOString()}&timeMax=${maxD.toISOString()}&singleEvents=true&orderBy=startTime`;
+                    try {
+                        const res = await fetch(url);
+                        if(!res.ok) continue;
+                        const data = await res.json();
+                        if(data.items) {
+                            const events = data.items.map(item => {
+                                let start = item.start.dateTime || item.start.date;
+                                let end = item.end.dateTime || item.end.date;
+                                let isAllDay = !item.start.dateTime;
+                                
+                                let startDateStr = start.split('T')[0];
+                                let startTime = isAllDay ? "Tutto il giorno" : start.split('T')[1].substring(0,5);
+                                let endTime = isAllDay ? "" : end.split('T')[1].substring(0,5);
+                                
+                                return {
+                                    id: 'gcal_' + item.id,
+                                    isGcal: true,
+                                    title: item.summary || 'Evento Google Calendar',
+                                    date: startDateStr,
+                                    startTime: startTime,
+                                    endTime: endTime,
+                                    category: 'gcal',
+                                    isAllDay: isAllDay,
+                                    link: item.htmlLink,
+                                    notes: item.description ? item.description.replace(/<[^>]*>?/gm, '').substring(0,250) + (item.description.length > 250 ? '...' : '') : ''
+                                };
+                            });
+                            allEvents.push(...events);
+                        }
+                    } catch(e) { console.error("Gcal sync error for cal:", cal, e); }
+                }
+                this.gcalCache = allEvents;
             }
 
             triggerSave() {
@@ -476,10 +633,11 @@
 
             migrateData(d) {
                 if (!d || Object.keys(d).length === 0) return JSON.parse(JSON.stringify(this.defaultData));
-                let n = { version: "5.0", spheres: [], projects: [], subprojects: [], tasks: d.tasks || [], contacts: d.contacts || [] };
+                let n = { version: "5.1", spheres: [], projects: [], subprojects: [], tasks: d.tasks || [], contacts: d.contacts || [], calendarBlocks: d.calendarBlocks || [] };
                 n.pinnedLevels = d.pinnedLevels || [{id: 'pl_default', name: 'In Evidenza'}];
+                n.gcalCompleted = d.gcalCompleted || [];
                 
-                if (d.version !== "4.5" && d.version !== "5.0" && d.spheres && d.spheres.length > 0 && d.spheres[0].projects !== undefined) {
+                if (d.version !== "4.5" && d.version !== "5.0" && d.version !== "5.1" && d.spheres && d.spheres.length > 0 && d.spheres[0].projects !== undefined) {
                     d.spheres.forEach((s, sIdx) => {
                         n.spheres.push({ id: s.id, name: s.name, icon: s.icon || 'fa-folder', color: mapColor(s.color), order: s.order||sIdx, notes: s.notes||'', permanentNotes: s.permanentNotes||'', updates: s.updates||[] });
                         if (s.projects) {
@@ -508,6 +666,8 @@
                 if(parsed.subprojects) this.data.subprojects.push(...parsed.subprojects);
                 if(parsed.tasks) this.data.tasks.push(...parsed.tasks);
                 if(parsed.contacts) this.data.contacts.push(...parsed.contacts);
+                if(parsed.calendarBlocks) this.data.calendarBlocks.push(...parsed.calendarBlocks);
+                if(parsed.gcalCompleted) this.data.gcalCompleted.push(...parsed.gcalCompleted);
                 this.triggerSave();
             }
             
@@ -521,23 +681,54 @@
         const state = { 
             view: 'home', 
             path: { sphereId: null, projId: null, subprojId: null }, 
-            ui: { showArchived: false, tmView: 'all', showCompletedTasks: false, homeTaskFilter: 'all', homeContextFilter: 'all' },
+            ui: { showArchived: false, tmView: 'all', showCompletedTasks: false, homeTaskFilter: 'all', homeContextFilter: 'all', calSelectedDate: getISODate(new Date()) },
             get data() { return AppData.data; },
             set data(val) { AppData.data = val; }
         };
         
         let tmListSettings = JSON.parse(localStorage.getItem('hub_tm_settings')) || {};
 
-        let editState = { mode: 'create', type: 'sphere', id: null };
+        let editState = { mode: 'create', type: 'sphere', id: null, sId: null, pId: null };
         let contactEditId = null;
         let editingTaskId = null;
         let currentArchiveEdit = { type: null, entityId: null, updateId: null };
         let archiveQuill = null;
         let dragSource = null;
 
-        function forceSync() { 
+        // CALENDAR GLOBALS
+        let blockEditId = null;
+        let blockEditDate = null; 
+
+        // --- UTILS DATE ---
+        function getISODate(dateObj) {
+            const offset = dateObj.getTimezoneOffset() * 60000;
+            return new Date(dateObj - offset).toISOString().split('T')[0];
+        }
+        function getDayNameShort(dateObj) {
+            const days = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+            return days[dateObj.getDay()];
+        }
+        function formatDisplayDate(dateStr) {
+            const d = new Date(dateStr);
+            const today = getISODate(new Date());
+            const yesterday = getISODate(new Date(new Date().setDate(new Date().getDate() - 1)));
+            const tomorrow = getISODate(new Date(new Date().setDate(new Date().getDate() + 1)));
+            
+            let prefix = "";
+            if(dateStr === today) prefix = "Oggi • ";
+            else if(dateStr === tomorrow) prefix = "Domani • ";
+            else if(dateStr === yesterday) prefix = "Ieri • ";
+
+            return prefix + getDayNameShort(d) + " " + d.getDate() + "/" + (d.getMonth()+1);
+        }
+
+        async function forceSync() { 
             if(confirm("Vuoi SCARICARE i dati dal cloud (OK) o FORZARE il caricamento dei dati locali sul cloud (Annulla)?")) {
-                AppData.initialize(); 
+                await AppData.initialize(); 
+                if (state.view === 'global_calendar' && AppData.gcalApiKey && AppData.gcalId) {
+                    await AppData.fetchGCalEvents();
+                    render();
+                }
             } else {
                 AppData.pushToCloud(); 
             }
@@ -614,6 +805,358 @@
             closeMobileNotes();
         }
 
+        // --- CALENDARIO / TIME MANAGEMENT LOGIC ---
+
+        function isBlockOnDate(block, dateStr) {
+            if (block.isGcal) return block.date === dateStr; 
+            
+            if (!block.isRecurring) {
+                return block.date === dateStr;
+            }
+            // Recurring logic
+            if (dateStr < block.date) return false; 
+            
+            const targetDate = new Date(dateStr);
+            const startDate = new Date(block.date);
+
+            if (block.recurrence.type === 'daily') return true;
+            if (block.recurrence.type === 'weekly') {
+                return block.recurrence.days.includes(targetDate.getDay());
+            }
+            if (block.recurrence.type === 'interval') {
+                const diffTime = Math.abs(targetDate - startDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                return diffDays % block.recurrence.interval === 0;
+            }
+            return false;
+        }
+
+        function toggleBlockTypeFields() {
+            const type = document.getElementById('bmType').value;
+            if(type === 'simple') {
+                document.getElementById('bmSimpleArea').classList.remove('hidden');
+                document.getElementById('bmTaskArea').classList.add('hidden');
+            } else {
+                document.getElementById('bmSimpleArea').classList.add('hidden');
+                document.getElementById('bmTaskArea').classList.remove('hidden');
+            }
+        }
+
+        function toggleRecurrenceFields() {
+            const isRec = document.getElementById('bmIsRecurring').checked;
+            const area = document.getElementById('bmRecurrenceArea');
+            if(isRec) area.classList.remove('hidden'); else area.classList.add('hidden');
+        }
+
+        function toggleRecurrenceDetails() {
+            const rType = document.getElementById('bmRecType').value;
+            document.getElementById('bmRecWeekly').classList.add('hidden');
+            document.getElementById('bmRecInterval').classList.add('hidden');
+            if(rType === 'weekly') document.getElementById('bmRecWeekly').classList.remove('hidden');
+            if(rType === 'interval') document.getElementById('bmRecInterval').classList.remove('hidden');
+        }
+
+        function openBlockModal(id = null, dateStr = null) {
+            blockEditId = id;
+            blockEditDate = dateStr || getISODate(new Date());
+
+            // Popola il selettore Task multiplo
+            let taskOpts = '';
+            state.data.tasks.filter(t => !t.completed).forEach(t => {
+                taskOpts += `<label class="flex items-center gap-2 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer transition border border-transparent hover:border-slate-200 dark:hover:border-slate-600"><input type="checkbox" class="bm-task-chk w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" value="${t.id}"> <span class="text-xs font-medium text-slate-700 dark:text-slate-300 leading-tight">${t.title}</span></label>`;
+            });
+            document.getElementById('bmTaskAreaList').innerHTML = taskOpts || '<p class="text-xs text-slate-400 italic p-2">Nessuna task attiva disponibile.</p>';
+
+            const modal = document.getElementById('blockModal');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+
+            if (id) {
+                const b = state.data.calendarBlocks.find(x => x.id === id);
+                if(!b) return;
+                document.getElementById('bmTitle').innerHTML = '<i class="fas fa-edit text-blue-500 mr-2"></i> Modifica Blocco';
+                document.getElementById('bmType').value = b.type;
+                document.getElementById('bmCat').value = b.category || 'focus';
+                document.getElementById('bmStart').value = b.startTime;
+                document.getElementById('bmEnd').value = b.endTime;
+                document.getElementById('bmDate').value = b.date; 
+                document.getElementById('bmNotes').value = b.notes || '';
+                
+                if (b.type === 'simple') {
+                    document.getElementById('bmTextTitle').value = b.title;
+                } else {
+                    const taskIds = b.taskIds || (b.taskId ? [b.taskId] : []);
+                    document.querySelectorAll('.bm-task-chk').forEach(chk => {
+                        if(taskIds.includes(chk.value)) chk.checked = true;
+                    });
+                }
+
+                document.getElementById('bmIsRecurring').checked = b.isRecurring;
+                if(b.isRecurring && b.recurrence) {
+                    document.getElementById('bmRecType').value = b.recurrence.type;
+                    if(b.recurrence.type === 'weekly') {
+                        document.querySelectorAll('.bm-day-chk').forEach(chk => {
+                            chk.checked = b.recurrence.days.includes(parseInt(chk.value));
+                        });
+                    }
+                    if(b.recurrence.type === 'interval') document.getElementById('bmIntervalNum').value = b.recurrence.interval;
+                }
+                document.getElementById('bmDeleteBtn').classList.remove('hidden');
+            } else {
+                document.getElementById('bmTitle').innerHTML = '<i class="fas fa-plus-circle text-blue-500 mr-2"></i> Nuovo Blocco';
+                document.getElementById('bmType').value = 'simple';
+                document.getElementById('bmCat').value = 'focus';
+                document.getElementById('bmTextTitle').value = '';
+                document.getElementById('bmNotes').value = '';
+                document.getElementById('bmStart').value = '09:00';
+                document.getElementById('bmEnd').value = '10:00';
+                document.getElementById('bmDate').value = blockEditDate;
+                
+                document.getElementById('bmIsRecurring').checked = false;
+                document.getElementById('bmRecType').value = 'daily';
+                document.querySelectorAll('.bm-day-chk').forEach(c => c.checked = false);
+                document.getElementById('bmIntervalNum').value = '2';
+                
+                document.getElementById('bmDeleteBtn').classList.add('hidden');
+            }
+            toggleBlockTypeFields();
+            toggleRecurrenceFields();
+            toggleRecurrenceDetails();
+        }
+
+        function closeBlockModal() {
+            document.getElementById('blockModal').classList.add('hidden');
+            document.getElementById('blockModal').classList.remove('flex');
+        }
+
+        function saveBlock() {
+            const type = document.getElementById('bmType').value;
+            const category = document.getElementById('bmCat').value;
+            const start = document.getElementById('bmStart').value;
+            const end = document.getElementById('bmEnd').value;
+            const date = document.getElementById('bmDate').value;
+            const isRec = document.getElementById('bmIsRecurring').checked;
+            const notes = document.getElementById('bmNotes').value.trim();
+            
+            let title = "", taskIds = [];
+            if(type === 'simple') {
+                title = document.getElementById('bmTextTitle').value.trim();
+                if(!title) { showToast("Inserisci cosa devi fare", "error"); return; }
+            } else {
+                document.querySelectorAll('.bm-task-chk:checked').forEach(c => taskIds.push(c.value));
+                if(taskIds.length === 0) { showToast("Seleziona almeno una task", "error"); return; }
+                if (taskIds.length === 1) {
+                    const t = state.data.tasks.find(x => x.id === taskIds[0]);
+                    title = t ? t.title : 'Task sconosciuta';
+                } else {
+                    title = `${taskIds.length} Task collegate`;
+                }
+            }
+
+            if(!start || !end || !date) { showToast("Compila orari e date", "error"); return; }
+            if(start >= end) { showToast("L'orario di fine deve essere dopo l'inizio", "error"); return; }
+
+            let recurrenceObj = null;
+            if(isRec) {
+                const rType = document.getElementById('bmRecType').value;
+                recurrenceObj = { type: rType };
+                if(rType === 'weekly') {
+                    let days = [];
+                    document.querySelectorAll('.bm-day-chk').forEach(c => { if(c.checked) days.push(parseInt(c.value)) });
+                    if(days.length === 0) { showToast("Seleziona almeno un giorno per la ripetizione settimanale", "error"); return; }
+                    recurrenceObj.days = days;
+                } else if(rType === 'interval') {
+                    const intv = parseInt(document.getElementById('bmIntervalNum').value);
+                    if(intv < 1 || isNaN(intv)) { showToast("Intervallo non valido", "error"); return; }
+                    recurrenceObj.interval = intv;
+                }
+            }
+
+            const payload = { title, type, taskId: taskIds[0], taskIds, category, startTime: start, endTime: end, date, isRecurring: isRec, recurrence: recurrenceObj, notes };
+
+            if(blockEditId) {
+                let b = state.data.calendarBlocks.find(x => x.id === blockEditId);
+                if(b) Object.assign(b, payload);
+                showToast("Blocco modificato", "success");
+            } else {
+                state.data.calendarBlocks.push({ id: 'cb_'+Date.now(), ...payload, completedDates: [] });
+                showToast("Blocco aggiunto", "success");
+            }
+
+            closeBlockModal(); AppData.triggerSave(); render();
+        }
+
+        function deleteBlock() {
+            if(!blockEditId) return;
+            if(confirm("Eliminare questo blocco? Se ciclico verrà rimosso da tutti i giorni.")) {
+                state.data.calendarBlocks = state.data.calendarBlocks.filter(b => b.id !== blockEditId);
+                closeBlockModal(); AppData.triggerSave(); render();
+                showToast("Blocco eliminato", "success");
+            }
+        }
+
+        function toggleBlockCompleted(id, dateStr) {
+            // Check Google Calendar specifici
+            if(id.startsWith('gcal_')) {
+                if(!state.data.gcalCompleted) state.data.gcalCompleted = [];
+                const key = id + '_' + dateStr;
+                const idx = state.data.gcalCompleted.indexOf(key);
+                if(idx > -1) state.data.gcalCompleted.splice(idx, 1);
+                else state.data.gcalCompleted.push(key);
+                AppData.triggerSave(); render();
+                return;
+            }
+
+            const b = state.data.calendarBlocks.find(x => x.id === id);
+            if(!b) return;
+            
+            if(!b.completedDates) b.completedDates = [];
+            const idx = b.completedDates.indexOf(dateStr);
+            if(idx > -1) {
+                b.completedDates.splice(idx, 1);
+            } else {
+                b.completedDates.push(dateStr);
+                // Completa tutte le task associate se non è ricorrente
+                if(b.type === 'task' && !b.isRecurring) {
+                    const tIds = b.taskIds || (b.taskId ? [b.taskId] : []);
+                    let tasksCompleted = 0;
+                    tIds.forEach(tid => {
+                        const t = state.data.tasks.find(x => x.id === tid);
+                        if(t && !t.completed) { t.completed = true; tasksCompleted++; }
+                    });
+                    if(tasksCompleted > 0) showToast(`${tasksCompleted} task marcate completate`, "success");
+                }
+            }
+            AppData.triggerSave(); render();
+        }
+
+        function renderCalendar() {
+            let daysArr = [];
+            let baseDate = new Date();
+            for(let i = -1; i <= 5; i++) {
+                let d = new Date(baseDate);
+                d.setDate(baseDate.getDate() + i);
+                daysArr.push(getISODate(d));
+            }
+
+            if(!daysArr.includes(state.ui.calSelectedDate)) state.ui.calSelectedDate = daysArr[1]; 
+
+            let mobileTabsHtml = `<div class="flex overflow-x-auto no-scrollbar gap-2 px-4 py-3 md:hidden border-b border-slate-200 dark:border-darkborder bg-white dark:bg-slate-800">`;
+            daysArr.forEach(dStr => {
+                const active = dStr === state.ui.calSelectedDate;
+                const dObj = new Date(dStr);
+                const dayName = getDayNameShort(dObj);
+                const dayNum = dObj.getDate();
+                const btnClass = active ? "bg-emerald-500 text-white shadow-md border-emerald-500" : "bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300";
+                
+                let label = dayName;
+                if(dStr === daysArr[1]) label = "Oggi";
+                else if(dStr === daysArr[0]) label = "Ieri";
+
+                mobileTabsHtml += `
+                    <button onclick="state.ui.calSelectedDate='${dStr}'; render();" class="flex flex-col items-center justify-center min-w-[70px] px-3 py-2 rounded-xl border transition-all ${btnClass}">
+                        <span class="text-[10px] font-bold uppercase tracking-wider mb-0.5 opacity-80">${label}</span>
+                        <span class="text-lg font-black leading-none">${dayNum}</span>
+                    </button>`;
+            });
+            mobileTabsHtml += `</div>`;
+
+            const renderDayColumn = (dateStr, isMobileTarget = false) => {
+                const displayTitle = formatDisplayDate(dateStr);
+                const isToday = dateStr === daysArr[1];
+                let blocks = state.data.calendarBlocks.filter(b => isBlockOnDate(b, dateStr));
+                
+                // Meschia i blocchi del Life Hub con quelli provenienti da Google Calendar
+                if(AppData.gcalCache && AppData.gcalCache.length > 0) {
+                    let gEvents = AppData.gcalCache.filter(e => e.date === dateStr);
+                    blocks.push(...gEvents);
+                }
+
+                // Ordina per orario
+                blocks.sort((a,b) => a.startTime.localeCompare(b.startTime));
+
+                let blocksHtml = '';
+                if(blocks.length === 0) {
+                    blocksHtml = `<div class="text-center py-10 opacity-40 italic text-sm text-slate-500"><i class="fas fa-coffee text-2xl mb-2"></i><br>Niente in programma</div>`;
+                } else {
+                    blocks.forEach(b => {
+                        let isDone = false;
+                        if(b.isGcal) {
+                            isDone = state.data.gcalCompleted && state.data.gcalCompleted.includes(b.id + '_' + dateStr);
+                        } else {
+                            isDone = b.completedDates && b.completedDates.includes(dateStr);
+                        }
+                        
+                        const catClass = b.isGcal ? 'block-gcal' : "block-" + (b.category || 'routine');
+                        let icon = b.isGcal ? 'fab fa-google' : (b.type === 'task' ? 'fa-link' : (b.category === 'focus' ? 'fa-laptop-code' : (b.category === 'break' ? 'fa-mug-hot' : 'fa-list-ul')));
+                        
+                        let extraHtml = '';
+                        if(b.type === 'task' && b.taskIds && b.taskIds.length > 0) {
+                            extraHtml += `<div class="mt-1.5 space-y-1 pl-1 border-l-2 border-slate-200 dark:border-slate-600/50">`;
+                            b.taskIds.forEach(tid => {
+                                const t = state.data.tasks.find(x => x.id === tid);
+                                if(t) extraHtml += `<div class="text-[10px] flex items-start gap-1.5 opacity-90 text-slate-700 dark:text-slate-300"><i class="fas fa-check-square mt-0.5 opacity-50"></i> <span class="leading-tight">${t.title}</span></div>`;
+                            });
+                            extraHtml += `</div>`;
+                        }
+                        if(b.notes) {
+                            extraHtml += `<div class="text-[10px] text-slate-600 dark:text-slate-400 opacity-90 mt-2 bg-slate-100/50 dark:bg-slate-800/30 p-1.5 rounded whitespace-pre-wrap leading-tight max-h-20 overflow-y-auto"><i class="fas fa-align-left mr-1.5 opacity-50"></i>${b.notes}</div>`;
+                        }
+
+                        const onClickAction = b.isGcal ? (b.link ? `window.open('${b.link}', '_blank')` : '') : `openBlockModal('${b.id}', '${dateStr}')`;
+                        const cursorStyle = b.isGcal ? (b.link ? 'cursor:pointer' : 'cursor:default') : 'cursor:pointer';
+
+                        blocksHtml += `
+                            <div class="panel p-3 mb-3 flex items-start gap-3 transition-all relative group ${catClass} ${isDone ? 'opacity-50 grayscale' : ''}">
+                                <input type="checkbox" class="task-checkbox shrink-0 mt-0.5 border-current checked:!bg-current checked:!border-current" style="color:inherit" ${isDone ? 'checked' : ''} onclick="toggleBlockCompleted('${b.id}', '${dateStr}')">
+                                <div class="flex-1 min-w-0" onclick="${onClickAction}" style="${cursorStyle}">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-[10px] font-black uppercase tracking-wider opacity-80">${b.startTime}${b.endTime ? ' - '+b.endTime : ''}</span>
+                                        ${b.isRecurring ? `<i class="fas fa-sync-alt text-[9px] opacity-60"></i>` : ''}
+                                    </div>
+                                    <p class="font-bold text-sm leading-tight word-wrap mb-1 ${isDone ? 'line-through opacity-70' : ''}"><i class="fas ${icon} text-[10px] mr-1.5 opacity-60"></i>${b.title}</p>
+                                    ${extraHtml}
+                                </div>
+                            </div>`;
+                    });
+                }
+
+                const mobileVisibility = isMobileTarget ? 'block md:flex' : 'hidden md:flex';
+                const colHeaderColor = isToday ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-300';
+                const colHeaderBg = isToday ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800' : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700';
+
+                return `
+                    <div class="calendar-col flex-col h-full ${mobileVisibility} pb-20 md:pb-0">
+                        <div class="flex justify-between items-center p-3 mb-4 rounded-xl border shadow-sm ${colHeaderBg}">
+                            <h3 class="font-bold text-sm ${colHeaderColor}">${displayTitle}</h3>
+                            <button onclick="openBlockModal(null, '${dateStr}')" class="text-xs w-6 h-6 rounded-full bg-white dark:bg-darkbg shadow text-slate-500 hover:text-blue-500 transition flex items-center justify-center active:scale-95"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <div class="flex-1 overflow-y-auto px-1 no-scrollbar space-y-1">
+                            ${blocksHtml}
+                        </div>
+                    </div>`;
+            };
+
+            let desktopColsHtml = `<div class="flex flex-row gap-5 md:gap-6 overflow-x-auto snap-x md:snap-none w-full h-[calc(100vh-250px)] md:h-[calc(100vh-160px)] px-4 md:px-0">`;
+            daysArr.forEach(d => {
+                desktopColsHtml += renderDayColumn(d, d === state.ui.calSelectedDate);
+            });
+            desktopColsHtml += `</div>`;
+
+            return `
+                <div class="flex flex-col h-full">
+                    <div class="flex justify-between items-center mb-4 md:mb-6 hidden md:flex">
+                        <h2 class="text-2xl font-bold flex items-center text-slate-800 dark:text-white tracking-tight"><i class="fas fa-calendar-alt text-emerald-500 mr-3"></i> Time Management</h2>
+                    </div>
+                    ${mobileTabsHtml}
+                    <div class="mt-4 md:mt-0 flex-1">
+                        ${desktopColsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+
+        // --- MOBILE QUICK ADD ---
         function openMobileQuickAdd() {
             const ctxValue = state.ui.tmView.startsWith('p_') || state.ui.tmView.startsWith('sp_') || state.ui.tmView.startsWith('s_') ? state.ui.tmView.replace(/^[ps_]+/, '') : '';
             const ctxOpts = generateCtxOpts(ctxValue);
@@ -647,6 +1190,8 @@
             if(m.classList.contains('hidden')) {
                 document.getElementById('supabaseUrl').value = AppData.supabaseUrl;
                 document.getElementById('anonKey').value = AppData.anonKey;
+                document.getElementById('gcalIdSettings').value = AppData.gcalId;
+                document.getElementById('gcalApiSettings').value = AppData.gcalApiKey;
                 m.classList.remove('hidden');
             } else { m.classList.add('hidden'); }
         }
@@ -654,16 +1199,27 @@
         function saveSettings() {
             const url = document.getElementById('supabaseUrl').value.trim();
             const key = document.getElementById('anonKey').value.trim();
+            const gcalId = document.getElementById('gcalIdSettings').value.trim();
+            const gcalApi = document.getElementById('gcalApiSettings').value.trim();
+            
             localStorage.setItem('hub_supabase_url', url);
             localStorage.setItem('hub_anon_key', key);
-            AppData.supabaseUrl = url; AppData.anonKey = key;
+            localStorage.setItem('hub_gcal_id', gcalId);
+            localStorage.setItem('hub_gcal_apikey', gcalApi);
+            
+            AppData.supabaseUrl = url; AppData.anonKey = key; AppData.gcalId = gcalId; AppData.gcalApiKey = gcalApi;
+            
             toggleSettings();
             AppData.initialize();
-            showToast("Impostazioni Supabase salvate", "success");
+            
+            if(state.view === 'global_calendar' && gcalId && gcalApi) {
+                AppData.fetchGCalEvents().then(() => render());
+            }
+            showToast("Impostazioni salvate", "success");
         }
 
         function factoryReset() { 
-            if(confirm("ATTENZIONE: Questo svuoterà completamente il database e il cloud. Sei sicuro?")) { 
+            if(confirm("ATTENZIONE: Questo svuoterà completamente il database locale e il cloud. Sei sicuro?")) { 
                 AppData.reset(); navigate('home'); toggleSettings(); 
                 showToast("Database resettato", "success");
             } 
@@ -740,15 +1296,27 @@
                 extraObj = { type: document.getElementById('emType').value, status: document.getElementById('emStatus').value, startDate: document.getElementById('emStartDate').value, endDate: document.getElementById('emEndDate').value };
             }
 
+            // Fallback robusti per gli ID genitore
+            let currentSId = editState.sId || state.path.sphereId;
+            let currentPId = editState.pId || state.path.projId;
+
             if(editState.mode === 'create') {
                 const newId = editState.type.charAt(0) + '_' + Date.now();
-                if(editState.type === 'sphere') state.data.spheres.push({ id: newId, ...baseObj, order: state.data.spheres.length, notes: '', permanentNotes: '', updates: [] });
-                else if(editState.type === 'project') state.data.projects.push({ id: newId, sphereId: editState.sId, ...baseObj, ...extraObj, pinned: false, pinnedLevelId: null, archived: false, order: getChildren('sphere', editState.sId).length, notes: '', permanentNotes: '', updates: [] });
-                else state.data.subprojects.push({ id: newId, projectId: editState.pId, ...baseObj, ...extraObj, pinned: false, pinnedLevelId: null, archived: false, order: getChildren('project', editState.pId).length, notes: '', permanentNotes: '', updates: [] });
+                if(editState.type === 'sphere') {
+                    state.data.spheres.push({ id: newId, ...baseObj, order: state.data.spheres.length, notes: '', permanentNotes: '', updates: [] });
+                    navigate('sphere', newId);
+                }
+                else if(editState.type === 'project') {
+                    if(!currentSId) { showToast("Errore: Impossibile determinare la Sfera madre.", "error"); return; }
+                    state.data.projects.push({ id: newId, sphereId: currentSId, ...baseObj, ...extraObj, pinned: false, pinnedLevelId: null, archived: false, order: getChildren('sphere', currentSId).length, notes: '', permanentNotes: '', updates: [] });
+                    navigate('project', currentSId, newId);
+                }
+                else {
+                    if(!currentPId) { showToast("Errore: Impossibile determinare il Progetto madre.", "error"); return; }
+                    state.data.subprojects.push({ id: newId, projectId: currentPId, ...baseObj, ...extraObj, pinned: false, pinnedLevelId: null, archived: false, order: getChildren('project', currentPId).length, notes: '', permanentNotes: '', updates: [] });
+                    navigate('subproject', currentSId, currentPId, newId);
+                }
                 
-                if(editState.type === 'sphere') navigate('sphere', newId);
-                else if(editState.type === 'project') navigate('project', editState.sId, newId);
-                else navigate('subproject', editState.sId, editState.pId, newId);
                 showToast("Creato con successo", "success");
             } else {
                 const e = getEntity(editState.type, editState.id);
@@ -787,27 +1355,33 @@
             } else if(editState.type === 'project') {
                 state.data.projects = state.data.projects.filter(x => x.id !== id);
                 state.data.subprojects = state.data.subprojects.filter(x => x.projectId !== id);
-                navigate('sphere', editState.sId);
+                navigate('sphere', editState.sId || state.path.sphereId);
             } else {
                 state.data.subprojects = state.data.subprojects.filter(x => x.id !== id);
-                navigate('project', editState.sId, editState.pId);
+                navigate('project', editState.sId || state.path.sphereId, editState.pId || state.path.projId);
             }
             showToast("Eliminato", "success");
             closeEntityModal(); AppData.triggerSave(); render();
         }
 
-        function navigate(view, sId=null, pId=null, spId=null) { 
+        async function navigate(view, sId=null, pId=null, spId=null) { 
             state.view = view; 
             state.path = { sphereId: sId, projId: pId, subprojId: spId }; 
             editingTaskId = null; 
             
             const headers = document.querySelectorAll('.hidden-in-tm');
             headers.forEach(h => {
-                if(view === 'global_tasks') h.classList.add('hidden', 'md:flex');
+                if(['global_tasks', 'global_calendar'].includes(view)) h.classList.add('hidden', 'md:flex');
                 else h.classList.remove('hidden', 'md:flex');
             });
             
             render(); 
+
+            // Se siamo nel Calendario e l'utente ha configurato le API, fetcha e re-renderizza istantaneamente
+            if(view === 'global_calendar' && AppData.gcalApiKey && AppData.gcalId) {
+                await AppData.fetchGCalEvents();
+                render();
+            }
         }
 
         function render() {
@@ -825,6 +1399,7 @@
             else if(state.view === 'subproject') c.innerHTML = renderSubproject();
             else if(state.view === 'global_tasks') c.innerHTML = renderAdvancedTaskManager();
             else if(state.view === 'global_contacts') c.innerHTML = renderGlobalContacts();
+            else if(state.view === 'global_calendar') c.innerHTML = renderCalendar(); 
             
             initQuillEditors(); 
         }
@@ -843,8 +1418,8 @@
         function renderBreadcrumbs() {
             const nav = document.getElementById('breadcrumbs');
             let html = `<span class="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1.5 transition" onclick="navigate('home')"><i class="fas fa-home text-xs mb-[1px]"></i> Home</span>`;
-            if (['global_contacts','global_tasks'].includes(state.view)) {
-                const labels = { global_tasks: 'Task Manager', global_contacts: 'Rubrica' };
+            if (['global_contacts','global_tasks', 'global_calendar'].includes(state.view)) {
+                const labels = { global_tasks: 'Task Manager', global_contacts: 'Rubrica', global_calendar: 'Time Management' };
                 html += ` <i class="fas fa-chevron-right text-[9px] opacity-40 mx-1.5"></i> <span class="text-slate-800 dark:text-slate-200 font-bold">${labels[state.view]}</span>`;
             } else if (state.path.sphereId) {
                 const s = getEntity('sphere', state.path.sphereId);
@@ -1084,89 +1659,102 @@
         }
 
         // --- ENTITY VIEWS & NOTES ---
-        function archiveNotes(type, id) {
-            const entity = getEntity(type, id);
-            if(!entity) return;
-            if (!entity.notes || entity.notes.trim() === '' || entity.notes === '<p><br></p>') {
-                showToast("Il foglio degli appunti è vuoto. Non c'è nulla da archiviare.", "error");
+        function archiveNotes(type, entityId) {
+            const e = getEntity(type, entityId);
+            if(!e) return;
+            const content = e.notes;
+            if(!content || content.trim() === '' || content === '<p><br></p>') {
+                showToast("Il foglio corrente è vuoto.", "default");
                 return;
             }
-            if (!entity.updates) entity.updates = [];
-            const dStr = new Date().toLocaleDateString('it-IT') + ' - ' + new Date().toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'});
-            
-            entity.updates.push({ id: 'u_'+Date.now(), date: dStr, text: entity.notes, edited: false });
-            entity.notes = ''; 
-            
-            const el = document.getElementById(`quill-editor-${type}`);
-            if (el && el.__quill) el.__quill.root.innerHTML = '';
-            
-            showToast("Appunti archiviati con successo", "success");
-            AppData.triggerSave(); render();
+            if(!e.updates) e.updates = [];
+            e.updates.unshift({ id: 'upd_'+Date.now(), date: getISODate(new Date()), content: content });
+            e.notes = ''; 
+            AppData.triggerSave();
+            render();
+            showToast("Foglio archiviato con successo", "success");
         }
 
-        function renderArchivedNotes(updates, type, id) {
-            if (!updates || updates.length === 0) return '';
-            let html = `
-                <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-700/50">
-                    <h3 class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center mb-4"><i class="fas fa-history mr-1.5"></i> Storico Archiviati</h3>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">`;
-            updates.slice().reverse().forEach(u => {
-                html += `
-                    <div onclick="openArchiveModal('${type}', '${id}', '${u.id}')" class="panel p-4 bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder hover:border-blue-500 dark:hover:border-blue-400 cursor-pointer shadow-sm transition-all group">
-                        <i class="far fa-file-alt text-3xl text-slate-300 dark:text-slate-600 mb-3 group-hover:text-blue-500 transition transform group-hover:scale-110 origin-left"></i>
-                        <p class="font-bold text-xs text-slate-700 dark:text-slate-200">Appunti</p>
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mt-1.5">${u.date.split(' - ')[0]}</p>
-                        ${u.edited ? `<p class="text-[8px] text-amber-500 mt-2 font-bold bg-amber-50 dark:bg-amber-900/20 px-1.5 py-0.5 rounded inline-block"><i class="fas fa-pencil-alt"></i> MODIFICATO</p>` : ''}
-                    </div>`;
-            });
-            return html + `</div></div>`;
+        function deleteArchivedNote(type, entityId, updateId) {
+            if(!confirm("Sei sicuro di voler eliminare questa nota archiviata?")) return;
+            const e = getEntity(type, entityId);
+            if(e && e.updates) {
+                e.updates = e.updates.filter(u => u.id !== updateId);
+                AppData.triggerSave();
+                render();
+                showToast("Nota eliminata", "success");
+            }
         }
 
         function openArchiveModal(type, entityId, updateId) {
-            currentArchiveEdit = { type, entityId, updateId };
-            const entity = getEntity(type, entityId);
-            if(!entity) return;
-            const update = entity.updates.find(u => u.id === updateId);
-            
-            document.getElementById('archiveViewTitle').innerText = `Archivio - ${entity.name}`;
-            document.getElementById('archiveViewDate').innerText = update.date;
-            
-            if (update.edited) {
-                document.getElementById('archiveEditIndicator').classList.remove('hidden');
-                document.getElementById('archiveEditIndicator').innerHTML = `<i class="fas fa-pencil-alt mr-1"></i> Modificato il ${update.editDate}`;
-            } else {
-                document.getElementById('archiveEditIndicator').classList.add('hidden');
-            }
+            const e = getEntity(type, entityId);
+            if(!e || !e.updates) return;
+            const upd = e.updates.find(u => u.id === updateId);
+            if(!upd) return;
 
+            currentArchiveEdit = { type, entityId, updateId };
+            document.getElementById('archiveViewDate').innerText = "Data: " + upd.date;
+            document.getElementById('archiveEditIndicator').classList.add('hidden');
+            
             document.getElementById('archiveViewModal').classList.remove('hidden');
             document.getElementById('archiveViewModal').classList.add('flex');
-            
-            if (!archiveQuill) {
+
+            if(!archiveQuill) {
                 const tOpts = [['bold', 'italic', 'underline', 'strike'], ['blockquote', 'code-block'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], [{ 'color': [] }, { 'background': [] }], ['link'], ['clean']];
                 archiveQuill = new Quill('#quill-archive-editor', { theme: 'snow', modules: { toolbar: tOpts } });
+                archiveQuill.on('text-change', function(delta, oldDelta, source) {
+                    if(source === 'user') document.getElementById('archiveEditIndicator').classList.remove('hidden');
+                });
             }
-            archiveQuill.root.innerHTML = update.text || '';
+            archiveQuill.root.innerHTML = upd.content;
         }
-        
-        function closeArchiveModal() { 
+
+        function closeArchiveModal() {
             document.getElementById('archiveViewModal').classList.add('hidden');
             document.getElementById('archiveViewModal').classList.remove('flex');
+            currentArchiveEdit = { type: null, entityId: null, updateId: null };
         }
-        
+
         function saveArchiveEdit() {
-            const { type, entityId, updateId } = currentArchiveEdit;
-            const entity = getEntity(type, entityId);
-            if(entity) {
-                const update = entity.updates.find(u => u.id === updateId);
-                if(update) {
-                    update.text = archiveQuill.root.innerHTML;
-                    update.edited = true;
-                    update.editDate = new Date().toLocaleDateString('it-IT') + ' ' + new Date().toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'});
-                    AppData.triggerSave(); render();
+            if(!currentArchiveEdit.entityId) return;
+            const e = getEntity(currentArchiveEdit.type, currentArchiveEdit.entityId);
+            if(e && e.updates) {
+                const upd = e.updates.find(u => u.id === currentArchiveEdit.updateId);
+                if(upd) {
+                    upd.content = archiveQuill.root.innerHTML;
+                    AppData.triggerSave();
+                    document.getElementById('archiveEditIndicator').classList.add('hidden');
                     showToast("Archivio aggiornato", "success");
+                    render();
                 }
             }
-            closeArchiveModal();
+        }
+
+        function renderArchivedNotes(updates, type, entityId) {
+            if(!updates || updates.length === 0) return '';
+            let html = `
+                <div class="mt-8 pt-6 border-t border-slate-200 dark:border-darkborder">
+                    <h3 class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center mb-4"><i class="fas fa-history mr-2 text-sm"></i> Storico Appunti Archiviati</h3>
+                    <div class="space-y-3">
+            `;
+            updates.forEach(u => {
+                let preview = u.content.replace(/<[^>]*>?/gm, '').substring(0, 80) + '...';
+                if(preview.trim() === '...') preview = 'Contenuto multimediale o formattato';
+                html += `
+                    <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-[#202938] border border-slate-200 dark:border-darkborder rounded-xl group hover:shadow-sm transition">
+                        <div class="flex-1 min-w-0 cursor-pointer" onclick="openArchiveModal('${type}', '${entityId}', '${u.id}')">
+                            <div class="text-[10px] font-bold text-slate-500 mb-1"><i class="far fa-calendar-alt mr-1"></i> ${u.date}</div>
+                            <div class="text-xs text-slate-600 dark:text-slate-300 truncate">${preview}</div>
+                        </div>
+                        <div class="flex gap-1 ml-3 opacity-0 group-hover:opacity-100 transition">
+                            <button onclick="openArchiveModal('${type}', '${entityId}', '${u.id}')" class="text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 p-2 rounded-lg transition"><i class="fas fa-expand-alt"></i></button>
+                            <button onclick="deleteArchivedNote('${type}', '${entityId}', '${u.id}')" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div></div>`;
+            return html;
         }
 
         function renderSphere() {
@@ -1518,7 +2106,7 @@
             if (showGlobal && !contextId) {
                 const filter = state.ui.homeTaskFilter || 'all';
                 const ctxFilter = state.ui.homeContextFilter || 'all';
-                const todayStr = new Date().toISOString().split('T')[0];
+                const todayStr = getISODate(new Date());
 
                 if (ctxFilter !== 'all') {
                     let globalValidCtxIds = [ctxFilter];
@@ -1540,8 +2128,8 @@
                     const today = new Date();
                     const nextWeek = new Date();
                     nextWeek.setDate(today.getDate() + 7);
-                    const tStr = today.toISOString().split('T')[0];
-                    const nStr = nextWeek.toISOString().split('T')[0];
+                    const tStr = getISODate(today);
+                    const nStr = getISODate(nextWeek);
                     tasks = tasks.filter(t => t.dueDate >= tStr && t.dueDate <= nStr); 
                 }
                 else if(filter === 'inbox') { tasks = tasks.filter(t => !t.contextId); }
@@ -1613,7 +2201,6 @@
             return html + `</div>`;
         }
 
-        // --- TASK MANAGER (ADVANCED) ---
         function toggleTmSidebar() {
             const sidebar = document.getElementById('tmSidebar');
             const overlay = document.getElementById('tmOverlayInner');
@@ -1683,7 +2270,7 @@
 
             let ctxOpts = generateCtxOpts(currentCtxId);
             let tasks = [...state.data.tasks];
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = getISODate(new Date());
             let listTitle = "Tutte le task";
 
             if(state.ui.tmView === 'today') { tasks = tasks.filter(t => t.dueDate === todayStr); listTitle = "Oggi"; }
@@ -1691,8 +2278,8 @@
                 const today = new Date();
                 const nextWeek = new Date();
                 nextWeek.setDate(today.getDate() + 7);
-                const tStr = today.toISOString().split('T')[0];
-                const nStr = nextWeek.toISOString().split('T')[0];
+                const tStr = getISODate(today);
+                const nStr = getISODate(nextWeek);
                 tasks = tasks.filter(t => t.dueDate >= tStr && t.dueDate <= nStr); 
                 listTitle = "Prossimi 7 Giorni"; 
             }
